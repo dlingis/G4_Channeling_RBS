@@ -43,18 +43,18 @@ class G4UIcmdWithAnInteger;
 
 class StackingMessenger: public G4UImessenger
 {
-  public:
-    StackingMessenger(StackingAction*);
-   ~StackingMessenger();
-    
-    void SetNewValue(G4UIcommand*, G4String);
-    
-  private:
-    StackingAction*        stackAction;
-    
-    G4UIdirectory*         stackDir;          
-    G4UIcmdWithAnInteger*  killCmd;
-};
+	public:
+		StackingMessenger(StackingAction*);
+		~StackingMessenger();
+		
+		void SetNewValue(G4UIcommand*, G4String);
+		
+	private:
+		StackingAction*        stackAction;
+		
+		G4UIdirectory*         stackDir;
+		G4UIcmdWithAnInteger*  killCmd;
+	};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

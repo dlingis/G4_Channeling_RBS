@@ -45,33 +45,22 @@ class DetectorConstruction;
 
 class StackingAction : public G4UserStackingAction
 {
-  public:
-    StackingAction(EventAction*,DetectorConstruction* );
-   ~StackingAction();
-   
-    void SetKillStatus(G4int value) {killSecondary = value;};
-    
-    
-    G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track*);
-    
-    G4double DamageEnergy(G4double T, G4double A, G4double Z);
-  
-    G4double PartitionFunction(G4double T, G4double M1, G4double M2, G4double Z1, G4double Z2);
-    G4double PartitionFunction2(G4double T, G4double M1, G4double M2, G4double Z1, G4double Z2);
+	public:
+		StackingAction(EventAction*,DetectorConstruction* );
+		~StackingAction();
+		void SetKillStatus(G4int value) {killSecondary = value;};
+		G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track*);
+		G4double DamageEnergy(G4double T, G4double A, G4double Z);
+		G4double DamagePartitionFunction(G4double T, G4double M1, G4double M2, G4double Z1, G4double Z2);
 
-
-    
-  private:
-    //Run*          run;
-    EventAction*        eventaction;    
-    DetectorConstruction* detector;
-    G4int               killSecondary;
-    StackingMessenger*  stackMessenger;
-    G4int rec;
-    G4int SecRec;
-    G4int absnbrec;
-
-
+	private:
+		EventAction* eventaction;
+		DetectorConstruction* detector;
+		G4int killSecondary;
+		StackingMessenger* stackMessenger;
+		G4int rec;
+		G4int SecRec;
+		G4int absnbrec;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

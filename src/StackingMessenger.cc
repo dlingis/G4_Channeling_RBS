@@ -40,32 +40,28 @@
 StackingMessenger::StackingMessenger(StackingAction* stack)
 :stackAction(stack)
 {
-
-  stackDir = new G4UIdirectory("/stack/");
-  stackDir->SetGuidance("stacking control");
-   
-  killCmd = new G4UIcmdWithAnInteger("/stack/killSecondaries",this);
-  killCmd->SetGuidance(" Choice: 0=no kill; 1=kill and record; 2=kill only");
-  killCmd->SetParameterName("choice",true);
-  killCmd->SetRange("choice>=0");
-  //buvo killCmd->SetDefaultValue(1);
-  killCmd->SetDefaultValue(0);
+	stackDir = new G4UIdirectory("/stack/");
+	stackDir->SetGuidance("stacking control");
+	killCmd = new G4UIcmdWithAnInteger("/stack/killSecondaries", this);
+	killCmd->SetGuidance(" Choice: 0=no kill; 1=kill and record; 2=kill only");
+	killCmd->SetParameterName("choice", true);
+	killCmd->SetRange("choice>=0");
+	killCmd->SetDefaultValue(1);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 StackingMessenger::~StackingMessenger()
 {
-  delete killCmd;
-  delete stackDir;
+	delete killCmd;
+	delete stackDir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void StackingMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
-{     
-  if(command == killCmd)
-    {stackAction->SetKillStatus(killCmd->GetNewIntValue(newValue));}               
+{
+	if(command == killCmd)
+		stackAction->SetKillStatus(killCmd->GetNewIntValue(newValue));
 }
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

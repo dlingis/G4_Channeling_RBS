@@ -42,80 +42,72 @@ class G4AttValue;
 class SensitiveDetectorHit : public G4VHit
 {
 public:
-    SensitiveDetectorHit();
-    SensitiveDetectorHit(G4int z);
-    virtual ~SensitiveDetectorHit();
-    SensitiveDetectorHit(
-                        const SensitiveDetectorHit &right);
-    const SensitiveDetectorHit& operator=(
-                        const SensitiveDetectorHit &right);
-    int operator==(const SensitiveDetectorHit &right) const;
-    
-    inline void *operator new(size_t);
-    inline void operator delete(void *aHit);
-    
-    virtual void Draw();
-    virtual const std::map<G4String,G4AttDef>* GetAttDefs() const;
-    virtual std::vector<G4AttValue>* CreateAttValues() const;
-    virtual void Print();
-    
+	SensitiveDetectorHit();
+	SensitiveDetectorHit(G4int z);
+	virtual ~SensitiveDetectorHit();
+	SensitiveDetectorHit(const SensitiveDetectorHit &right);
+	const SensitiveDetectorHit& operator=(const SensitiveDetectorHit &right);
+	int operator==(const SensitiveDetectorHit &right) const;
+	
+	inline void *operator new(size_t);
+	inline void operator delete(void *aHit);
+	
+	virtual void Draw();
+	virtual const std::map<G4String,G4AttDef>* GetAttDefs() const;
+	virtual std::vector<G4AttValue>* CreateAttValues() const;
+	virtual void Print();
+	
 private:
-    G4int fTrackID;
-    G4int fLayerID;
-    G4ThreeVector fWorldPos;
-    G4ThreeVector fSpin;
-    G4double fKinE;
+	G4int fTrackID;
+	G4int fLayerID;
+	G4ThreeVector fWorldPos;
+	G4ThreeVector fSpin;
+	G4double fKinE;
 
-    
+	
 public:
-    inline void SetTrackID(G4int z) { fTrackID = z; }
-    inline G4int GetTrackID() const { return fTrackID; }
-    inline void SetLayerID(G4int z) { fLayerID = z; }
-    inline G4int GetLayerID() const { return fLayerID; }
-    inline void SetWorldPos(G4ThreeVector xyz) { fWorldPos = xyz; }
-    inline G4ThreeVector GetWorldPos() const { return fWorldPos; }
-    inline void SetSpin(G4ThreeVector xyz) { fSpin = xyz; }
-    inline G4ThreeVector GetSpin() const { return fSpin; }
-    inline void SetKinE(G4double xyz) { fKinE = xyz; }
-    inline G4double GetKinE() const { return fKinE; }
-
-
-
+	inline void SetTrackID(G4int z) { fTrackID = z; }
+	inline G4int GetTrackID() const { return fTrackID; }
+	inline void SetLayerID(G4int z) { fLayerID = z; }
+	inline G4int GetLayerID() const { return fLayerID; }
+	inline void SetWorldPos(G4ThreeVector xyz) { fWorldPos = xyz; }
+	inline G4ThreeVector GetWorldPos() const { return fWorldPos; }
+	inline void SetSpin(G4ThreeVector xyz) { fSpin = xyz; }
+	inline G4ThreeVector GetSpin() const { return fSpin; }
+	inline void SetKinE(G4double xyz) { fKinE = xyz; }
+	inline G4double GetKinE() const { return fKinE; }
 };
 
 typedef G4THitsCollection<SensitiveDetectorHit>
-    SensitiveDetectorHitsCollection;
+	SensitiveDetectorHitsCollection;
 
 #ifdef G4MULTITHREADED
 extern G4ThreadLocal G4Allocator<SensitiveDetectorHit>*
-    SensitiveDetectorHitAllocator;
+	SensitiveDetectorHitAllocator;
 #else
 extern G4Allocator<SensitiveDetectorHit>
-    SensitiveDetectorHitAllocator;
+	SensitiveDetectorHitAllocator;
 #endif
 
 inline void* SensitiveDetectorHit::operator new(size_t)
 {
 #ifdef G4MULTITHREADED
-    if(!SensitiveDetectorHitAllocator)
-        SensitiveDetectorHitAllocator =
-        new G4Allocator<SensitiveDetectorHit>;
-    return (void *) SensitiveDetectorHitAllocator->MallocSingle();
+	if(!SensitiveDetectorHitAllocator)
+		SensitiveDetectorHitAllocator = new G4Allocator<SensitiveDetectorHit>;
+	return (void *) SensitiveDetectorHitAllocator->MallocSingle();
 #else
-    void* aHit;
-    aHit = (void*)SensitiveDetectorHitAllocator.MallocSingle();
-    return aHit;
+	void* aHit;
+	aHit = (void*)SensitiveDetectorHitAllocator.MallocSingle();
+	return aHit;
 #endif
 }
 
 inline void SensitiveDetectorHit::operator delete(void* aHit)
 {
 #ifdef G4MULTITHREADED
-    SensitiveDetectorHitAllocator->FreeSingle((
-                    SensitiveDetectorHit*) aHit);
+	SensitiveDetectorHitAllocator->FreeSingle((SensitiveDetectorHit*) aHit);
 #else
-   SensitiveDetectorHitAllocator.FreeSingle((
-                    SensitiveDetectorHit*) aHit);
+   SensitiveDetectorHitAllocator.FreeSingle((SensitiveDetectorHit*) aHit);
 #endif
 }
 

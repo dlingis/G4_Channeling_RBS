@@ -31,11 +31,11 @@
 
 class PhysicsList: public G4VModularPhysicsList
 {
-public:
-  PhysicsList();
-  virtual ~PhysicsList();
+	public:
+		PhysicsList();
+		virtual ~PhysicsList();
 
-  virtual void SetCuts();
+		virtual void SetCuts();
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

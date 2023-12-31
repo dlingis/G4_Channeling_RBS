@@ -144,7 +144,7 @@ Run::Run(DetectorConstruction* det)
 
    angle_of_incidence = 0;
    primary_energy = 0;
-        
+		
 
 }
 
@@ -152,12 +152,12 @@ Run::Run(DetectorConstruction* det)
 
 Run::~Run()
 { 
-    // Important to clean up the map
-    std::map<G4int, G4THitsMap<G4double>* >::iterator iter = fMap.begin();
-    
-    while (iter != fMap.end()) {
-        delete iter->second;
-        iter++;}
+	// Important to clean up the map
+	std::map<G4int, G4THitsMap<G4double>* >::iterator iter = fMap.begin();
+	
+	while (iter != fMap.end()) {
+		delete iter->second;
+		iter++;}
 }
 //========================================================
 void Run::SetPrimary(G4ParticleDefinition* particle, G4double energy)
@@ -173,10 +173,10 @@ void Run::CountProcesses(const G4VProcess* process)
   G4String procName = process->GetProcessName();
   std::map<G4String,G4int>::iterator it = fProcCounter.find(procName);
   if ( it == fProcCounter.end()) {
-    fProcCounter[procName] = 1;
+	fProcCounter[procName] = 1;
   }
   else {
-    fProcCounter[procName]++; 
+	fProcCounter[procName]++; 
   }
 }
 
@@ -259,27 +259,27 @@ void Run::AddTrakLenSec (G4double length)
   TrakLenSec2 += length*length;
 }
   
-                  
+				  
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void Run::ParticleCount(G4String name, G4double Ekin)
 {
   std::map<G4String, ParticleData>::iterator it = fParticleDataMap1.find(name);
   if ( it == fParticleDataMap1.end()) {
-    fParticleDataMap1[name] = ParticleData(1, Ekin, Ekin, Ekin);
+	fParticleDataMap1[name] = ParticleData(1, Ekin, Ekin, Ekin);
   }
   else {
-    ParticleData& data = it->second;
-    data.fCount++;
-    data.fEmean += Ekin;
-    //update min max
-    G4double emin = data.fEmin;
-    if (Ekin < emin) data.fEmin = Ekin;
-    G4double emax = data.fEmax;
-    if (Ekin > emax) data.fEmax = Ekin; 
+	ParticleData& data = it->second;
+	data.fCount++;
+	data.fEmean += Ekin;
+	//update min max
+	G4double emin = data.fEmin;
+	if (Ekin < emin) data.fEmin = Ekin;
+	G4double emax = data.fEmax;
+	if (Ekin > emax) data.fEmax = Ekin; 
   }   
 }
-                 
+				 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void Run::AddEdep(G4double edep)
@@ -287,7 +287,7 @@ void Run::AddEdep(G4double edep)
   fEnergyDeposit += edep;
   fEnergyDeposit2 += edep*edep;
 }
-                 
+				 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void Run::AddEflow(G4double eflow)
@@ -301,17 +301,17 @@ void Run::ParticleFlux(G4String name, G4double Ekin)
 {
   std::map<G4String, ParticleData>::iterator it = fParticleDataMap2.find(name);
   if ( it == fParticleDataMap2.end()) {
-    fParticleDataMap2[name] = ParticleData(1, Ekin, Ekin, Ekin);
+	fParticleDataMap2[name] = ParticleData(1, Ekin, Ekin, Ekin);
   }
   else {
-    ParticleData& data = it->second;
-    data.fCount++;
-    data.fEmean += Ekin;
-    //update min max
-    G4double emin = data.fEmin;
-    if (Ekin < emin) data.fEmin = Ekin;
-    G4double emax = data.fEmax;
-    if (Ekin > emax) data.fEmax = Ekin; 
+	ParticleData& data = it->second;
+	data.fCount++;
+	data.fEmean += Ekin;
+	//update min max
+	G4double emin = data.fEmin;
+	if (Ekin < emin) data.fEmin = Ekin;
+	G4double emax = data.fEmax;
+	if (Ekin > emax) data.fEmax = Ekin; 
   }   
 }
 
@@ -470,71 +470,71 @@ void Run::Merge(const G4Run* run)
   //map: processes count
   std::map<G4String,G4int>::const_iterator itp;
   for ( itp = localRun->fProcCounter.begin();
-        itp != localRun->fProcCounter.end(); ++itp ) {
+		itp != localRun->fProcCounter.end(); ++itp ) {
 
-    G4String procName = itp->first;
-    G4int localCount = itp->second;
-    if ( fProcCounter.find(procName) == fProcCounter.end()) {
-      fProcCounter[procName] = localCount;
-    }
-    else {
-      fProcCounter[procName] += localCount;
-    }  
+	G4String procName = itp->first;
+	G4int localCount = itp->second;
+	if ( fProcCounter.find(procName) == fProcCounter.end()) {
+	  fProcCounter[procName] = localCount;
+	}
+	else {
+	  fProcCounter[procName] += localCount;
+	}  
   }
   
   //map: created particles count    
   std::map<G4String,ParticleData>::const_iterator itc;
   for (itc = localRun->fParticleDataMap1.begin(); 
-       itc != localRun->fParticleDataMap1.end(); ++itc) {
-    
-    G4String name = itc->first;
-    const ParticleData& localData = itc->second;   
-    if ( fParticleDataMap1.find(name) == fParticleDataMap1.end()) {
-      fParticleDataMap1[name]
-       = ParticleData(localData.fCount, 
-                      localData.fEmean, 
-                      localData.fEmin, 
-                      localData.fEmax);
-    }
-    else {
-      ParticleData& data = fParticleDataMap1[name];   
-      data.fCount += localData.fCount;
-      data.fEmean += localData.fEmean;
-      G4double emin = localData.fEmin;
-      if (emin < data.fEmin) data.fEmin = emin;
-      G4double emax = localData.fEmax;
-      if (emax > data.fEmax) data.fEmax = emax; 
-    }   
+	   itc != localRun->fParticleDataMap1.end(); ++itc) {
+	
+	G4String name = itc->first;
+	const ParticleData& localData = itc->second;   
+	if ( fParticleDataMap1.find(name) == fParticleDataMap1.end()) {
+	  fParticleDataMap1[name]
+	   = ParticleData(localData.fCount, 
+					  localData.fEmean, 
+					  localData.fEmin, 
+					  localData.fEmax);
+	}
+	else {
+	  ParticleData& data = fParticleDataMap1[name];   
+	  data.fCount += localData.fCount;
+	  data.fEmean += localData.fEmean;
+	  G4double emin = localData.fEmin;
+	  if (emin < data.fEmin) data.fEmin = emin;
+	  G4double emax = localData.fEmax;
+	  if (emax > data.fEmax) data.fEmax = emax; 
+	}   
   }
   
   //map: particles flux count       
   std::map<G4String,ParticleData>::const_iterator itn;
   for (itn = localRun->fParticleDataMap2.begin(); 
-       itn != localRun->fParticleDataMap2.end(); ++itn) {
-    
-    G4String name = itn->first;
-    const ParticleData& localData = itn->second;   
-    if ( fParticleDataMap2.find(name) == fParticleDataMap2.end()) {
-      fParticleDataMap2[name]
-       = ParticleData(localData.fCount, 
-                      localData.fEmean, 
-                      localData.fEmin, 
-                      localData.fEmax);
-    }
-    else {
-      ParticleData& data = fParticleDataMap2[name];   
-      data.fCount += localData.fCount;
-      data.fEmean += localData.fEmean;
-      G4double emin = localData.fEmin;
-      if (emin < data.fEmin) data.fEmin = emin;
-      G4double emax = localData.fEmax;
-      if (emax > data.fEmax) data.fEmax = emax; 
-    }   
+	   itn != localRun->fParticleDataMap2.end(); ++itn) {
+	
+	G4String name = itn->first;
+	const ParticleData& localData = itn->second;   
+	if ( fParticleDataMap2.find(name) == fParticleDataMap2.end()) {
+	  fParticleDataMap2[name]
+	   = ParticleData(localData.fCount, 
+					  localData.fEmean, 
+					  localData.fEmin, 
+					  localData.fEmax);
+	}
+	else {
+	  ParticleData& data = fParticleDataMap2[name];   
+	  data.fCount += localData.fCount;
+	  data.fEmean += localData.fEmean;
+	  G4double emin = localData.fEmin;
+	  if (emin < data.fEmin) data.fEmin = emin;
+	  G4double emax = localData.fEmax;
+	  if (emax > data.fEmax) data.fEmax = emax; 
+	}   
   }
-    const std::map< G4int, G4THitsMap<G4double>* >& localMap = localRun->fMap;
-    std::map< G4int, G4THitsMap<G4double>* >::const_iterator iter = localMap.begin();
-    for ( ; iter != localMap.end() ; ++iter)
-        (*(fMap[iter->first])) += (*(iter->second));
+	const std::map< G4int, G4THitsMap<G4double>* >& localMap = localRun->fMap;
+	std::map< G4int, G4THitsMap<G4double>* >::const_iterator iter = localMap.begin();
+	for ( ; iter != localMap.end() ; ++iter)
+		(*(fMap[iter->first])) += (*(iter->second));
 
 
   G4Run::Merge(run); 
@@ -544,9 +544,6 @@ void Run::Merge(const G4Run* run)
 
 void Run::EndOfRun() 
 {
-
-
-
   G4int prec = 5, wid = prec + 2;  
   G4int dfprec = G4cout.precision(prec);
   //fDetector->GetMaterial()->GetName()
@@ -565,45 +562,45 @@ void Run::EndOfRun()
   
   G4cout << " ********************************************************** " << G4endl;
   G4cout << " ******************** FINISH OF RUN *********************** " << G4endl;
-     
+	 
   G4String Particle = fParticle->GetParticleName();    
   G4cout << "\n The run is " << numberOfEvent << " "<< Particle << " of "
-         << G4BestUnit(fEkin,"Energy") << " through "  << G4BestUnit(fDetector->GetLength(0),"Length") << " length parallelpiped of " << material->GetName() << " (density: " << G4BestUnit(density,"Volumic Mass") << ")" << "\n and second material " << G4BestUnit(fDetector->GetLength(1),"Length") << " of " << material2->GetName() <<  " (density: " << G4BestUnit(density2,"Volumic Mass") << ")" << G4endl;
+		 << G4BestUnit(fEkin,"Energy") << " through "  << G4BestUnit(fDetector->GetLength(0),"Length") << " length parallelpiped of " << material->GetName() << " (density: " << G4BestUnit(density,"Volumic Mass") << ")" << "\n and second material " << G4BestUnit(fDetector->GetLength(1),"Length") << " of " << material2->GetName() <<  " (density: " << G4BestUnit(density2,"Volumic Mass") << ")" << G4endl;
 
   if (numberOfEvent == 0) { G4cout.precision(dfprec);   return;}
-             
+			 
   //frequency of processes
   //
   G4cout << "\n Process calls frequency :" << G4endl;
   G4int index = 0;
   std::map<G4String,G4int>::iterator it;    
   for (it = fProcCounter.begin(); it != fProcCounter.end(); it++) {
-     G4String procName = it->first;
-     G4int    count    = it->second;
-     G4String space = " "; if (++index%3 == 0) space = "\n";
-     G4cout << " " << std::setw(20) << procName << "="<< std::setw(7) << count
-            << space;
+	 G4String procName = it->first;
+	 G4int    count    = it->second;
+	 G4String space = " "; if (++index%3 == 0) space = "\n";
+	 G4cout << " " << std::setw(20) << procName << "="<< std::setw(7) << count
+			<< space;
   }
   G4cout << G4endl;
   
   //particles count
   //
   G4cout << "\n List of generated particles:" << G4endl;
-     
+	 
  std::map<G4String,ParticleData>::iterator itc;               
  for (itc = fParticleDataMap1.begin(); itc != fParticleDataMap1.end(); itc++) { 
-    G4String name = itc->first;
-    ParticleData data = itc->second;
-    G4int count = data.fCount;
-    G4double eMean = data.fEmean/count;
-    G4double eMin = data.fEmin;
-    G4double eMax = data.fEmax;    
-         
-    G4cout << "  " << std::setw(13) << name << ": " << std::setw(7) << count
-           << "  Emean = " << std::setw(wid) << G4BestUnit(eMean, "Energy")
-           << "\t( "  << G4BestUnit(eMin, "Energy")
-           << " --> " << G4BestUnit(eMax, "Energy") 
-           << ")" << G4endl;           
+	G4String name = itc->first;
+	ParticleData data = itc->second;
+	G4int count = data.fCount;
+	G4double eMean = data.fEmean/count;
+	G4double eMin = data.fEmin;
+	G4double eMax = data.fEmax;    
+		 
+	G4cout << "  " << std::setw(13) << name << ": " << std::setw(7) << count
+		   << "  Emean = " << std::setw(wid) << G4BestUnit(eMean, "Energy")
+		   << "\t( "  << G4BestUnit(eMin, "Energy")
+		   << " --> " << G4BestUnit(eMax, "Energy") 
+		   << ")" << G4endl;           
  }
    
   // compute mean Energy deposited and rms
@@ -615,9 +612,9 @@ void Run::EndOfRun()
   else            rmsEdep = 0.;
   
   G4cout << "\n Mean energy deposit per event = "
-         << G4BestUnit(fEnergyDeposit,"Energy") << ";  rms = "
-         << G4BestUnit(rmsEdep,      "Energy") 
-         << G4endl;
+		 << G4BestUnit(fEnergyDeposit,"Energy") << ";  rms = "
+		 << G4BestUnit(rmsEdep,      "Energy") 
+		 << G4endl;
   
   // compute mean Energy flow and rms
   //
@@ -627,29 +624,29 @@ void Run::EndOfRun()
   else             rmsEflow = 0.;
   
   G4cout << " Mean energy flow per event    = "
-         << G4BestUnit(fEnergyFlow,"Energy") << ";  rms = "
-         << G4BestUnit(rmsEflow,   "Energy") 
-         << G4endl;
-                                
+		 << G4BestUnit(fEnergyFlow,"Energy") << ";  rms = "
+		 << G4BestUnit(rmsEflow,   "Energy") 
+		 << G4endl;
+								
  //particles flux
  //
  G4cout << "\n List of particles emerging from the absorber :" << G4endl;
-     
+	 
  std::map<G4String,ParticleData>::iterator itn;               
  for (itn = fParticleDataMap2.begin(); itn != fParticleDataMap2.end(); itn++) { 
-    G4String name = itn->first;
-    ParticleData data = itn->second;
-    G4int count = data.fCount;
-    G4double eMean = data.fEmean/count;
-    G4double eMin = data.fEmin;
-    G4double eMax = data.fEmax;
-    G4double Eflow = data.fEmean/TotNbofEvents;        
-         
-    G4cout << "  " << std::setw(13) << name << ": " << std::setw(7) << count
-           << "  Emean = " << std::setw(wid) << G4BestUnit(eMean, "Energy")
-           << "\t( "  << G4BestUnit(eMin, "Energy")
-           << " --> " << G4BestUnit(eMax, "Energy") 
-           << ") \tEflow/event = " << G4BestUnit(Eflow, "Energy") << G4endl;
+	G4String name = itn->first;
+	ParticleData data = itn->second;
+	G4int count = data.fCount;
+	G4double eMean = data.fEmean/count;
+	G4double eMin = data.fEmin;
+	G4double eMax = data.fEmax;
+	G4double Eflow = data.fEmean/TotNbofEvents;        
+		 
+	G4cout << "  " << std::setw(13) << name << ": " << std::setw(7) << count
+		   << "  Emean = " << std::setw(wid) << G4BestUnit(eMean, "Energy")
+		   << "\t( "  << G4BestUnit(eMin, "Energy")
+		   << " --> " << G4BestUnit(eMax, "Energy") 
+		   << ") \tEflow/event = " << G4BestUnit(Eflow, "Energy") << G4endl;
  }
 
   // compute mean and rms
@@ -676,16 +673,16 @@ void Run::EndOfRun()
   //mean kinetic energy of secondary particles (IDp==1) 
   G4double rmssum_T = 0.0;
   if(N_rec > 0) {
-    sum_T/=N_rec;     sum_T2/=N_rec;
-    rmssum_T =sum_T2- sum_T*sum_T;
-    if(rmssum_T>0.) rmssum_T=std::sqrt(rmssum_T/N_rec);  }
+	sum_T/=N_rec;     sum_T2/=N_rec;
+	rmssum_T =sum_T2- sum_T*sum_T;
+	if(rmssum_T>0.) rmssum_T=std::sqrt(rmssum_T/N_rec);  }
 
   //mean kinetic energy of tertiary particles (IDp>1) 
   G4double rmssum_Tt = 0.0;
   if(N_Sec_Rec > 0) {
-    sum_Tt/=N_Sec_Rec;     sum_Tt2/=N_Sec_Rec;
-    rmssum_Tt =sum_Tt2- sum_Tt*sum_Tt;
-    if(rmssum_Tt>0.) rmssum_Tt=std::sqrt(rmssum_Tt/N_Sec_Rec);  }
+	sum_Tt/=N_Sec_Rec;     sum_Tt2/=N_Sec_Rec;
+	rmssum_Tt =sum_Tt2- sum_Tt*sum_Tt;
+	if(rmssum_Tt>0.) rmssum_Tt=std::sqrt(rmssum_Tt/N_Sec_Rec);  }
 
   //mean number of steps:
   Nsteps/=TotNbofEvents;  Nsteps2/=TotNbofEvents;
@@ -737,9 +734,9 @@ void Run::EndOfRun()
   //mean kinetic energy of secondary particles (IDp==1) 
   G4double absrmssum_t = 0.0;
   if(absrec > 0) {
-    abssum_t/=absrec;     abssum_t2/=absrec;
-    absrmssum_t =abssum_t2- abssum_t*abssum_t;
-    if(absrmssum_t>0.) absrmssum_t=std::sqrt(absrmssum_t/absrec);  }
+	abssum_t/=absrec;     abssum_t2/=absrec;
+	absrmssum_t =abssum_t2- abssum_t*abssum_t;
+	if(absrmssum_t>0.) absrmssum_t=std::sqrt(absrmssum_t/absrec);  }
   //mean number of steps:
   absstep/=TotNbofEvents;  absstep2/=TotNbofEvents;
   G4double absrmsSteps= absstep2 -absstep*absstep;
@@ -775,9 +772,9 @@ void Run::EndOfRun()
   //mean kinetic energy of secondary particles (IDp==1) 
   G4double abs1rmssum_t = 0.0;
   if(abs1rec > 0) {
-    abs1sum_t/=abs1rec;     abs1sum_t2/=abs1rec;
-    abs1rmssum_t =abs1sum_t2- abs1sum_t*abs1sum_t;
-    if(abs1rmssum_t>0.) abs1rmssum_t=std::sqrt(abs1rmssum_t/abs1rec);  }
+	abs1sum_t/=abs1rec;     abs1sum_t2/=abs1rec;
+	abs1rmssum_t =abs1sum_t2- abs1sum_t*abs1sum_t;
+	if(abs1rmssum_t>0.) abs1rmssum_t=std::sqrt(abs1rmssum_t/abs1rec);  }
   //mean number of steps:
   abs1step/=TotNbofEvents;  abs1step2/=TotNbofEvents;
   G4double abs1rmsSteps= abs1step2 -abs1step*abs1step;
@@ -814,9 +811,9 @@ void Run::EndOfRun()
   //mean kinetic energy of secondary particles (IDp==1) 
   G4double abs2rmssum_t = 0.0;
   if(abs2rec > 0) {
-    abs2sum_t/=abs2rec;     abs2sum_t2/=abs2rec;
-    abs2rmssum_t =abs2sum_t2- abs2sum_t*abs2sum_t;
-    if(abs2rmssum_t>0.) abs2rmssum_t=std::sqrt(abs2rmssum_t/abs2rec);  }
+	abs2sum_t/=abs2rec;     abs2sum_t2/=abs2rec;
+	abs2rmssum_t =abs2sum_t2- abs2sum_t*abs2sum_t;
+	if(abs2rmssum_t>0.) abs2rmssum_t=std::sqrt(abs2rmssum_t/abs2rec);  }
   //mean number of steps:
   abs2step/=TotNbofEvents;  abs2step2/=TotNbofEvents;
   G4double abs2rmsSteps= abs2step2 -abs2step*abs2step;
@@ -853,9 +850,9 @@ void Run::EndOfRun()
   //mean kinetic energy of secondary particles (IDp==1) 
   G4double abs3rmssum_t = 0.0;
   if(abs3rec > 0) {
-    abs3sum_t/=abs3rec;     abs3sum_t2/=abs3rec;
-    abs3rmssum_t =abs3sum_t2- abs3sum_t*abs3sum_t;
-    if(abs3rmssum_t>0.) abs3rmssum_t=std::sqrt(abs3rmssum_t/abs3rec);  }
+	abs3sum_t/=abs3rec;     abs3sum_t2/=abs3rec;
+	abs3rmssum_t =abs3sum_t2- abs3sum_t*abs3sum_t;
+	if(abs3rmssum_t>0.) abs3rmssum_t=std::sqrt(abs3rmssum_t/abs3rec);  }
   //mean number of steps:
   abs3step/=TotNbofEvents;  abs3step2/=TotNbofEvents;
   G4double abs3rmsSteps= abs3step2 -abs3step*abs3step;
@@ -892,9 +889,9 @@ void Run::EndOfRun()
   //mean kinetic energy of secondary particles (IDp==1) 
   G4double abs4rmssum_t = 0.0;
   if(abs4rec > 0) {
-    abs4sum_t/=abs4rec;     abs4sum_t2/=abs4rec;
-    abs4rmssum_t =abs4sum_t2- abs4sum_t*abs4sum_t;
-    if(abs4rmssum_t>0.) abs4rmssum_t=std::sqrt(abs4rmssum_t/abs4rec);  }
+	abs4sum_t/=abs4rec;     abs4sum_t2/=abs4rec;
+	abs4rmssum_t =abs4sum_t2- abs4sum_t*abs4sum_t;
+	if(abs4rmssum_t>0.) abs4rmssum_t=std::sqrt(abs4rmssum_t/abs4rec);  }
   //mean number of steps:
   abs4step/=TotNbofEvents;  abs4step2/=TotNbofEvents;
   G4double abs4rmsSteps= abs4step2 -abs4step*abs4step;
@@ -953,7 +950,7 @@ void Run::EndOfRun()
   fTrueRange /= TotNbofEvents; fTrueRange2 /= TotNbofEvents;
   G4double trueRms = fTrueRange2 - fTrueRange*fTrueRange;        
   if (trueRms>0.) trueRms = std::sqrt(trueRms); else trueRms = 0.;
-        
+		
   fProjRange /= TotNbofEvents; fProjRange2 /= TotNbofEvents;
   G4double projRms = fProjRange2 - fProjRange*fProjRange;        
   if (projRms>0.) projRms = std::sqrt(projRms); else projRms = 0.;
@@ -971,12 +968,12 @@ void Run::EndOfRun()
 
   G4cout << "\n ============= Simulation statistics ==============\n";
   G4cout << "\n Primary Total track length in absorber:\n "
-         << G4BestUnit(TrakLenPrim,"Length") << " +- "
-         << G4BestUnit(rmsTLPrim,       "Length") << G4endl;
+		 << G4BestUnit(TrakLenPrim,"Length") << " +- "
+		 << G4BestUnit(rmsTLPrim,       "Length") << G4endl;
 
   G4cout << "\n Secondaries total track length in absorber:\n "
-         << G4BestUnit(TrakLenSec,"Length") << " +- "
-         << G4BestUnit(rmsTLSec,       "Length") << G4endl;
+		 << G4BestUnit(TrakLenSec,"Length") << " +- "
+		 << G4BestUnit(rmsTLSec,       "Length") << G4endl;
 
   G4cout << "\n ==================================================\n ";
   G4cout << "\n Primary particle statistics\n ";
@@ -992,50 +989,50 @@ void Run::EndOfRun()
 			<< G4BestUnit(rmsTheta,"Angle")<<G4endl;
   
   G4cout << "\n Total energy deposit in absorber:\n "
-         << G4BestUnit(EnergyDeposit,"Energy") << " +/- "
-         << G4BestUnit(FrmsEdep,      "Energy") 
-         << G4endl;
+		 << G4BestUnit(EnergyDeposit,"Energy") << " +/- "
+		 << G4BestUnit(FrmsEdep,      "Energy") 
+		 << G4endl;
   G4cout << "-----> dE/dx total= " << meandEdx/(MeV/cm) << " MeV/cm"
-         << "\t(" << stopPower/(MeV*cm2/g) << " MeV*cm2/g)"
-         << G4endl;
+		 << "\t(" << stopPower/(MeV*cm2/g) << " MeV*cm2/g)"
+		 << G4endl;
 
 
   G4cout << "\n Nuclear energy deposit in absorber:\n "
-         << G4BestUnit(NonIonEnergyDeposit,"Energy") << " +/- "
-         << G4BestUnit(rmsEnondep,      "Energy")
-         << G4endl;
+		 << G4BestUnit(NonIonEnergyDeposit,"Energy") << " +/- "
+		 << G4BestUnit(rmsEnondep,      "Energy")
+		 << G4endl;
   G4cout << "-----> dE/dx  nucl = " << meandEdx_nucl/(MeV/cm) << " MeV/cm"
-         << "\t(" << stopPower_nucl/(MeV*cm2/g) << " MeV*cm2/g)"
-         << G4endl;
+		 << "\t(" << stopPower_nucl/(MeV*cm2/g) << " MeV*cm2/g)"
+		 << G4endl;
 
   G4cout <<"\n NIEL in absorber (Th>"<<Th/eV <<" eV):\n "
-         << G4BestUnit(sum_TL,"Energy") << " +/- "
-         << G4BestUnit(rmssum_TL,      "Energy")
-         << G4endl;
+		 << G4BestUnit(sum_TL,"Energy") << " +/- "
+		 << G4BestUnit(rmssum_TL,      "Energy")
+		 << G4endl;
   G4cout << "-----> NIEL = " << meandEdx_sumTL/(MeV/cm) << " MeV/cm"
-         << "\t(" << stopPower_sumTL/(MeV*cm2/g) << " MeV*cm2/g)"
-         << G4endl;
+		 << "\t(" << stopPower_sumTL/(MeV*cm2/g) << " MeV*cm2/g)"
+		 << G4endl;
 
   G4cout << "\n ===========================================================\n";
   G4cout << "\n true Range = " << G4BestUnit(fTrueRange,"Length")
-         << "   rms = "        << G4BestUnit(trueRms,  "Length");
+		 << "   rms = "        << G4BestUnit(trueRms,  "Length");
 
   G4cout << "\n proj Range = " << G4BestUnit(fProjRange,"Length")
-         << "   rms = "        << G4BestUnit(projRms,  "Length");
+		 << "   rms = "        << G4BestUnit(projRms,  "Length");
   G4cout << "\n ===========================================================\n";
   G4cout << " ====================== GEOMETRY ===========================";
   G4cout << "\n ===========================================================\n";
   G4cout << " \n"; 
   
-    G4ThreeVector pozicija1 = fDetector->GetPosition(0);
-    G4ThreeVector pozicija2 = fDetector->GetPosition(1);
-    G4ThreeVector pozicija3 = fDetector->GetPosition(2);
-    G4ThreeVector pozicija4 = fDetector->GetPosition(3);
-    
-    G4double ilgis1 = pozicija1.z();
-    G4double ilgis2 = pozicija2.z();
-    G4double ilgis3 = pozicija3.z();
-    G4double ilgis4 = pozicija4.z();
+	G4ThreeVector pozicija1 = fDetector->GetPosition(0);
+	G4ThreeVector pozicija2 = fDetector->GetPosition(1);
+	G4ThreeVector pozicija3 = fDetector->GetPosition(2);
+	G4ThreeVector pozicija4 = fDetector->GetPosition(3);
+	
+	G4double ilgis1 = pozicija1.z();
+	G4double ilgis2 = pozicija2.z();
+	G4double ilgis3 = pozicija3.z();
+	G4double ilgis4 = pozicija4.z();
 
   G4double atstums1 = (fDetector->GetLength(0)/2)+ilgis1-(fDetector->GetLength(1)/2);
   if(atstums1/nm < 1e-5)
@@ -1207,23 +1204,23 @@ void Run::EndOfRun()
   // kinetic energy of particles reaching the 4th detector
   G4double rmssum_kinen = 0.0;
   if(chan > 0) {
-    detKinEn/=hit;     detKinEn2/=hit;  // buvo /hit, ne is chan
-    rmssum_kinen =detKinEn2- detKinEn*detKinEn;
-    if(rmssum_kinen>0.) rmssum_kinen=std::sqrt(rmssum_kinen/hit);  }
+	detKinEn/=hit;     detKinEn2/=hit;  // buvo /hit, ne is chan
+	rmssum_kinen =detKinEn2- detKinEn*detKinEn;
+	if(rmssum_kinen>0.) rmssum_kinen=std::sqrt(rmssum_kinen/hit);  }
 
   G4cout << " **************************************************** " << G4endl;
   G4cout 
-    << " Projected range = " << G4BestUnit(projectedR,"Length")
-    << " +- " << G4BestUnit( rmsPR,"Length")<< G4endl;
+	<< " Projected range = " << G4BestUnit(projectedR,"Length")
+	<< " +- " << G4BestUnit( rmsPR,"Length")<< G4endl;
   G4cout << " Rotation of the sample: " << fDetector->GetAngles()/degree << " degrees " << G4endl;
-    
+	
   G4cout << " **************************************************** " << G4endl;
   G4cout << " # of particles that reaches last detector " << hit/4 << G4endl;
   G4cout << " part of total particles " << std::fixed << std::setprecision(2) << totchan*100 << " % " <<G4endl;
   G4cout << " part of emitted particles " << std::setprecision(2) << totem*100 << " % "<< G4endl;
 
   G4cout << " Mean KinEn of particles reaching 4th detector = "<<G4BestUnit(detKinEn,"Energy")
-                <<" +/- "  <<G4BestUnit(rmssum_kinen,"Energy")<<G4endl; 
+				<<" +/- "  <<G4BestUnit(rmssum_kinen,"Energy")<<G4endl; 
   G4cout << " ****************************************************** " << G4endl;
   G4double no_of_steps_per_particle = entry_sd/numberOfEvent;
   G4double no_of_reach_per_particle = entry_reach/numberOfEvent;
@@ -1283,7 +1280,7 @@ void Run::EndOfRun()
   G4cout << " TFU UNITS " << G4endl;
   G4cout << " " << TFU01 << " || " << TFU1 << " || " << TFU12 << " || " << TFU2 << " || " << TFU23 << " || " << TFU3 << " || " << TFU34 << " || " << TFU4 << " || " << TFU5 << G4endl;
   
-    G4cout << " " << G4BestUnit(atstums1, "Length") <<  "  " << G4BestUnit(plotis[0], "Length") << "  "<< G4BestUnit(atstumas_tarp_gretimu[0], "Length")  <<  "  " << G4BestUnit(plotis[1], "Length") << "  " << G4BestUnit(atstumas_tarp_gretimu[1], "Length") <<  "  " << G4BestUnit(plotis[2], "Length") << "  "<<G4BestUnit(atstumas_tarp_gretimu[2], "Length") <<  "  " << G4BestUnit(plotis[3], "Length") << "  " << G4BestUnit(final_dist, "Length") <<G4endl;
+	G4cout << " " << G4BestUnit(atstums1, "Length") <<  "  " << G4BestUnit(plotis[0], "Length") << "  "<< G4BestUnit(atstumas_tarp_gretimu[0], "Length")  <<  "  " << G4BestUnit(plotis[1], "Length") << "  " << G4BestUnit(atstumas_tarp_gretimu[1], "Length") <<  "  " << G4BestUnit(plotis[2], "Length") << "  "<<G4BestUnit(atstumas_tarp_gretimu[2], "Length") <<  "  " << G4BestUnit(plotis[3], "Length") << "  " << G4BestUnit(final_dist, "Length") <<G4endl;
   
   
   G4cout << " XXXXXX->|<-AAAAAA->|<-XXXXXX->|<-BBBBBB->|<-XXXXXX->|<-CCCCCC->|<-XXXXXX->|<-DDDDDD->|<-XXXXXX" << G4endl;
@@ -1295,48 +1292,48 @@ void Run::EndOfRun()
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance(); 
   if (analysisManager->IsActive() ) 
   {      
-    G4double fac; 
-    G4double unit     = analysisManager->GetH1Unit(2); 
-    G4double binWidth = analysisManager->GetH1Width(2)*unit;
-    fac = (1./(numberOfEvent*binWidth))*(mm/MeV);
-    analysisManager->ScaleH1(2,fac);
+	G4double fac; 
+	G4double unit     = analysisManager->GetH1Unit(2); 
+	G4double binWidth = analysisManager->GetH1Width(2)*unit;
+	fac = (1./(numberOfEvent*binWidth))*(mm/MeV);
+	analysisManager->ScaleH1(2,fac);
   	for (G4int ih=3; ih<15; ih++) 
   	{
-      unit    = analysisManager->GetH1Unit(ih);
+	  unit    = analysisManager->GetH1Unit(ih);
 		  binWidth = analysisManager->GetH1Width(ih)*unit;
-    	fac = (1./totstep); 
+		fac = (1./totstep); 
 			analysisManager->ScaleH1(15,fac);
-    	fac = (1./(numberOfEvent*binWidth))*(mm/keV);
+		fac = (1./(numberOfEvent*binWidth))*(mm/keV);
 			analysisManager->ScaleH1(17,fac);
-    	fac = (1./numberOfEvent);
+		fac = (1./numberOfEvent);
 			analysisManager->ScaleH1(18,fac);
-    	fac = (1./(totstep*binWidth));
+		fac = (1./(totstep*binWidth));
 			analysisManager->ScaleH1(19,fac);
-    }
-    for (G4int ih=20; ih<36; ih++) // buvo 53 
-    {
-      G4double binW = analysisManager->GetH1Width(ih);
-      G4double ave_step = total_step_length/no_of_steps_per_particle;
-    	G4double RBS_norm_dist = 0.1*nm;
-    	G4double norm = ave_step/RBS_norm_dist;
-    	G4double exponent = exp(1);
-    	fac = (1/(exponent*norm*no_of_steps_per_particle*numberOfEvent*binW));	// latest, 2021-02-23
-    	analysisManager->ScaleH1(ih,fac);
+	}
+	for (G4int ih=20; ih<36; ih++) // buvo 53 
+	{
+	  G4double binW = analysisManager->GetH1Width(ih);
+	  G4double ave_step = total_step_length/no_of_steps_per_particle;
+		G4double RBS_norm_dist = 0.1*nm;
+		G4double norm = ave_step/RBS_norm_dist;
+		G4double exponent = exp(1);
+		fac = (1/(exponent*norm*no_of_steps_per_particle*numberOfEvent*binW));	// latest, 2021-02-23
+		analysisManager->ScaleH1(ih,fac);
 	  } 
-    unit = analysisManager->GetH1Unit(16);
+	unit = analysisManager->GetH1Unit(16);
 		G4double BW1 = analysisManager->GetH1Width(16)*unit;
-    G4double fcc = (1./(BW1*numberOfEvent))*(cm);
+	G4double fcc = (1./(BW1*numberOfEvent))*(cm);
 		analysisManager->ScaleH1(16,fcc);
 
-    unit = analysisManager->GetH1Unit(17); 
-    BW1 = analysisManager->GetH1Width(17)*unit;
+	unit = analysisManager->GetH1Unit(17); 
+	BW1 = analysisManager->GetH1Width(17)*unit;
 		fcc = (1./(BW1*numberOfEvent))*(cm/eV);	
-    analysisManager->ScaleH1(17,fcc);
+	analysisManager->ScaleH1(17,fcc);
 }
   //remove all contents in fProcCounter, fCount 
   fProcCounter.clear();
   fParticleDataMap2.clear();
-                          
+						  
   //restore default format         
   G4cout.precision(dfprec);   
 }

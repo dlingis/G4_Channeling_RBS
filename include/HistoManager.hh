@@ -45,8 +45,6 @@
 #include <iostream>
 #include <fstream>
 
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 class DetectorConstruction; 
 

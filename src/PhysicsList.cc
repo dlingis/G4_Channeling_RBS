@@ -30,35 +30,10 @@
 
 #include "PhysicsList.hh"
 
-//
-/*
-#include "G4IonPhysicsPHP.hh"
-#include "G4IonElasticPhysics.hh"
-#include "G4StoppingPhysics.hh"
-#include "G4HadronElasticPhysicsPHP.hh"
-#include "G4HadronPhysicsQGSP_BIC_AllHP.hh"
-#include "G4HadronPhysicsQGSP_BERT_HP.hh"
-*/
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PhysicsList::PhysicsList():G4VModularPhysicsList(){
-  SetVerboseLevel(1);
-  /*
-  // Hadron Elastic scattering
-  RegisterPhysics( new G4HadronElasticPhysicsPHP(0) );
-
-  // Hadron Physics
-  //RegisterPhysics( new G4HadronPhysicsQGSP_BIC_AllHP(0));
-  RegisterPhysics( new G4HadronPhysicsQGSP_BERT_HP(0));
-
-  // Stopping Physics
-  RegisterPhysics( new G4StoppingPhysics(0) );
-
-  // Ion Physics
-  RegisterPhysics( new G4IonElasticPhysics(0) );
-  RegisterPhysics( new G4IonPhysicsPHP(0));  
-  */
+	SetVerboseLevel(1);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -68,5 +43,5 @@ PhysicsList::~PhysicsList(){;}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::SetCuts(){
-  G4VUserPhysicsList::SetCuts();
-}  
+	G4VUserPhysicsList::SetCuts();
+}

@@ -64,31 +64,27 @@ TrackingAction::TrackingAction(EventAction* event, DetectorConstruction* detecto
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track)
-{  
+{
 
-   ExExChParticleUserInfo *trackInfo(
-            static_cast< ExExChParticleUserInfo * >
-            (track->GetUserInformation() ) );
-    if(trackInfo){
-        return;
-    } else {
-        G4Track *  theTrack( const_cast< G4Track * >( track ) );
-        trackInfo = new ExExChParticleUserInfo();
-        theTrack->SetUserInformation( trackInfo );
-    }
+	ExExChParticleUserInfo *trackInfo(static_cast< ExExChParticleUserInfo * > (track->GetUserInformation() ) );
+	if (trackInfo){
+		return;
+	} else {
+		G4Track *  theTrack( const_cast< G4Track * >( track ) );
+		trackInfo = new ExExChParticleUserInfo();
+		theTrack->SetUserInformation( trackInfo );
+	}
 
 	G4VPhysicalVolume* volume = track->GetTouchableHandle()->GetVolume();
-	
-	if(volume == fDetector->GetIntAbsorber(1) || volume == fDetector->GetIntAbsorber(2) || volume == fDetector->GetIntAbsorber(3) || volume == fDetector->GetIntAbsorber(4) || volume == fDetector->GetIntAbsorber(5))
-	{
+	if (volume == fDetector->GetIntAbsorber(1) || volume == fDetector->GetIntAbsorber(2) || volume == fDetector->GetIntAbsorber(3) || volume == fDetector->GetIntAbsorber(4) || volume == fDetector->GetIntAbsorber(5)) {
 		//count secondary particles
-  		if (track->GetTrackID() == 1) return;  
-  		G4String name   = track->GetDefinition()->GetParticleName();
-  		G4double energy = track->GetKineticEnergy();
-  		Run* run = static_cast<Run*>(
-      		G4RunManager::GetRunManager()->GetNonConstCurrentRun());    
-  		run->ParticleCount(name,energy);
-  	}
+		if (track->GetTrackID() == 1)
+			return;
+		G4String name = track->GetDefinition()->GetParticleName();
+		G4double energy = track->GetKineticEnergy();
+		Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+		run->ParticleCount(name,energy);
+	}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -96,81 +92,75 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track)
 void TrackingAction::PostUserTrackingAction(const G4Track* track)
 {
 
- Run* run = static_cast<Run*>(
-              G4RunManager::GetRunManager()->GetNonConstCurrentRun());
-
-
+	Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
 	G4VPhysicalVolume* volume = track->GetTouchableHandle()->GetVolume();
-	
-	if(volume == fDetector->GetIntAbsorber(0) || volume == fDetector->GetIntAbsorber(1) || volume == fDetector->GetIntAbsorber(2) || volume == fDetector->GetIntAbsorber(3) || volume == fDetector->GetIntAbsorber(4))
-	{
 
-  		G4String parName = track->GetDefinition()->GetParticleName();
+	if(volume == fDetector->GetIntAbsorber(0) || volume == fDetector->GetIntAbsorber(1) || volume == fDetector->GetIntAbsorber(2) || volume == fDetector->GetIntAbsorber(3) || volume == fDetector->GetIntAbsorber(4)) {
+		G4String parName = track->GetDefinition()->GetParticleName();
+		G4double Trleng = track->GetTrackLength() + fPrimary->GetParticleGun()->GetParticlePosition().z() + 0.5 * fDetector->GetLength(0);
 
-		//pliusas, nes -z kryptimi pluostelis sklinda
-  		G4double Trleng = track->GetTrackLength()+fPrimary->GetParticleGun()->GetParticlePosition().z()+0.5*fDetector->GetLength(0);
+		if (track->GetParentID() == 0) {
+			fEventAction->AddTrueTrakLen(Trleng);
+			G4ThreeVector vertex = track->GetVertexPosition();
+			G4ThreeVector position = track->GetPosition() + 0.5 * fDetector->GetDimensions(0);
+			fEventAction->AddProjTrakLen(position.z());
+		}
 
-  		if (track->GetParentID() == 0) 
-  		{
-    		fEventAction->AddTrueTrakLen(Trleng);
-   			G4ThreeVector vertex = track->GetVertexPosition();
-   			G4ThreeVector position = track->GetPosition()+0.5*fDetector->GetDimensions(0);
-    		fEventAction->AddProjTrakLen(position.z());
-		} 
+		if (track->GetTrackID() == 1) {
+			G4double z = track->GetPosition().z() + 0.5 * fDetector->GetLength(0);
+			run->AddProjectedRange(z);
+			G4AnalysisManager* analysis = G4AnalysisManager::Instance();
+			analysis->FillH1(16, z);
+		}
 
- 		if (track->GetTrackID() == 1) 
- 		{
-   			G4double z = track->GetPosition().z() + 0.5*fDetector->GetLength(0);
-   			run->AddProjectedRange(z);
- 			G4AnalysisManager* analysis = G4AnalysisManager::Instance();
-   			analysis->FillH1(16, z);
- 		}
+		//scattering angle of  primary particle
+		// TODO check whether this actually works
+		if (track->GetParentID() == 0 ) {
+			G4double theta = 0.0;
+			G4double vz = (track->GetMomentumDirection()).z();
+			//G4cout<<"Angle_Lab: "<<std::acos(vx)<<" Position_x: "<<px<<G4endl;
+			if(vz <= -1.0)
+				theta = -CLHEP::pi;
+			else if(vz < 1.0)
+				theta = std::acos(vz);
+			fEventAction->AddTheta(theta);
+		}
+	}
+	// keep only outgoing particle
+	G4StepStatus status = track->GetStep()->GetPostStepPoint()->GetStepStatus();
+	if (status != fWorldBoundary)
+		return;
 
-  		//scattering angle of  primary particle
-  		if (track->GetParentID() == 0 )
-  		{
-    		G4double theta = 0.0;
-    		G4double    vz = (track->GetMomentumDirection()).z(); 
-    		//G4cout<<"Angle_Lab: "<<std::acos(vx)<<" Position_x: "<<px<<G4endl;
-    		if(vz <= -1.0)    { theta = -CLHEP::pi; }
-    		else if(vz < 1.0) { theta = std::acos(vz); }
-    		fEventAction->AddTheta(theta);   
-  		}
-  	}
- // keep only outgoing particle
- G4StepStatus status = track->GetStep()->GetPostStepPoint()->GetStepStatus();
- if (status != fWorldBoundary) return; 
+	if (track->GetParentID() == 0)
+		run->countEmerging();
 
-	if (track->GetParentID() == 0) 
-		{ run->countEmerging();}
- 
- const G4ParticleDefinition* particle = track->GetParticleDefinition();
- G4String name   = particle->GetParticleName();
- G4double energy = track->GetKineticEnergy();
+	const G4ParticleDefinition* particle = track->GetParticleDefinition();
+	G4String name = particle->GetParticleName();
+	G4double energy = track->GetKineticEnergy();
 
- fEventAction->AddEflow(energy);   
- run->ParticleFlux(name,energy);               
- 
- // histograms: enery flow
- //
- G4AnalysisManager* analysis = G4AnalysisManager::Instance();
- 
- G4int ih = 0; 
- G4String type   = particle->GetParticleType();      
- G4double charge = particle->GetPDGCharge();
- if (charge > 3.)  ih = 10; 
- else if (particle == G4Gamma::Gamma())       ih = 4;
- else if (particle == G4Electron::Electron()) ih = 5;
- else if (particle == G4Positron::Positron()) ih = 5;  
- else if (particle == G4Neutron::Neutron())   ih = 6;
- else if (particle == G4Proton::Proton())     ih = 7;
- else if (particle == G4Deuteron::Deuteron()) ih = 8;
- else if (particle == G4Alpha::Alpha())       ih = 9;       
- else if (type == "nucleus")                  ih = 10;
- else if (type == "baryon")                   ih = 11;         
- else if (type == "meson")                    ih = 12;
- else if (type == "lepton")                   ih = 13;        
- if (ih > 0) analysis->FillH1(ih,energy);
+	fEventAction->AddEflow(energy);
+	run->ParticleFlux(name,energy);
+
+	// histograms: enery flow
+	//
+	G4AnalysisManager* analysis = G4AnalysisManager::Instance();
+
+	G4int ih = 0;
+	G4String type = particle->GetParticleType();
+	G4double charge = particle->GetPDGCharge();
+	if (charge > 3.)                             ih = 10;
+	else if (particle == G4Gamma::Gamma())       ih = 4;
+	else if (particle == G4Electron::Electron()) ih = 5;
+	else if (particle == G4Positron::Positron()) ih = 5;
+	else if (particle == G4Neutron::Neutron())   ih = 6;
+	else if (particle == G4Proton::Proton())     ih = 7;
+	else if (particle == G4Deuteron::Deuteron()) ih = 8;
+	else if (particle == G4Alpha::Alpha())       ih = 9;
+	else if (type == "nucleus")                  ih = 10;
+	else if (type == "baryon")                   ih = 11;
+	else if (type == "meson")                    ih = 12;
+	else if (type == "lepton")                   ih = 13;
+	if (ih > 0) analysis->FillH1(ih,energy);
 }
 
 

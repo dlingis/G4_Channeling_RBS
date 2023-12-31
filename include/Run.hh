@@ -40,8 +40,6 @@
 #include "G4THitsMap.hh"
 #include <map>
 
-
-
 //test
 class DetectorConstruction;
 class G4ParticleDefinition;
@@ -56,11 +54,11 @@ class Run : public G4Run
    ~Run();
 
   public:
-    void SetPrimary(G4ParticleDefinition* particle, G4double energy);         
+    void SetPrimary(G4ParticleDefinition* particle, G4double energy);
     void CountProcesses(const G4VProcess* process);
     void ParticleCount(G4String, G4double); 
     void AddEdep (G4double edep);
-    void AddEflow (G4double eflow);                   
+    void AddEflow (G4double eflow);
     void ParticleFlux(G4String, G4double);
     void AddEnergy (G4double);
     void AddNonIonEnergy (G4double);
