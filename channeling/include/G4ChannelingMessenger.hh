@@ -39,29 +39,29 @@ class G4UIcmdWithABool;
 
 class G4ChannelingMessenger: public G4UImessenger
 {
-public:
-    G4ChannelingMessenger(G4Channeling* mpgax);
-    ~G4ChannelingMessenger();
-    
-    virtual void SetNewValue(G4UIcommand * command,G4String newValues);
-    virtual G4String GetCurrentValue(G4UIcommand * command);
-    
-private:
-    G4UIdirectory* fChannelingDirectory;
-    G4Channeling * fTarget;
+	public:
+		G4ChannelingMessenger(G4Channeling* mpgax);
+		~G4ChannelingMessenger();
+		
+		virtual void SetNewValue(G4UIcommand* command,G4String newValues);
+		virtual G4String GetCurrentValue(G4UIcommand* command);
+		
+	private:
+		G4UIdirectory* fChannelingDirectory;
+		G4Channeling * fTarget;
 
-    
-    G4UIcmdWithADoubleAndUnit*  fMinimumEnergyCmd;
-    G4UIcmdWithADouble*  fMaximumMomentumRatioCmd;
-    G4UIcmdWithADouble* fStepCmd;
-    G4UIcmdWithABool*   fRechannelingCmd;
-    G4UIcmdWithADouble* fNudEldLimCmd;
-    G4UIcmdWithABool* fGeantV11AlgorithmCmd;
-    G4UIcmdWithABool* fOrgChanStepSizeCmd;
-    G4UIcmdWithABool*   fManualStepSizeCmd;
-    G4UIcmdWithADoubleAndUnit* fManualStepSizeValue;
-    G4UIcmdWithADoubleAndUnit* fMeanFPSizeValue;
+		G4UIcmdWithADouble*  fMaximumMomentumRatioCmd;
+		G4UIcmdWithADouble* fStepCmd;
+		G4UIcmdWithADouble* fNudEldLimCmd;
 
+		G4UIcmdWithABool* fRechannelingCmd;
+		G4UIcmdWithABool* fGeantV11AlgorithmCmd;
+		G4UIcmdWithABool* fOrgChanStepSizeCmd;
+		G4UIcmdWithABool* fManualStepSizeCmd;
+
+		G4UIcmdWithADoubleAndUnit* fMinimumEnergyCmd;
+		G4UIcmdWithADoubleAndUnit* fManualStepSizeValue;
+		G4UIcmdWithADoubleAndUnit* fMeanFPSizeValue;
 };
 
 #endif

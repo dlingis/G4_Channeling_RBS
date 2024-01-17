@@ -39,109 +39,109 @@ class G4Channeling;
 
 class ExExChParticleUserInfo : public G4VUserTrackInformation
 {
-    friend class G4Channeling;
+	friend class G4Channeling;
 
 private:
-    const G4Channeling* fChannelingProcess;
+	const G4Channeling* fChannelingProcess;
 
 
 public:
-    
-    ExExChParticleUserInfo();
-    ~ExExChParticleUserInfo();
-    
-    void SetCoherentEffect(G4int flag); 
-    G4int HasBeenUnderCoherentEffect();
-    
-    void SetNucleiDensity(G4double);
-    G4double GetNucleiDensity();
-    
-    void SetElectronDensity(G4double);
-    G4double GetElectronDensity();
-    
-    G4double GetNucleiDensityPreviousStep();
-    G4double GetElectronDensityPreviousStep();
-    void StoreDensityPreviousStep();
+	
+	ExExChParticleUserInfo();
+	~ExExChParticleUserInfo();
+	
+	void SetCoherentEffect(G4int flag); 
+	G4int HasBeenUnderCoherentEffect();
+	
+	void SetNucleiDensity(G4double);
+	G4double GetNucleiDensity();
+	
+	void SetElectronDensity(G4double);
+	G4double GetElectronDensity();
+	
+	G4double GetNucleiDensityPreviousStep();
+	G4double GetElectronDensityPreviousStep();
+	void StoreDensityPreviousStep();
 
-    G4ThreeVector GetMomentumChanneled();
-    void SetMomentumChanneled(G4ThreeVector);
+	G4ThreeVector GetMomentumChanneled();
+	void SetMomentumChanneled(G4ThreeVector);
 
-    G4ThreeVector GetLastChannelingMomentum();
-    void SetLastChannelingMomentum(G4ThreeVector);
+	G4ThreeVector GetLastChannelingMomentum();
+	void SetLastChannelingMomentum(G4ThreeVector);
 
-    G4ThreeVector GetPositionChanneled();
-    void SetPositionChanneled(G4ThreeVector);
+	G4ThreeVector GetPositionChanneled();
+	void SetPositionChanneled(G4ThreeVector);
 
-    G4ThreeVector GetLastChannelingPosition();
-    void SetLastChannelingPosition(G4ThreeVector);
+	G4ThreeVector GetLastChannelingPosition();
+	void SetLastChannelingPosition(G4ThreeVector);
 
-    G4ThreeVector GetLastChannelingWorldPositionPost();
-    void SetLastChannelingWorldPositionPost(G4ThreeVector);
+	G4ThreeVector GetLastChannelingWorldPositionPost();
+	void SetLastChannelingWorldPositionPost(G4ThreeVector);
 
-    G4ThreeVector GetLastChannelingWorldPositionPre();
-    void SetLastChannelingWorldPositionPre(G4ThreeVector);
+	G4ThreeVector GetLastChannelingWorldPositionPre();
+	void SetLastChannelingWorldPositionPre(G4ThreeVector);
 
-    G4ThreeVector GetLastChannelingWorldMomentum();
-    void SetLastChannelingWorldMomentum(G4ThreeVector);
+	G4ThreeVector GetLastChannelingWorldMomentum();
+	void SetLastChannelingWorldMomentum(G4ThreeVector);
 
-    G4double GetEnergyChanneled();
-    void SetEnergyChanneled(G4double);
+	G4double GetEnergyChanneled();
+	void SetEnergyChanneled(G4double);
 
-    G4ThreeVector GetMomentumChanneledInitial();
-    void SetMomentumChanneledInitial(G4ThreeVector);
-    
-    G4ThreeVector GetPositionChanneledInitial();
-    void SetPositionChanneledInitial(G4ThreeVector);
+	G4ThreeVector GetMomentumChanneledInitial();
+	void SetMomentumChanneledInitial(G4ThreeVector);
+	
+	G4ThreeVector GetPositionChanneledInitial();
+	void SetPositionChanneledInitial(G4ThreeVector);
 
-    G4int GetNumberOfDechanneling();
-    void IncreaseNumberOfDechanneling();
-    
-    G4int GetInTheCrystal() {return fInTheCrystal;};
-    void SetInTheCrystal(G4int aInt) {fInTheCrystal = aInt;};
+	G4int GetNumberOfDechanneling();
+	void IncreaseNumberOfDechanneling();
+	
+	G4int GetInTheCrystal() {return fInTheCrystal;};
+	void SetInTheCrystal(G4int aInt) {fInTheCrystal = aInt;};
 
-    void Reset() { fChannelingProcess = nullptr;
-        fNucleiDensity = fElectronDensity = 1.;
-        fPositionInChanneling = fMomentumInChanneling = fDBL;
+	void Reset() { fChannelingProcess = nullptr;
+		fNucleiDensity = fElectronDensity = 1.;
+		fPositionInChanneling = fMomentumInChanneling = fDBL;
 	//fMomentumInChannelingInitial = fPositionInChannelingInitial = fDBL;
 	//fInTheCrystal = false; // nereikia, idejus stipriai sumazeja praejusiu daleliu sk.
 	};
 
 private:
-    G4ThreeVector fDBL;
+	G4ThreeVector fDBL;
 
-    G4int fHasBeenUnderCoherentEffect;
-    //Has been in channeling in the last step
+	G4int fHasBeenUnderCoherentEffect;
+	//Has been in channeling in the last step
 
-    G4double fNucleiDensity;
-    //Last value of density seen by channeled particle
-    G4double fNucleiDensityPreviousStep;
-    
-    G4double fElectronDensity;
-    //Last value of density seen by channeled particle
-    G4double fElectronDensityPreviousStep;
+	G4double fNucleiDensity;
+	//Last value of density seen by channeled particle
+	G4double fNucleiDensityPreviousStep;
+	
+	G4double fElectronDensity;
+	//Last value of density seen by channeled particle
+	G4double fElectronDensityPreviousStep;
 
-    G4ThreeVector fMomentumInChanneling;
-    //Last position of the particle in the channel
-    G4ThreeVector fMomentumInChannelingInitial;
-    //Last position of the particle in the channel
+	G4ThreeVector fMomentumInChanneling;
+	//Last position of the particle in the channel
+	G4ThreeVector fMomentumInChannelingInitial;
+	//Last position of the particle in the channel
 
-    G4ThreeVector fPositionInChanneling;
-    //Last projection fof the particle momentum in the crystal reference system
-    G4ThreeVector fPositionInChannelingInitial;
-    //Last projection fof the particle momentum in the crystal reference system
+	G4ThreeVector fPositionInChanneling;
+	//Last projection fof the particle momentum in the crystal reference system
+	G4ThreeVector fPositionInChannelingInitial;
+	//Last projection fof the particle momentum in the crystal reference system
 
-    //G4ThreeVector fLattConst;
-    
-    G4int fNumberOfDechanneling;
-    G4int fInTheCrystal;
+	//G4ThreeVector fLattConst;
+	
+	G4int fNumberOfDechanneling;
+	G4int fInTheCrystal;
 
 	// position and momentum of particle before dechanneling
-    G4ThreeVector fLastChannelingPosition;
-    G4ThreeVector fLastChannelingMomentum;
+	G4ThreeVector fLastChannelingPosition;
+	G4ThreeVector fLastChannelingMomentum;
 
-    G4ThreeVector fLastChannelingWorldPositionPost;
-    G4ThreeVector fLastChannelingWorldPositionPre;
-    G4ThreeVector fLastChannelingWorldMomentum;
+	G4ThreeVector fLastChannelingWorldPositionPost;
+	G4ThreeVector fLastChannelingWorldPositionPre;
+	G4ThreeVector fLastChannelingWorldMomentum;
 
 };
 

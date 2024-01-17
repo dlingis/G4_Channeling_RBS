@@ -49,78 +49,65 @@ class G4UIcmdWithAnInteger;
 
 class DetectorConstructionMessenger: public G4UImessenger
 {
-  public:
-    DetectorConstructionMessenger(
-                    DetectorConstruction* mpga);
+	public:
+		DetectorConstructionMessenger(DetectorConstruction* mpga);
+		~DetectorConstructionMessenger();
 
-    ~DetectorConstructionMessenger();
+		virtual void SetNewValue(G4UIcommand * command,G4String newValues);
+		virtual G4String GetCurrentValue(G4UIcommand * command);
 
-    virtual void SetNewValue(G4UIcommand * command,G4String newValues);
-    virtual G4String GetCurrentValue(G4UIcommand * command);
+	private:
+		DetectorConstruction *          fTarget;
 
-  private:
-    DetectorConstruction *          fTarget;
+		G4UIdirectory*                  fMyXtalDirectory;
+		G4UIdirectory*                  fMyDetDirectory;
+		G4UIdirectory*                  fMyChanDirectory;
 
-    G4UIdirectory* 			            fMyXtalDirectory;
-    G4UIdirectory* 			            fMyDetDirectory;
-    G4UIdirectory*                  fMyChanDirectory;
-    
-    G4UIcmdWithAString*  	        	fWorldMaterial;
-    
-    G4UIcmdWithAString*  		        fDetMaterialCmd;
-    
-    G4UIcmdWithAString*  		        fMaterialCmd[5];
-    G4UIcmdWith3VectorAndUnit* 	    fSizeCmd[5];
-    G4UIcmdWith3VectorAndUnit* 	    fPosCmd[4];
-    G4UIcmdWithAString*  		        fXtalEC[5][3];
-    G4UIcmdWithABool*               fXtalAmorphous[5];
-    
-    G4UIcmdWithABool*               fXtalTrackCmd;
-    G4UIcmdWithABool*			          fMatMixCmd;
-    G4UIcmdWithADouble*		          fMatMixRatioCmd;
-    
-    G4UIcmdWithADoubleAndUnit*		  fDetResCmd;
-    G4UIcmdWithAnInteger*		        fGaussCountCmd;
-    
-    G4UIcmdWith3VectorAndUnit* 		  fXtalAngleCmd;
-    G4UIcmdWithABool*			          fSigmaCalcCmd;
-    G4UIcmdWithADoubleAndUnit* 		  fMaxStepCmd;
-    G4UIcmdWithADoubleAndUnit*		  fRBSAngleCmd;
-    G4UIcmdWithAnInteger* 	      	fEnLossStepCmd;
+		G4UIcmdWith3VectorAndUnit*      fSizeCmd[5];
+		G4UIcmdWith3VectorAndUnit*      fPosCmd[4];
+		G4UIcmdWith3VectorAndUnit*      fXtalAngleCmd;
+		G4UIcmdWith3VectorAndUnit*      fDetSizesCmd;
 
-    G4UIcmdWithABool* 			        fRBSCmd;
-    G4UIcmdWithADoubleAndUnit*		  fRBSROICmd;
-    
-    G4UIcmdWithABool*			          fCustomMatCmd;
-    G4UIcmdWithADoubleAndUnit*	  		fCustomMatDensityCmd;
-    G4UIcmdWithADouble*		          	fCustomMatElement1PartCmd;
-    G4UIcmdWithADouble*		          fCustomMatElement2PartCmd;
-    G4UIcmdWithADouble*		          fCustomMatElement3PartCmd;
-    G4UIcmdWithAString*		          fCustomMatElement1Cmd;
-    G4UIcmdWithAString*		          fCustomMatElement2Cmd;
-    G4UIcmdWithAString*		          fCustomMatElement3Cmd;
-    
-    G4UIcmdWithADoubleAndUnit* 	    fDeadThickCmd; 
-    G4UIcmdWithAString*		          fDeadMaterialCmd;
-    
-    G4UIcmdWithADouble*		          fSolidAngleCmd;
-    
-    	
-    G4UIcmdWithAnInteger*	        	fNoMatMixCmd;
-    G4UIcmdWithAString*		          fMixMatNameCmd;
-    
-    
-    G4UIcmdWithABool*		          	fFwhmCalcCmd;
-    G4UIcmdWithABool*			          fConstScatCmd;
-    
-    G4UIcmdWithAString*  		        fDetectorsMaterialCmd;
-    G4UIcmdWith3VectorAndUnit*  	  fDetSizesCmd;
-    G4UIcmdWithADoubleAndUnit*    	fDetDistanceCmd[5];
+		G4UIcmdWithAnInteger*           fGaussCountCmd;
+		G4UIcmdWithAnInteger*           fEnLossStepCmd;
+		G4UIcmdWithAnInteger*           fNoMatMixCmd;
 
-    G4UIcmdWithABool* 			        fUseXStranformation;
+		G4UIcmdWithAString*             fCustomMatElement1Cmd;
+		G4UIcmdWithAString*             fCustomMatElement2Cmd;
+		G4UIcmdWithAString*             fCustomMatElement3Cmd;
+		G4UIcmdWithAString*             fDeadMaterialCmd;
+		G4UIcmdWithAString*             fMixMatNameCmd;
+		G4UIcmdWithAString*             fDetectorsMaterialCmd;
+		G4UIcmdWithAString*             fWorldMaterial;
+		G4UIcmdWithAString*             fDetMaterialCmd;
+		G4UIcmdWithAString*             fXtalEC[5][3];
+		G4UIcmdWithAString*             fMaterialCmd[5];
 
-    G4UIcmdWithADoubleAndUnit*		  fDepthForHistos[12];
-    G4UIcmdWithABool*               fHistoTrackingCmd;
+		G4UIcmdWithADoubleAndUnit*      fDetResCmd;
+		G4UIcmdWithADoubleAndUnit*      fMaxStepCmd;
+		G4UIcmdWithADoubleAndUnit*      fRBSAngleCmd;
+		G4UIcmdWithADoubleAndUnit*      fRBSROICmd;
+		G4UIcmdWithADoubleAndUnit*      fCustomMatDensityCmd;
+		G4UIcmdWithADoubleAndUnit*      fDeadThickCmd;
+		G4UIcmdWithADoubleAndUnit*      fDetDistanceCmd[5];
+		G4UIcmdWithADoubleAndUnit*      fDepthForHistos[12];
+
+		G4UIcmdWithADouble*             fSolidAngleCmd;
+		G4UIcmdWithADouble*             fCustomMatElement1PartCmd;
+		G4UIcmdWithADouble*             fCustomMatElement2PartCmd;
+		G4UIcmdWithADouble*             fCustomMatElement3PartCmd;
+		G4UIcmdWithADouble*             fMatMixRatioCmd;
+
+		G4UIcmdWithABool*               fCustomMatCmd;
+		G4UIcmdWithABool*               fSigmaCalcCmd;
+		G4UIcmdWithABool*               fXtalAmorphous[5];
+		G4UIcmdWithABool*               fXtalTrackCmd;
+		G4UIcmdWithABool*               fMatMixCmd;
+		G4UIcmdWithABool*               fRBSCmd;
+		G4UIcmdWithABool*               fFwhmCalcCmd;
+		G4UIcmdWithABool*               fConstScatCmd;
+		G4UIcmdWithABool*               fUseXStranformation;
+		G4UIcmdWithABool*               fHistoTrackingCmd;
 };
 
 #endif

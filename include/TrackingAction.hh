@@ -46,18 +46,18 @@ class PrimaryGeneratorAction;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class TrackingAction : public G4UserTrackingAction {
+class TrackingAction : public G4UserTrackingAction
+{
+public:
+	TrackingAction(EventAction*, DetectorConstruction*, PrimaryGeneratorAction*);
+	~TrackingAction() {};
 
-  public:  
-    TrackingAction(EventAction*, DetectorConstruction*, PrimaryGeneratorAction*);
-   ~TrackingAction() {};
-   
-    virtual void  PreUserTrackingAction(const G4Track*);   
-    virtual void PostUserTrackingAction(const G4Track*);
+	virtual void  PreUserTrackingAction(const G4Track*);
+	virtual void PostUserTrackingAction(const G4Track*);
 
-    EventAction* fEventAction;
-    DetectorConstruction* fDetector;
-    PrimaryGeneratorAction* fPrimary;
+	EventAction* fEventAction;
+	DetectorConstruction* fDetector;
+	PrimaryGeneratorAction* fPrimary;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

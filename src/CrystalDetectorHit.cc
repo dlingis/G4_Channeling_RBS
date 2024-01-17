@@ -49,13 +49,13 @@ CrystalDetectorHitAllocator;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 CrystalDetectorHit::CrystalDetectorHit(){
-    fLayerID = -1;
+	fLayerID = -1;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 CrystalDetectorHit::CrystalDetectorHit(G4int z){
-    fLayerID = z;
+	fLayerID = z;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -65,101 +65,94 @@ CrystalDetectorHit::~CrystalDetectorHit(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-CrystalDetectorHit::CrystalDetectorHit(
-                                       const CrystalDetectorHit &right): G4VHit(){
-    fLayerID = right.fLayerID;
-    fWorldPos = right.fWorldPos;
-    fStep = right.fStep;
-    fEFX = right.fEFX;
-    fEFY = right.fEFY;
-    fNud = right.fNud;
-    fEld = right.fEld;
-    fKinECR = right.fKinECR;
-    fWorldMomentum = right.fWorldMomentum;
-    fWorldMomentumDirection = right.fWorldMomentumDirection;
+CrystalDetectorHit::CrystalDetectorHit(const CrystalDetectorHit &right): G4VHit(){
+	fLayerID = right.fLayerID;
+	fWorldPos = right.fWorldPos;
+	fStep = right.fStep;
+	fEFX = right.fEFX;
+	fEFY = right.fEFY;
+	fNud = right.fNud;
+	fEld = right.fEld;
+	fKinECR = right.fKinECR;
+	fWorldMomentum = right.fWorldMomentum;
+	fWorldMomentumDirection = right.fWorldMomentumDirection;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 const CrystalDetectorHit&
-CrystalDetectorHit::operator=(
-                              const CrystalDetectorHit &right){
-    fLayerID = right.fLayerID;
-    fWorldPos = right.fWorldPos;
-    fStep = right.fStep;
-    fEFX = right.fEFX;
-    fEFY = right.fEFY;
-    fNud = right.fNud;
-    fEld = right.fEld;
-    fKinECR = right.fKinECR;
-    fWorldMomentum = right.fWorldMomentum;
-    fWorldMomentumDirection = right.fWorldMomentumDirection;    
-    return *this;
+CrystalDetectorHit::operator=(const CrystalDetectorHit &right){
+	fLayerID = right.fLayerID;
+	fWorldPos = right.fWorldPos;
+	fStep = right.fStep;
+	fEFX = right.fEFX;
+	fEFY = right.fEFY;
+	fNud = right.fNud;
+	fEld = right.fEld;
+	fKinECR = right.fKinECR;
+	fWorldMomentum = right.fWorldMomentum;
+	fWorldMomentumDirection = right.fWorldMomentumDirection;
+	return *this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-int CrystalDetectorHit::operator==
-(const CrystalDetectorHit &/*right*/) const{
-    return 0;
+int CrystalDetectorHit::operator==(const CrystalDetectorHit &/*right*/) const{
+	return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void CrystalDetectorHit::Draw(){
-    G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
-    if(pVVisManager)
-    {
-        G4Circle circle(fWorldPos);
-        circle.SetScreenSize(2);
-        circle.SetFillStyle(G4Circle::filled);
-        G4Colour colour(1.,1.,0.);
-        G4VisAttributes attribs(colour);
-        circle.SetVisAttributes(attribs);
-        pVVisManager->Draw(circle);
-    }
+	G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
+	if (pVVisManager) {
+		G4Circle circle(fWorldPos);
+		circle.SetScreenSize(2);
+		circle.SetFillStyle(G4Circle::filled);
+		G4Colour colour(1.,1.,0.);
+		G4VisAttributes attribs(colour);
+		circle.SetVisAttributes(attribs);
+		pVVisManager->Draw(circle);
+	}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 const std::map<G4String,G4AttDef>*
 CrystalDetectorHit::GetAttDefs() const{
-    G4bool isNew;
-    std::map<G4String,G4AttDef>* store =
-    G4AttDefStore::GetInstance("CrystalDetectorHit",isNew);
-    if (isNew) {
-        G4String ID("ID");
-        (*store)[ID] = G4AttDef(ID,"ID","Physics","","G4int");
-        
-        G4String Pos("Pos");
-        (*store)[Pos] =
-        G4AttDef(Pos, "Position","Physics","G4BestUnit","G4ThreeVector");
-    }
-    return store;
+	G4bool isNew;
+	std::map<G4String,G4AttDef>* store =
+	G4AttDefStore::GetInstance("CrystalDetectorHit",isNew);
+	if (isNew) {
+		G4String ID("ID");
+		(*store)[ID] = G4AttDef(ID,"ID","Physics","","G4int");
+		
+		G4String Pos("Pos");
+		(*store)[Pos] =
+		G4AttDef(Pos, "Position","Physics","G4BestUnit","G4ThreeVector");
+	}
+	return store;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 std::vector<G4AttValue>*
 CrystalDetectorHit::CreateAttValues() const{
-    std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
-    
-    values->push_back(G4AttValue("ID",
-                                 G4UIcommand::ConvertToString(fLayerID),
-                                 ""));
-    
-    values->push_back(G4AttValue("Pos",G4BestUnit(fWorldPos,"Length"),""));
-    
-    return values;
+	std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
+
+	values->push_back(G4AttValue("ID", G4UIcommand::ConvertToString(fLayerID), ""));
+	values->push_back(G4AttValue("Pos",G4BestUnit(fWorldPos,"Length"),""));
+
+	return values;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void CrystalDetectorHit::Print(){
-    G4cout << fLayerID <<
-    "," << fWorldPos.x() <<
-    "," << fWorldPos.z() <<
-    "," << fWorldPos.y() << G4endl;
+	G4cout << fLayerID <<
+	"," << fWorldPos.x() <<
+	"," << fWorldPos.z() <<
+	"," << fWorldPos.y() << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

@@ -45,11 +45,11 @@ G4ChannelingTrackData::~G4ChannelingTrackData(){;}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void G4ChannelingTrackData::Print() const {
-    G4cout << "Nuclei Density Ratio: " << fNuD << G4endl;
-    G4cout << "Electron Density Ratio: " << fElD << G4endl;
-    G4cout << "Channeling Momentum (GeV/c): " << fMomCh/CLHEP::GeV << G4endl;
-    G4cout << "Channeling Position (angstrom): " << fPosCh/CLHEP::angstrom << G4endl;
-    G4cout << "Channeling Spin (): " << fSpinCh << G4endl;
+	G4cout << "Nuclei Density Ratio: " << fNuD << G4endl;
+	G4cout << "Electron Density Ratio: " << fElD << G4endl;
+	G4cout << "Channeling Momentum (GeV/c): " << fMomCh/CLHEP::GeV << G4endl;
+	G4cout << "Channeling Position (angstrom): " << fPosCh/CLHEP::angstrom << G4endl;
+	G4cout << "Channeling Spin (): " << fSpinCh << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

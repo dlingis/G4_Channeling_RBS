@@ -31,32 +31,35 @@
 #include "G4Physics2DVector.hh"
 #include "G4ThreeVector.hh"
 
-class G4ChannelingECHARM {
+class G4ChannelingECHARM
+{
+	public:
+		G4ChannelingECHARM(const G4String&,G4double);
+		~G4ChannelingECHARM();
 
-public:
-    G4ChannelingECHARM(const G4String&,G4double);
-    ~G4ChannelingECHARM();
+		//virtual function of XVCrystalCharacteristic
+		G4double GetEC(G4ThreeVector&);
+		
+		virtual void ReadFromECHARM(const G4String&,G4double);
+		
+		G4double GetMax()
+			{return fMaximum;};
+		G4double GetMin()
+			{return fMinimum;};
+		G4double GetMaxMin()
+			{return std::fabs(fMaximum-fMinimum);};
+		
+		G4double GetIntSp(G4int index)
+			{return fDistances[index];};
+		
+	private:
+		G4PhysicsVector* fVectorEC;
+		G4Physics2DVector* fVectorEC2D;
 
-    //virtual function of XVCrystalCharacteristic
-    G4double GetEC(G4ThreeVector&);
-    
-    virtual void ReadFromECHARM(const G4String&,G4double);
-    
-    G4double GetMax() {return fMaximum;};
-    G4double GetMin() {return fMinimum;};
-    G4double GetMaxMin() {return std::fabs(fMaximum-fMinimum);};
-    
-    G4double GetIntSp(G4int index) {return fDistances[index];};
-    
-private:
-    G4PhysicsVector* fVectorEC;
-    G4Physics2DVector* fVectorEC2D;
+		G4double fDistances[3];
+		G4int fPoints[3];
 
-    G4double fDistances[3];
-    G4int fPoints[3];
-
-    G4double fMaximum;
-    G4double fMinimum;
+		G4double fMaximum, fMinimum;
 };
 
 #endif

@@ -53,15 +53,14 @@ class G4EmStandardPhysics_option4_channeling : public G4VPhysicsConstructor
 {
 public:
 
-  explicit G4EmStandardPhysics_option4_channeling(G4int ver=1, const G4String& name="");
+	explicit G4EmStandardPhysics_option4_channeling(G4int ver=1, const G4String& name="");
 
-  virtual ~G4EmStandardPhysics_option4_channeling();
-
-  virtual void ConstructParticle();
-  virtual void ConstructProcess();
+	virtual ~G4EmStandardPhysics_option4_channeling();
+	virtual void ConstructParticle();
+	virtual void ConstructProcess();
 
 private:
-  G4int  verbose;
+	G4int verbose;
 };
 
 

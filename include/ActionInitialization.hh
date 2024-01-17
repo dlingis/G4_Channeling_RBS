@@ -36,27 +36,16 @@
 class DetectorConstruction;
 class G4GeneralParticleSource;
 
-//class G4VSteppingVerbose;
-/// Action initialization class.
-///
-
 class ActionInitialization : public G4VUserActionInitialization
 {
-  public:
-    ActionInitialization(DetectorConstruction* detector);
-    virtual ~ActionInitialization();
+	public:
+		ActionInitialization(DetectorConstruction* detector);
+		virtual ~ActionInitialization();
 
-    virtual void BuildForMaster() const;
-    virtual void Build() const;
-    
-    //virtual G4VSteppingVerbose* InitializeSteppingVerbose() const;
-   
-  private:
-    DetectorConstruction* fDetector;
-    G4GeneralParticleSource* masterGPS;
-
+		virtual void BuildForMaster() const;
+		virtual void Build() const;
+	private:
+		DetectorConstruction* fDetector;
+		G4GeneralParticleSource* masterGPS;
 };
-
 #endif
-
-    

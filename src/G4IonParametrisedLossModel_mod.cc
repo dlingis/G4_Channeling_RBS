@@ -97,133 +97,128 @@
 #include "Randomize.hh"
 #include "G4Exp.hh"
 
-//#define PRINT_TABLE_BUILT
-
 
 // #########################################################################
 
 G4IonParametrisedLossModel_mod::G4IonParametrisedLossModel_mod(
-             const G4ParticleDefinition*,
-             const G4String& nam)
+			 const G4ParticleDefinition*,
+			 const G4String& nam)
   : G4VEmModel(nam),
-    braggIonModel(0),
-    betheBlochModel(0),
-    nmbBins(90),
-    nmbSubBins(100),
-    particleChangeLoss(0),
-    corrFactor(1.0),
-    energyLossLimit(0.01),
-    cutEnergies(0),
-    isInitialised(false)
+	braggIonModel(0),
+	betheBlochModel(0),
+	nmbBins(90),
+	nmbSubBins(100),
+	particleChangeLoss(0),
+	corrFactor(1.0),
+	energyLossLimit(0.01),
+	cutEnergies(0),
+	isInitialised(false)
 {
-  genericIon = G4GenericIon::Definition();
-  genericIonPDGMass = genericIon->GetPDGMass();
-  corrections = G4LossTableManager::Instance()->EmCorrections();
+	genericIon = G4GenericIon::Definition();
+	genericIonPDGMass = genericIon->GetPDGMass();
+	corrections = G4LossTableManager::Instance()->EmCorrections();
 
-  // The Bragg ion and Bethe Bloch models are instantiated
-  braggIonModel = new G4BraggIonModel();
-  betheBlochModel = new G4BetheBlochModel();
+	// The Bragg ion and Bethe Bloch models are instantiated
+	braggIonModel = new G4BraggIonModel();
+	betheBlochModel = new G4BetheBlochModel();
 
-  // The boundaries for the range tables are set
-  lowerEnergyEdgeIntegr = 0.01 * MeV;
-  upperEnergyEdgeIntegr = 4.*MeV;	// my add
-  //upperEnergyEdgeIntegr = betheBlochModel -> HighEnergyLimit();
+	// The boundaries for the range tables are set
+	lowerEnergyEdgeIntegr = 0.01 * MeV;
+	upperEnergyEdgeIntegr = 4.*MeV;	// my add
+	//upperEnergyEdgeIntegr = betheBlochModel -> HighEnergyLimit();
 
-  // Cache parameters are set
-  cacheParticle = 0;
-  cacheMass = 0;
-  cacheElecMassRatio = 0;
-  cacheChargeSquare = 0;
+	// Cache parameters are set
+	cacheParticle = 0;
+	cacheMass = 0;
+	cacheElecMassRatio = 0;
+	cacheChargeSquare = 0;
 
-  // Cache parameters are set
-  rangeCacheParticle = 0;
-  rangeCacheMatCutsCouple = 0;
-  rangeCacheEnergyRange = 0;
-  rangeCacheRangeEnergy = 0;
+	// Cache parameters are set
+	rangeCacheParticle = 0;
+	rangeCacheMatCutsCouple = 0;
+	rangeCacheEnergyRange = 0;
+	rangeCacheRangeEnergy = 0;
 
-  // Cache parameters are set
-  dedxCacheParticle = 0;
-  dedxCacheMaterial = 0;
-  dedxCacheEnergyCut = 0;
-  dedxCacheIter = lossTableList.end();
-  dedxCacheTransitionEnergy = 0.0;
-  dedxCacheTransitionFactor = 0.0;
-  dedxCacheGenIonMassRatio = 0.0;
+	// Cache parameters are set
+	dedxCacheParticle = 0;
+	dedxCacheMaterial = 0;
+	dedxCacheEnergyCut = 0;
+	dedxCacheIter = lossTableList.end();
+	dedxCacheTransitionEnergy = 0.0;
+	dedxCacheTransitionFactor = 0.0;
+	dedxCacheGenIonMassRatio = 0.0;
 
-  // default generator
-  SetAngularDistribution(new G4DeltaAngle());
-  
+	// default generator
+	SetAngularDistribution(new G4DeltaAngle());
+	
 	// Retrieval of SRIM stopping powers
-	G4cout << " SRIM stopping powers loaded " << G4endl; 
+	G4cout << " Loading SRIM stopping powers " << G4endl; 
 
-  	fVectorLiHf = FillStopVector("STP_PWR/Li_Hf.txt",7);	
-  	fVectorLiO = FillStopVector("STP_PWR/Li_O.txt",7);	
-  	fVectorLiAr = FillStopVector("STP_PWR/Li_Ar.txt",7);
-  	fVectorLiSi = FillStopVector("STP_PWR/Li_Si.txt",7);	
-  	fVectorLiAu = FillStopVector("STP_PWR/Li_Au.txt",7);
-  	fVectorLiHfO2 = FillStopVector("STP_PWR/Li_HfO2.txt",7);
-  	fVectorLiSiO2 = FillStopVector("STP_PWR/Li_SiO2.txt",7);
-  	
- 	srim_table->AddPhysicsVector(fVectorLiHf,3, "Hf",72); 
- 	srim_table->AddPhysicsVector(fVectorLiO,3, "O",8);
- 	srim_table->AddPhysicsVector(fVectorLiAr,3, "Ar",18);
- 	srim_table->AddPhysicsVector(fVectorLiSi,3, "Si",14);
- 	srim_table->AddPhysicsVector(fVectorLiAu,3, "Au",79);
- 	srim_table->AddPhysicsVector(fVectorLiHfO2,3,"HfO2");	// add of compound
- 	srim_table->AddPhysicsVector(fVectorLiSiO2,3,"G4_SILICON_DIOXIDE");	// add of compound
- 
- 	srim_table->BuildPhysicsVector(3,72);
- 	srim_table->BuildPhysicsVector(3,8);
- 	srim_table->BuildPhysicsVector(3,18);
- 	srim_table->BuildPhysicsVector(3,14);
- 	srim_table->BuildPhysicsVector(3,79); 	 
- 	srim_table->BuildPhysicsVector(3,"HfO2");
- 	srim_table->BuildPhysicsVector(3,"G4_SILICON_DIOXIDE"); 	
- 	
- 	srim_table->DumpMap();  	  
-  
-  
+	fVectorLiHf = FillStopVector("STP_PWR/Li_Hf.txt",7);	
+	fVectorLiO = FillStopVector("STP_PWR/Li_O.txt",7);	
+	fVectorLiAr = FillStopVector("STP_PWR/Li_Ar.txt",7);
+	fVectorLiSi = FillStopVector("STP_PWR/Li_Si.txt",7);	
+	fVectorLiAu = FillStopVector("STP_PWR/Li_Au.txt",7);
+	fVectorLiHfO2 = FillStopVector("STP_PWR/Li_HfO2.txt",7);
+	fVectorLiSiO2 = FillStopVector("STP_PWR/Li_SiO2.txt",7);
+
+	srim_table->AddPhysicsVector(fVectorLiHf,3, "Hf",72); 
+	srim_table->AddPhysicsVector(fVectorLiO,3, "O",8);
+	srim_table->AddPhysicsVector(fVectorLiAr,3, "Ar",18);
+	srim_table->AddPhysicsVector(fVectorLiSi,3, "Si",14);
+	srim_table->AddPhysicsVector(fVectorLiAu,3, "Au",79);
+	srim_table->AddPhysicsVector(fVectorLiHfO2,3,"HfO2"); // add of compound
+	srim_table->AddPhysicsVector(fVectorLiSiO2,3,"G4_SILICON_DIOXIDE"); // add of compound
+
+	srim_table->BuildPhysicsVector(3,72);
+	srim_table->BuildPhysicsVector(3,8);
+	srim_table->BuildPhysicsVector(3,18);
+	srim_table->BuildPhysicsVector(3,14);
+	srim_table->BuildPhysicsVector(3,79); 	 
+	srim_table->BuildPhysicsVector(3,"HfO2");
+	srim_table->BuildPhysicsVector(3,"G4_SILICON_DIOXIDE"); 	
+
+	srim_table->DumpMap();
 }
 
 // #########################################################################
 
 G4IonParametrisedLossModel_mod::~G4IonParametrisedLossModel_mod() {
 
-  // dE/dx table objects are deleted and the container is cleared
-  LossTableList::iterator iterTables = lossTableList.begin();
-  LossTableList::iterator iterTables_end = lossTableList.end();
+	// dE/dx table objects are deleted and the container is cleared
+	LossTableList::iterator iterTables = lossTableList.begin();
+	LossTableList::iterator iterTables_end = lossTableList.end();
 
-  for(;iterTables != iterTables_end; ++iterTables) { delete *iterTables; }
-  lossTableList.clear();
+	for (;iterTables != iterTables_end; ++iterTables)
+		delete *iterTables;
+	lossTableList.clear();
 
-  // range table
-  RangeEnergyTable::iterator itr = r.begin();
-  RangeEnergyTable::iterator itr_end = r.end();
-  for(;itr != itr_end; ++itr) { delete itr->second; }
-  r.clear();
+	// range table
+	RangeEnergyTable::iterator itr = r.begin();
+	RangeEnergyTable::iterator itr_end = r.end();
+	for (;itr != itr_end; ++itr)
+		delete itr->second;
+	r.clear();
 
-  // inverse range
-  EnergyRangeTable::iterator ite = E.begin();
-  EnergyRangeTable::iterator ite_end = E.end();
-  for(;ite != ite_end; ++ite) { delete ite->second; }
-  E.clear();
+	// inverse range
+	EnergyRangeTable::iterator ite = E.begin();
+	EnergyRangeTable::iterator ite_end = E.end();
+	for (;ite != ite_end; ++ite)
+		delete ite->second;
+	E.clear();
 
 }
 
 // #########################################################################
 
-G4double G4IonParametrisedLossModel_mod::MinEnergyCut(
-                                       const G4ParticleDefinition*,
-                                       const G4MaterialCutsCouple* couple) {
+G4double G4IonParametrisedLossModel_mod::MinEnergyCut(const G4ParticleDefinition*, const G4MaterialCutsCouple* couple) {
 
   return couple->GetMaterial()->GetIonisation()->GetMeanExcitationEnergy();
 }
 
 // #########################################################################
 
-G4double G4IonParametrisedLossModel_mod::MaxSecondaryEnergy(
-                             const G4ParticleDefinition* particle,
-                             G4double kineticEnergy) {
+G4double G4IonParametrisedLossModel_mod::MaxSecondaryEnergy(const G4ParticleDefinition* particle, G4double kineticEnergy) {
 
   // ############## Maximum energy of secondaries ##########################
   // Function computes maximum energy of secondary electrons which are
@@ -237,184 +232,152 @@ G4double G4IonParametrisedLossModel_mod::MaxSecondaryEnergy(
   //
   // (Implementation adapted from G4BraggIonModel)
 
-  if(particle != cacheParticle) UpdateCache(particle);
+	if (particle != cacheParticle)
+		UpdateCache(particle);
 
-  G4double tau  = kineticEnergy/cacheMass;
-  G4double tmax = 2.0 * electron_mass_c2 * tau * (tau + 2.) /
-                  (1. + 2.0 * (tau + 1.) * cacheElecMassRatio +
-                  cacheElecMassRatio * cacheElecMassRatio);
+	G4double tau = kineticEnergy/cacheMass;
+	G4double tmax = 2.0 * electron_mass_c2 * tau * (tau + 2.) / (1. + 2.0 * (tau + 1.) * cacheElecMassRatio + cacheElecMassRatio * cacheElecMassRatio);
 
-  return tmax;
+	return tmax;
 }
 
 // #########################################################################
 
-G4double G4IonParametrisedLossModel_mod::GetChargeSquareRatio(
-                             const G4ParticleDefinition* particle,
-	 	 	     const G4Material* material,
-                             G4double kineticEnergy) {    // Kinetic energy
+G4double G4IonParametrisedLossModel_mod::GetChargeSquareRatio(const G4ParticleDefinition* particle, const G4Material* material, G4double kineticEnergy) {// Kinetic energy
 
-  G4double chargeSquareRatio = corrections ->
-                                     EffectiveChargeSquareRatio(particle,
-                                                                material,
-                                                                kineticEnergy);
-  corrFactor = chargeSquareRatio *
-                       corrections -> EffectiveChargeCorrection(particle,
-                                                                material,
-                                                                kineticEnergy);
-  return corrFactor;
+	G4double chargeSquareRatio = corrections->EffectiveChargeSquareRatio(particle, material, kineticEnergy);
+	corrFactor = chargeSquareRatio * corrections->EffectiveChargeCorrection(particle, material, kineticEnergy);
+	return corrFactor;
 }
 
 // #########################################################################
 
-G4double G4IonParametrisedLossModel_mod::GetParticleCharge(
-                             const G4ParticleDefinition* particle,
-			     const G4Material* material,
-                             G4double kineticEnergy) {   // Kinetic energy
+G4double G4IonParametrisedLossModel_mod::GetParticleCharge(const G4ParticleDefinition* particle, const G4Material* material, G4double kineticEnergy) { // Kinetic energy
 
-  return corrections -> GetParticleCharge(particle, material, kineticEnergy);
+	return corrections -> GetParticleCharge(particle, material, kineticEnergy);
 }
 
 // #########################################################################
 
-void G4IonParametrisedLossModel_mod::Initialise(
-                                       const G4ParticleDefinition* particle,
-                                       const G4DataVector& cuts) {
+void G4IonParametrisedLossModel_mod::Initialise(const G4ParticleDefinition* particle, const G4DataVector& cuts) {
 
-  // Cached parameters are reset
-  cacheParticle = 0;
-  cacheMass = 0;
-  cacheElecMassRatio = 0;
-  cacheChargeSquare = 0;
+	// Cached parameters are reset
+	cacheParticle = 0;
+	cacheMass = 0;
+	cacheElecMassRatio = 0;
+	cacheChargeSquare = 0;
 
-  // Cached parameters are reset
-  rangeCacheParticle = 0;
-  rangeCacheMatCutsCouple = 0;
-  rangeCacheEnergyRange = 0;
-  rangeCacheRangeEnergy = 0;
+	// Cached parameters are reset
+	rangeCacheParticle = 0;
+	rangeCacheMatCutsCouple = 0;
+	rangeCacheEnergyRange = 0;
+	rangeCacheRangeEnergy = 0;
 
-  // Cached parameters are reset
-  dedxCacheParticle = 0;
-  dedxCacheMaterial = 0;
-  dedxCacheEnergyCut = 0;
-  dedxCacheIter = lossTableList.end();
-  dedxCacheTransitionEnergy = 0.0;
-  dedxCacheTransitionFactor = 0.0;
-  dedxCacheGenIonMassRatio = 0.0;
+	// Cached parameters are reset
+	dedxCacheParticle = 0;
+	dedxCacheMaterial = 0;
+	dedxCacheEnergyCut = 0;
+	dedxCacheIter = lossTableList.end();
+	dedxCacheTransitionEnergy = 0.0;
+	dedxCacheTransitionFactor = 0.0;
+	dedxCacheGenIonMassRatio = 0.0;
 
 	// addition of STOPPING power data
-  if(!isInitialised) {
-    isInitialised = true;
-    G4cout << " ****************************** " << G4endl;
-    if(useSRIMData == 1)
-    {
-    	G4cout << " \tUsing SRIM DATA " << G4endl;
-    	AddDEDXTable("SRIM", srim_table, new G4VIonDEDXScalingAlgorithm());	
-    }
-    else if(useSRIMData == 0)
-    {
-    	G4cout << " \tUsing ICRU DATA " << G4endl;
-    	G4bool icru90 = G4EmParameters::Instance()->UseICRU90Data();
-    	AddDEDXTable("ICRU73",
-		 new G4IonStoppingData("ion_stopping_data/icru",icru90),
-		 new G4IonDEDXScalingICRU73());
-    }
-    G4cout << " ****************************** " << G4endl;
-  }
-  // The cache of loss tables is cleared
-  LossTableList::iterator iterTables = lossTableList.begin();
-  LossTableList::iterator iterTables_end = lossTableList.end();
+	if (!isInitialised) {
+		isInitialised = true;
+		G4cout << " ****************************** " << G4endl;
+		if (useSRIMData == 1) {
+			G4cout << " \tUsing SRIM DATA " << G4endl;
+			AddDEDXTable("SRIM", srim_table, new G4VIonDEDXScalingAlgorithm());	
+		} else if (useSRIMData == 0) {
+			G4cout << " \tUsing ICRU DATA " << G4endl;
+			G4bool icru90 = G4EmParameters::Instance()->UseICRU90Data();
+			AddDEDXTable("ICRU73", new G4IonStoppingData("ion_stopping_data/icru",icru90), new G4IonDEDXScalingICRU73());
+		}
+		G4cout << " ****************************** " << G4endl;
+	}
+	// The cache of loss tables is cleared
+	LossTableList::iterator iterTables = lossTableList.begin();
+	LossTableList::iterator iterTables_end = lossTableList.end();
 
-  for(;iterTables != iterTables_end; ++iterTables) {
-    (*iterTables) -> ClearCache();
-  }
+	for (;iterTables != iterTables_end; ++iterTables) {
+		(*iterTables) -> ClearCache();
+	}
 
-  // Range vs energy and energy vs range vectors from previous runs are
-  // cleared
-  RangeEnergyTable::iterator iterRange = r.begin();
-  RangeEnergyTable::iterator iterRange_end = r.end();
+	// Range vs energy and energy vs range vectors from previous runs are
+	// cleared
+	RangeEnergyTable::iterator iterRange = r.begin();
+	RangeEnergyTable::iterator iterRange_end = r.end();
 
-  for(;iterRange != iterRange_end; ++iterRange) {
-    delete iterRange->second;
-  }
-  r.clear();
+	for (;iterRange != iterRange_end; ++iterRange) {
+		delete iterRange->second;
+	}
+	r.clear();
 
-  EnergyRangeTable::iterator iterEnergy = E.begin();
-  EnergyRangeTable::iterator iterEnergy_end = E.end();
+	EnergyRangeTable::iterator iterEnergy = E.begin();
+	EnergyRangeTable::iterator iterEnergy_end = E.end();
 
-  for(;iterEnergy != iterEnergy_end; iterEnergy++) {
-    delete iterEnergy->second;
-  }
-  E.clear();
+	for (;iterEnergy != iterEnergy_end; iterEnergy++) {
+		delete iterEnergy->second;
+	}
+	E.clear();
 
-  // The cut energies 
-  cutEnergies = cuts;
+	// The cut energies 
+	cutEnergies = cuts;
 
-  // All dE/dx vectors are built
-  const G4ProductionCutsTable* coupleTable=
-                     G4ProductionCutsTable::GetProductionCutsTable();
-  size_t nmbCouples = coupleTable->GetTableSize();
+	// All dE/dx vectors are built
+	const G4ProductionCutsTable* coupleTable = G4ProductionCutsTable::GetProductionCutsTable();
+	size_t nmbCouples = coupleTable->GetTableSize();
 
 #ifdef PRINT_TABLE_BUILT
-    G4cout << "G4IonParametrisedLossModel_mod::Initialise():"
-           << " Building dE/dx vectors:"
-           << G4endl;
+	G4cout << "G4IonParametrisedLossModel_mod::Initialise():"
+		   << " Building dE/dx vectors:"
+		   << G4endl;
 #endif
 
-  for (size_t i = 0; i < nmbCouples; ++i) {
+	for (size_t i = 0; i < nmbCouples; ++i) {
+		const G4MaterialCutsCouple* couple = coupleTable->GetMaterialCutsCouple(i);
+		const G4Material* material = couple->GetMaterial();
 
-    const G4MaterialCutsCouple* couple = coupleTable->GetMaterialCutsCouple(i);
-    const G4Material* material = couple->GetMaterial();
+		for (G4int atomicNumberIon = 3; atomicNumberIon < 102; ++atomicNumberIon) {
+			LossTableList::iterator iter = lossTableList.begin();
+			LossTableList::iterator iter_end = lossTableList.end();
 
-    for(G4int atomicNumberIon = 3; atomicNumberIon < 102; ++atomicNumberIon) {
+			for (;iter != iter_end; ++iter) {
+				if(*iter == 0) {
+					G4cout << "G4IonParametrisedLossModel_mod::Initialise():"
+						<< " Skipping illegal table."
+						<< G4endl;
+				}
+				if ((*iter)->BuildDEDXTable(atomicNumberIon, material)) {
+	#ifdef PRINT_TABLE_BUILT
+					G4cout << "  Atomic Number Ion = " << atomicNumberIon
+						<< ", Material = " << material -> GetName()
+						<< ", Table = " << (*iter) -> GetName()
+						<< G4endl;
+	#endif
+					break;
+				}
+			}
+		}
+	}
 
-       LossTableList::iterator iter = lossTableList.begin();
-       LossTableList::iterator iter_end = lossTableList.end();
+	// The particle change object
+	if (! particleChangeLoss) {
+		particleChangeLoss = GetParticleChangeForLoss();
+		braggIonModel->SetParticleChange(particleChangeLoss, 0);
+		betheBlochModel->SetParticleChange(particleChangeLoss, 0);
+	}
 
-       for(;iter != iter_end; ++iter) {
-
-          if(*iter == 0) {
-              G4cout << "G4IonParametrisedLossModel_mod::Initialise():"
-                     << " Skipping illegal table."
-                     << G4endl;
-          }
-	  
-	  if((*iter)->BuildDEDXTable(atomicNumberIon, material)) {
-
-#ifdef PRINT_TABLE_BUILT
-             G4cout << "  Atomic Number Ion = " << atomicNumberIon
-                    << ", Material = " << material -> GetName()
-                    << ", Table = " << (*iter) -> GetName()
-                    << G4endl;
-#endif
-             break;
-	  }
-       }
-    }
-  }
-
-  // The particle change object
-  if(! particleChangeLoss) {
-    particleChangeLoss = GetParticleChangeForLoss();
-    braggIonModel->SetParticleChange(particleChangeLoss, 0);
-    betheBlochModel->SetParticleChange(particleChangeLoss, 0);
-  }
-
-  // The G4BraggIonModel and G4BetheBlochModel instances are initialised with
-  // the same settings as the current model:
-  braggIonModel -> Initialise(particle, cuts);
-  betheBlochModel -> Initialise(particle, cuts);
+	// The G4BraggIonModel and G4BetheBlochModel instances are initialised with
+	// the same settings as the current model:
+	braggIonModel->Initialise(particle, cuts);
+	betheBlochModel->Initialise(particle, cuts);
 }
 
 // #########################################################################
 
-G4double G4IonParametrisedLossModel_mod::ComputeCrossSectionPerAtom(
-                                   const G4ParticleDefinition* particle,
-                                   G4double kineticEnergy,
-				   G4double atomicNumber,
-                                   G4double,
-                                   G4double cutEnergy,
-                                   G4double maxKinEnergy) {
+G4double G4IonParametrisedLossModel_mod::ComputeCrossSectionPerAtom(const G4ParticleDefinition* particle, G4double kineticEnergy, G4double atomicNumber, G4double, G4double cutEnergy, G4double maxKinEnergy) {
 
   // ############## Cross section per atom  ################################
   // Function computes ionization cross section per atom
@@ -426,77 +389,59 @@ G4double G4IonParametrisedLossModel_mod::ComputeCrossSectionPerAtom(
   //
   // (Implementation adapted from G4BraggIonModel)
 
-  G4double crosssection     = 0.0;
-  G4double tmax      = MaxSecondaryEnergy(particle, kineticEnergy);
-  G4double maxEnergy = std::min(tmax, maxKinEnergy);
+	G4double crosssection = 0.0;
+	G4double tmax = MaxSecondaryEnergy(particle, kineticEnergy);
+	G4double maxEnergy = std::min(tmax, maxKinEnergy);
 
-  if(cutEnergy < tmax) {
-
-     G4double energy  = kineticEnergy + cacheMass;
-     G4double betaSquared  = kineticEnergy *
-                                     (energy + cacheMass) / (energy * energy);
-
-     crosssection = 1.0 / cutEnergy - 1.0 / maxEnergy -
-                         betaSquared * std::log(maxEnergy / cutEnergy) / tmax;
-
-     crosssection *= twopi_mc2_rcl2 * cacheChargeSquare / betaSquared;
-  }
+	if (cutEnergy < tmax) {
+		G4double energy = kineticEnergy + cacheMass;
+		G4double betaSquared = kineticEnergy * (energy + cacheMass) / (energy * energy);
+		crosssection = 1.0 / cutEnergy - 1.0 / maxEnergy - betaSquared * std::log(maxEnergy / cutEnergy) / tmax;
+		crosssection *= twopi_mc2_rcl2 * cacheChargeSquare / betaSquared;
+	}
 
 #ifdef PRINT_DEBUG_CS
-  G4cout << "########################################################"
-         << G4endl
-         << "# G4IonParametrisedLossModel_mod::ComputeCrossSectionPerAtom"
-         << G4endl
-         << "# particle =" << particle -> GetParticleName()
-         <<  G4endl
-         << "# cut(MeV) = " << cutEnergy/MeV
-         << G4endl;
+	G4cout << "########################################################"
+		   << G4endl
+		   << "# G4IonParametrisedLossModel_mod::ComputeCrossSectionPerAtom"
+		   << G4endl
+		   << "# particle =" << particle -> GetParticleName()
+		   <<  G4endl
+		   << "# cut(MeV) = " << cutEnergy/MeV
+		   << G4endl;
 
-  G4cout << "#"
-         << std::setw(13) << std::right << "E(MeV)"
-         << std::setw(14) << "CS(um)"
-         << std::setw(14) << "E_max_sec(MeV)"
-         << G4endl
-         << "# ------------------------------------------------------"
-         << G4endl;
+	G4cout << "#"
+		   << std::setw(13) << std::right << "E(MeV)"
+		   << std::setw(14) << "CS(um)"
+		   << std::setw(14) << "E_max_sec(MeV)"
+		   << G4endl
+		   << "# ------------------------------------------------------"
+		   << G4endl;
 
-  G4cout << std::setw(14) << std::right << kineticEnergy / MeV
-         << std::setw(14) << crosssection / (um * um)
-         << std::setw(14) << tmax / MeV
-         << G4endl;
+	G4cout << std::setw(14) << std::right << kineticEnergy / MeV
+		   << std::setw(14) << crosssection / (um * um)
+		   << std::setw(14) << tmax / MeV
+		   << G4endl;
 #endif
 
-  crosssection *= atomicNumber;
+	crosssection *= atomicNumber;
 
-  return crosssection;
+	return crosssection;
 }
 
 // #########################################################################
 
-G4double G4IonParametrisedLossModel_mod::CrossSectionPerVolume(
-				   const G4Material* material,
-                                   const G4ParticleDefinition* particle,
-                                   G4double kineticEnergy,
-                                   G4double cutEnergy,
-                                   G4double maxEnergy) {
+G4double G4IonParametrisedLossModel_mod::CrossSectionPerVolume(const G4Material* material, const G4ParticleDefinition* particle, G4double kineticEnergy, G4double cutEnergy, G4double maxEnergy) {
 
-  G4double nbElecPerVolume = material -> GetTotNbOfElectPerVolume();
-  G4double cross = ComputeCrossSectionPerAtom(particle,
-                                              kineticEnergy,
-                                              nbElecPerVolume, 0,
-                                              cutEnergy,
-                                              maxEnergy);
+	G4double nbElecPerVolume = material -> GetTotNbOfElectPerVolume();
+	G4double cross = ComputeCrossSectionPerAtom(particle, kineticEnergy, nbElecPerVolume, 0, cutEnergy, maxEnergy);
 
-  return cross;
+	return cross;
 }
 
 // #########################################################################
 
-G4double G4IonParametrisedLossModel_mod::ComputeDEDXPerVolume(
-                                      const G4Material* material,
-			              const G4ParticleDefinition* particle,
-				      G4double kineticEnergy,
-				      G4double cutEnergy) {
+G4double G4IonParametrisedLossModel_mod::ComputeDEDXPerVolume(const G4Material* material, const G4ParticleDefinition* particle, G4double kineticEnergy, G4double cutEnergy) {
 
   // ############## dE/dx ##################################################
   // Function computes dE/dx values, where following rules are adopted:
@@ -525,218 +470,168 @@ G4double G4IonParametrisedLossModel_mod::ComputeDEDXPerVolume(
   //      Also in this case, a smoothing procedure is applied to dE/dx values
   //      computed with the second model.
 
-  G4double dEdx = 0.0;
-  UpdateDEDXCache(particle, material, cutEnergy);
+	G4double dEdx = 0.0;
+	UpdateDEDXCache(particle, material, cutEnergy);
 
-  LossTableList::iterator iter = dedxCacheIter;
+	LossTableList::iterator iter = dedxCacheIter;
 	// DEDX table exists
-  if(iter != lossTableList.end()) {
+	if (iter != lossTableList.end()) {
+		G4double transitionEnergy = dedxCacheTransitionEnergy;
 
-     G4double transitionEnergy = dedxCacheTransitionEnergy;
+		//G4cout << " trans en = " << transitionEnergy/MeV << G4endl;
+		if (transitionEnergy > kineticEnergy) {
+			dEdx = (*iter)->GetDEDX(particle, material, kineticEnergy);
+			G4double dEdxDeltaRays = DeltaRayMeanEnergyTransferRate(material, particle, kineticEnergy, cutEnergy);
+			dEdx -= dEdxDeltaRays;
+		} else {
+			G4double massRatio = dedxCacheGenIonMassRatio;
+			G4double chargeSquare = GetChargeSquareRatio(particle, material, kineticEnergy);
+			G4double scaledKineticEnergy = kineticEnergy * massRatio;
+			G4double scaledTransitionEnergy = transitionEnergy * massRatio;
+			G4double lowEnergyLimit = betheBlochModel->LowEnergyLimit();
 
-	//G4cout << " trans en = " << transitionEnergy/MeV << G4endl;
-     if(transitionEnergy > kineticEnergy) {
+			if (scaledTransitionEnergy >= lowEnergyLimit) {
+				dEdx = betheBlochModel->ComputeDEDXPerVolume(material, genericIon, scaledKineticEnergy, cutEnergy);
+				dEdx *= chargeSquare;
+				dEdx += corrections->ComputeIonCorrections(particle, material, kineticEnergy);
+				G4double factor = 1.0 + dedxCacheTransitionFactor / kineticEnergy;
+				dEdx *= factor;
+			}
+		}
+	} else {
+		G4double massRatio = 1.0;
+		G4double chargeSquare = 1.0;
 
-        dEdx = (*iter) -> GetDEDX(particle, material, kineticEnergy);
-       
+		if (particle != genericIon) {
+			chargeSquare = GetChargeSquareRatio(particle, material, kineticEnergy);
+			massRatio = genericIonPDGMass / particle->GetPDGMass();
+		}
 
-        G4double dEdxDeltaRays = DeltaRayMeanEnergyTransferRate(material,
-                                           particle,
-                                           kineticEnergy,
-                                           cutEnergy);
-        dEdx -= dEdxDeltaRays;
+		G4double scaledKineticEnergy = kineticEnergy * massRatio;
+		G4double lowEnergyLimit = betheBlochModel->LowEnergyLimit();
+		if (scaledKineticEnergy < lowEnergyLimit) {
+			dEdx = braggIonModel->ComputeDEDXPerVolume(material, genericIon, scaledKineticEnergy, cutEnergy);
+			dEdx *= chargeSquare;
+		} else {
+			G4double dEdxLimitParam = braggIonModel->ComputeDEDXPerVolume(material, genericIon, lowEnergyLimit, cutEnergy);
+			G4double dEdxLimitBetheBloch = betheBlochModel->ComputeDEDXPerVolume(material, genericIon, lowEnergyLimit, cutEnergy);
 
-     }
-     else {
-        G4double massRatio = dedxCacheGenIonMassRatio;
+			if (particle != genericIon) {
+				G4double chargeSquareLowEnergyLimit = GetChargeSquareRatio(particle, material, lowEnergyLimit / massRatio);
+				dEdxLimitParam *= chargeSquareLowEnergyLimit;
+				dEdxLimitBetheBloch *= chargeSquareLowEnergyLimit;
+				dEdxLimitBetheBloch += corrections->ComputeIonCorrections(particle, material, lowEnergyLimit / massRatio);
+			}
+			G4double factor = (1.0 + (dEdxLimitParam/dEdxLimitBetheBloch - 1.0) * lowEnergyLimit / scaledKineticEnergy);
 
-        G4double chargeSquare =
-                       GetChargeSquareRatio(particle, material, kineticEnergy);
+			dEdx = betheBlochModel->ComputeDEDXPerVolume(material, genericIon, scaledKineticEnergy, cutEnergy);
+			dEdx *= chargeSquare;
 
-        G4double scaledKineticEnergy = kineticEnergy * massRatio;
-        G4double scaledTransitionEnergy = transitionEnergy * massRatio;
+			if (particle != genericIon) {
+				dEdx += corrections->ComputeIonCorrections(particle, material, kineticEnergy);
+			}
+			dEdx *= factor;
+		}
 
-        G4double lowEnergyLimit = betheBlochModel -> LowEnergyLimit();
-
-        if(scaledTransitionEnergy >= lowEnergyLimit) {
-
-           dEdx = betheBlochModel -> ComputeDEDXPerVolume(
-                                      material, genericIon,
-     				      scaledKineticEnergy, cutEnergy);
-
-           dEdx *= chargeSquare;
-
-           dEdx += corrections -> ComputeIonCorrections(particle,
-                                                 material, kineticEnergy);
-
-           G4double factor = 1.0 + dedxCacheTransitionFactor /
-                                                           kineticEnergy;
-
-	   dEdx *= factor;
 	}
-     }
-  }
-  else {
-     G4double massRatio = 1.0;
-     G4double chargeSquare = 1.0;
+	if (dEdx < 0.0)
+		dEdx = 0.0;
 
-     if(particle != genericIon) {
-
-        chargeSquare = GetChargeSquareRatio(particle, material, kineticEnergy);
-        massRatio = genericIonPDGMass / particle -> GetPDGMass();
-     }
-
-     G4double scaledKineticEnergy = kineticEnergy * massRatio;
-
-     G4double lowEnergyLimit = betheBlochModel -> LowEnergyLimit();
-     if(scaledKineticEnergy < lowEnergyLimit) {
-        dEdx = braggIonModel -> ComputeDEDXPerVolume(
-                                      material, genericIon,
-     				      scaledKineticEnergy, cutEnergy);
-
-        dEdx *= chargeSquare;
-     }
-     else {
-        G4double dEdxLimitParam = braggIonModel -> ComputeDEDXPerVolume(
-                                      material, genericIon,
-     				      lowEnergyLimit, cutEnergy);
-
-        G4double dEdxLimitBetheBloch = betheBlochModel -> ComputeDEDXPerVolume(
-                                      material, genericIon,
-     				      lowEnergyLimit, cutEnergy);
-
-        if(particle != genericIon) {
-           G4double chargeSquareLowEnergyLimit =
-               GetChargeSquareRatio(particle, material,
-                                    lowEnergyLimit / massRatio);
-
-           dEdxLimitParam *= chargeSquareLowEnergyLimit;
-           dEdxLimitBetheBloch *= chargeSquareLowEnergyLimit;
-
-           dEdxLimitBetheBloch +=
-                    corrections -> ComputeIonCorrections(particle,
-                                      material, lowEnergyLimit / massRatio);
-        }
-
-        G4double factor = (1.0 + (dEdxLimitParam/dEdxLimitBetheBloch - 1.0)
-                               * lowEnergyLimit / scaledKineticEnergy);
-
-        dEdx = betheBlochModel -> ComputeDEDXPerVolume(
-                                      material, genericIon,
-     				      scaledKineticEnergy, cutEnergy);
-
-        dEdx *= chargeSquare;
-
-        if(particle != genericIon) {
-           dEdx += corrections -> ComputeIonCorrections(particle,
-                                      material, kineticEnergy);
-        }
-
-        dEdx *= factor;
-     }
-
-  }
-  if (dEdx < 0.0) dEdx = 0.0;
-
-  return dEdx;
+	return dEdx;
 }
 
 // #########################################################################
 
 void G4IonParametrisedLossModel_mod::PrintDEDXTable(
-                   const G4ParticleDefinition* particle,  // Projectile (ion)
-                   const G4Material* material,  // Absorber material
-                   G4double lowerBoundary,      // Minimum energy per nucleon
-                   G4double upperBoundary,      // Maximum energy per nucleon
-                   G4int numBins,               // Number of bins
-                   G4bool logScaleEnergy) {     // Logarithmic scaling of energy
+				   const G4ParticleDefinition* particle,  // Projectile (ion)
+				   const G4Material* material,  // Absorber material
+				   G4double lowerBoundary,      // Minimum energy per nucleon
+				   G4double upperBoundary,      // Maximum energy per nucleon
+				   G4int numBins,               // Number of bins
+				   G4bool logScaleEnergy) {     // Logarithmic scaling of energy
 
-  G4double atomicMassNumber = particle -> GetAtomicMass();
-  G4double materialDensity = material -> GetDensity();
+	G4double atomicMassNumber = particle->GetAtomicMass();
+	G4double materialDensity = material->GetDensity();
 
-  G4cout << "# dE/dx table for " << particle -> GetParticleName()
-         << " in material " << material -> GetName()
-         << " of density " << materialDensity / g * cm3
-         << " g/cm3"
-         << G4endl
-         << "# Projectile mass number A1 = " << atomicMassNumber
-         << G4endl
-         << "# ------------------------------------------------------"
-         << G4endl;
-  G4cout << "#"
-         << std::setw(13) << std::right << "E"
-         << std::setw(14) << "E/A1"
-         << std::setw(14) << "dE/dx"
-         << std::setw(14) << "1/rho*dE/dx"
-         << G4endl;
-  G4cout << "#"
-         << std::setw(13) << std::right << "(MeV)"
-         << std::setw(14) << "(MeV)"
-         << std::setw(14) << "(MeV/cm)"
-         << std::setw(14) << "(MeV*cm2/mg)"
-         << G4endl
-         << "# ------------------------------------------------------"
-         << G4endl;
+	G4cout << "# dE/dx table for " << particle -> GetParticleName()
+		   << " in material " << material -> GetName()
+		   << " of density " << materialDensity / g * cm3
+		   << " g/cm3"
+		   << G4endl
+		   << "# Projectile mass number A1 = " << atomicMassNumber
+		   << G4endl
+		   << "# ------------------------------------------------------"
+		   << G4endl;
+	G4cout << "#"
+		   << std::setw(13) << std::right << "E"
+		   << std::setw(14) << "E/A1"
+		   << std::setw(14) << "dE/dx"
+		   << std::setw(14) << "1/rho*dE/dx"
+		   << G4endl;
+	G4cout << "#"
+		   << std::setw(13) << std::right << "(MeV)"
+		   << std::setw(14) << "(MeV)"
+		   << std::setw(14) << "(MeV/cm)"
+		   << std::setw(14) << "(MeV*cm2/mg)"
+		   << G4endl
+		   << "# ------------------------------------------------------"
+		   << G4endl;
 
-  G4double energyLowerBoundary = lowerBoundary * atomicMassNumber;
-  G4double energyUpperBoundary = upperBoundary * atomicMassNumber;
+	G4double energyLowerBoundary = lowerBoundary * atomicMassNumber;
+	G4double energyUpperBoundary = upperBoundary * atomicMassNumber;
 
-  if(logScaleEnergy) {
+	if (logScaleEnergy) {
+		energyLowerBoundary = std::log(energyLowerBoundary);
+		energyUpperBoundary = std::log(energyUpperBoundary);
+	}
 
-     energyLowerBoundary = std::log(energyLowerBoundary);
-     energyUpperBoundary = std::log(energyUpperBoundary);
-  }
+	G4double deltaEnergy = (energyUpperBoundary - energyLowerBoundary) / G4double(nmbBins);
 
-  G4double deltaEnergy = (energyUpperBoundary - energyLowerBoundary) /
-                                                           G4double(nmbBins);
+	for (int i = 0; i < numBins + 1; i++) {
+		G4double energy = energyLowerBoundary + i * deltaEnergy;
+		if (logScaleEnergy)
+			energy = G4Exp(energy);
 
-  for(int i = 0; i < numBins + 1; i++) {
-
-      G4double energy = energyLowerBoundary + i * deltaEnergy;
-      if(logScaleEnergy) energy = G4Exp(energy);
-
-      G4double dedx = ComputeDEDXPerVolume(material, particle, energy, DBL_MAX);
-      G4cout.precision(6);
-      G4cout << std::setw(14) << std::right << energy / MeV
-             << std::setw(14) << energy / atomicMassNumber / MeV
-             << std::setw(14) << dedx / MeV * cm
-             << std::setw(14) << dedx / materialDensity / (MeV*cm2/(0.001*g))
-             << G4endl;
-  }
+		G4double dedx = ComputeDEDXPerVolume(material, particle, energy, DBL_MAX);
+		G4cout.precision(6);
+		G4cout << std::setw(14) << std::right << energy / MeV
+			   << std::setw(14) << energy / atomicMassNumber / MeV
+			   << std::setw(14) << dedx / MeV * cm
+			   << std::setw(14) << dedx / materialDensity / (MeV*cm2/(0.001*g))
+			   << G4endl;
+	}
 }
 
 // #########################################################################
 
 void G4IonParametrisedLossModel_mod::PrintDEDXTableHandlers(
-                   const G4ParticleDefinition* particle,  // Projectile (ion)
-                   const G4Material* material,  // Absorber material
-                   G4double lowerBoundary,      // Minimum energy per nucleon
-                   G4double upperBoundary,      // Maximum energy per nucleon
-                   G4int numBins,               // Number of bins
-                   G4bool logScaleEnergy) {     // Logarithmic scaling of energy
+				   const G4ParticleDefinition* particle,  // Projectile (ion)
+				   const G4Material* material,  // Absorber material
+				   G4double lowerBoundary,      // Minimum energy per nucleon
+				   G4double upperBoundary,      // Maximum energy per nucleon
+				   G4int numBins,               // Number of bins
+				   G4bool logScaleEnergy) {     // Logarithmic scaling of energy
 
   LossTableList::iterator iter = lossTableList.begin();
   LossTableList::iterator iter_end = lossTableList.end();
 
-  for(;iter != iter_end; iter++) {
-      G4bool isApplicable =  (*iter) -> IsApplicable(particle, material);
-      if(isApplicable) {
-	(*iter) -> PrintDEDXTable(particle, material,
-                                  lowerBoundary, upperBoundary,
-                                  numBins,logScaleEnergy);
-        break;
-      }
-  }
+	for (;iter != iter_end; iter++) {
+		G4bool isApplicable =  (*iter) -> IsApplicable(particle, material);
+		if (isApplicable) {
+			(*iter) -> PrintDEDXTable(particle, material, lowerBoundary, upperBoundary, numBins,logScaleEnergy);
+		break;
+		}
+	}
 }
 
 // #########################################################################
 
 void G4IonParametrisedLossModel_mod::SampleSecondaries(
-                             std::vector<G4DynamicParticle*>* secondaries,
-			     const G4MaterialCutsCouple* couple,
-			     const G4DynamicParticle* particle,
-			     G4double cutKinEnergySec,
-			     G4double userMaxKinEnergySec) {
+							 std::vector<G4DynamicParticle*>* secondaries,
+				 const G4MaterialCutsCouple* couple,
+				 const G4DynamicParticle* particle,
+				 G4double cutKinEnergySec,
+				 G4double userMaxKinEnergySec) {
 
 
   // ############## Sampling of secondaries #################################
@@ -764,112 +659,91 @@ void G4IonParametrisedLossModel_mod::SampleSecondaries(
   //
   // (Implementation adapted from G4BraggIonModel)
 
-  G4double rossiMaxKinEnergySec = MaxSecondaryKinEnergy(particle);
-  G4double maxKinEnergySec =
-                        std::min(rossiMaxKinEnergySec, userMaxKinEnergySec);
+	G4double rossiMaxKinEnergySec = MaxSecondaryKinEnergy(particle);
+	G4double maxKinEnergySec = std::min(rossiMaxKinEnergySec, userMaxKinEnergySec);
 
-  if(cutKinEnergySec >= maxKinEnergySec) return;
+	if(cutKinEnergySec >= maxKinEnergySec)
+		return;
 
-  G4double kineticEnergy = particle -> GetKineticEnergy();
+	G4double kineticEnergy = particle->GetKineticEnergy();
 
-  G4double energy  = kineticEnergy + cacheMass;
-  G4double betaSquared = kineticEnergy * (energy + cacheMass)
-    / (energy * energy);
+	G4double energy  = kineticEnergy + cacheMass;
+	G4double betaSquared = kineticEnergy * (energy + cacheMass) / (energy * energy);
+	G4double kinEnergySec, grej;
 
-  G4double kinEnergySec;
-  G4double grej;
+	do {
+		// Sampling kinetic energy from f(T) (using F(T)):
+		G4double xi = G4UniformRand();
+		kinEnergySec = cutKinEnergySec * maxKinEnergySec / (maxKinEnergySec * (1.0 - xi) + cutKinEnergySec * xi);
+		// Deriving the value of the rejection function at the obtained kinetic
+		// energy:
+		grej = 1.0 - betaSquared * kinEnergySec / rossiMaxKinEnergySec;
 
-  do {
+		if(grej > 1.0) {
+			G4cout << "G4IonParametrisedLossModel_mod::SampleSecondary Warning: "
+				<< "Majorant 1.0 < "
+				<< grej << " for e= " << kinEnergySec
+				<< G4endl;
+		}
+	} while( G4UniformRand() >= grej );
 
-    // Sampling kinetic energy from f(T) (using F(T)):
-    G4double xi = G4UniformRand();
-    kinEnergySec = cutKinEnergySec * maxKinEnergySec /
-                        (maxKinEnergySec * (1.0 - xi) + cutKinEnergySec * xi);
+	const G4Material* mat =  couple->GetMaterial();
+	G4int Z = SelectRandomAtomNumber(mat);
 
-    // Deriving the value of the rejection function at the obtained kinetic
-    // energy:
-    grej = 1.0 - betaSquared * kinEnergySec / rossiMaxKinEnergySec;
+	const G4ParticleDefinition* electron = G4Electron::Electron();
+	G4DynamicParticle* delta = new G4DynamicParticle(electron, GetAngularDistribution()->SampleDirection(particle, kinEnergySec, Z, mat), kinEnergySec);
+	secondaries->push_back(delta);
+	// Change kinematics of primary particle
+	G4ThreeVector direction = particle ->GetMomentumDirection();
+	G4double totalMomentum = std::sqrt(kineticEnergy*(energy + cacheMass));
 
-    if(grej > 1.0) {
-        G4cout << "G4IonParametrisedLossModel_mod::SampleSecondary Warning: "
-               << "Majorant 1.0 < "
-               << grej << " for e= " << kinEnergySec
-               << G4endl;
-    }
+	G4ThreeVector finalP = totalMomentum*direction - delta->GetMomentum();
+	finalP = finalP.unit();
 
-  } while( G4UniformRand() >= grej );
+	kineticEnergy -= kinEnergySec;
 
-  const G4Material* mat =  couple->GetMaterial();
-  G4int Z = SelectRandomAtomNumber(mat);
-
-  const G4ParticleDefinition* electron = G4Electron::Electron();
-
-  G4DynamicParticle* delta = new G4DynamicParticle(electron,
-    GetAngularDistribution()->SampleDirection(particle, kinEnergySec,
-                                              Z, mat),
-                                                   kinEnergySec);
-
-
-  secondaries->push_back(delta);
-
-  // Change kinematics of primary particle
-  G4ThreeVector direction = particle ->GetMomentumDirection();
-  G4double totalMomentum = std::sqrt(kineticEnergy*(energy + cacheMass));
-
-  G4ThreeVector finalP = totalMomentum*direction - delta->GetMomentum();
-  finalP               = finalP.unit();
-
-  kineticEnergy       -= kinEnergySec;
-
-  particleChangeLoss->SetProposedKineticEnergy(kineticEnergy);
-  particleChangeLoss->SetProposedMomentumDirection(finalP);
+	particleChangeLoss->SetProposedKineticEnergy(kineticEnergy);
+	particleChangeLoss->SetProposedMomentumDirection(finalP);
 }
 
 // #########################################################################
 
-void G4IonParametrisedLossModel_mod::UpdateRangeCache(
-                     const G4ParticleDefinition* particle,
-                     const G4MaterialCutsCouple* matCutsCouple) {
+void G4IonParametrisedLossModel_mod::UpdateRangeCache(const G4ParticleDefinition* particle, const G4MaterialCutsCouple* matCutsCouple) {
 
   // ############## Caching ##################################################
   // If the ion-material-cut combination is covered by any native ion data
   // parameterisation (for low energies), range vectors are computed
 
-  if(particle == rangeCacheParticle &&
-     matCutsCouple == rangeCacheMatCutsCouple) {
-  }
-  else{
-     rangeCacheParticle = particle;
-     rangeCacheMatCutsCouple = matCutsCouple;
+	if (particle == rangeCacheParticle && matCutsCouple == rangeCacheMatCutsCouple) {
 
-     const G4Material* material = matCutsCouple -> GetMaterial();
-     LossTableList::iterator iter = IsApplicable(particle, material);
+	} else{
+		rangeCacheParticle = particle;
+		rangeCacheMatCutsCouple = matCutsCouple;
 
-     // If any table is applicable, the transition factor is computed:
-     if(iter != lossTableList.end()) {
+		const G4Material* material = matCutsCouple -> GetMaterial();
+		LossTableList::iterator iter = IsApplicable(particle, material);
 
-        // Build range-energy and energy-range vectors if they don't exist
-        IonMatCouple ionMatCouple = std::make_pair(particle, matCutsCouple);
-        RangeEnergyTable::iterator iterRange = r.find(ionMatCouple);
+		// If any table is applicable, the transition factor is computed:
+		if (iter != lossTableList.end()) {
+			// Build range-energy and energy-range vectors if they don't exist
+			IonMatCouple ionMatCouple = std::make_pair(particle, matCutsCouple);
+			RangeEnergyTable::iterator iterRange = r.find(ionMatCouple);
 
-        if(iterRange == r.end()) BuildRangeVector(particle, matCutsCouple);
+			if(iterRange == r.end())
+				BuildRangeVector(particle, matCutsCouple);
 
-        rangeCacheEnergyRange = E[ionMatCouple];
-        rangeCacheRangeEnergy = r[ionMatCouple];
-     }
-     else {
-        rangeCacheEnergyRange = 0;
-        rangeCacheRangeEnergy = 0;
-     }
-  }
+			rangeCacheEnergyRange = E[ionMatCouple];
+			rangeCacheRangeEnergy = r[ionMatCouple];
+		} else {
+			rangeCacheEnergyRange = 0;
+			rangeCacheRangeEnergy = 0;
+		}
+	}
 }
 
 // #########################################################################
 
-void G4IonParametrisedLossModel_mod::UpdateDEDXCache(
-                     const G4ParticleDefinition* particle,
-                     const G4Material* material,
-                     G4double cutEnergy) {
+void G4IonParametrisedLossModel_mod::UpdateDEDXCache(const G4ParticleDefinition* particle, const G4Material* material, G4double cutEnergy) {
 
   // ############## Caching ##################################################
   // If the ion-material combination is covered by any native ion data
@@ -879,87 +753,60 @@ void G4IonParametrisedLossModel_mod::UpdateDEDXCache(
   // This factor only needs to be calculated for the first step an ion
   // performs inside a certain material.
 
-  if(particle == dedxCacheParticle &&
-     material == dedxCacheMaterial &&
-     cutEnergy == dedxCacheEnergyCut) {
-  }
-  else {
+	if(particle == dedxCacheParticle && material == dedxCacheMaterial && cutEnergy == dedxCacheEnergyCut) {
 
-     dedxCacheParticle = particle;
-     dedxCacheMaterial = material;
-     dedxCacheEnergyCut = cutEnergy;
+	} else {
+		dedxCacheParticle = particle;
+		dedxCacheMaterial = material;
+		dedxCacheEnergyCut = cutEnergy;
 
-     G4double massRatio = genericIonPDGMass / particle -> GetPDGMass();
-     dedxCacheGenIonMassRatio = massRatio;
+		G4double massRatio = genericIonPDGMass / particle->GetPDGMass();
+		dedxCacheGenIonMassRatio = massRatio;
 
-     LossTableList::iterator iter = IsApplicable(particle, material);
-     dedxCacheIter = iter;
+		LossTableList::iterator iter = IsApplicable(particle, material);
+		dedxCacheIter = iter;
 
-     // If any table is applicable, the transition factor is computed:
-     if(iter != lossTableList.end()) {
+		// If any table is applicable, the transition factor is computed:
+		if (iter != lossTableList.end()) {
+			// Retrieving the transition energy from the parameterisation table
+			G4double transitionEnergy = (*iter)->GetUpperEnergyEdge(particle, material);
+			dedxCacheTransitionEnergy = transitionEnergy;
+			// Computing dE/dx from low-energy parameterisation at
+			// transition energy
+			G4double dEdxParam = (*iter)->GetDEDX(particle, material, transitionEnergy);
 
-        // Retrieving the transition energy from the parameterisation table
-        G4double transitionEnergy =
-                 (*iter) -> GetUpperEnergyEdge(particle, material);
-        dedxCacheTransitionEnergy = transitionEnergy;
+			G4double dEdxDeltaRays = DeltaRayMeanEnergyTransferRate(material, particle, transitionEnergy, cutEnergy);
+			dEdxParam -= dEdxDeltaRays;
 
-        // Computing dE/dx from low-energy parameterisation at
-        // transition energy
-        G4double dEdxParam = (*iter) -> GetDEDX(particle, material,
-                                           transitionEnergy);
+			// Computing dE/dx from Bethe-Bloch formula at transition
+			// energy
+			G4double transitionChargeSquare =  GetChargeSquareRatio(particle, material, transitionEnergy);
+			G4double scaledTransitionEnergy = transitionEnergy * massRatio;
 
-        G4double dEdxDeltaRays = DeltaRayMeanEnergyTransferRate(material,
-                                           particle,
-                                           transitionEnergy,
-                                           cutEnergy);
-        dEdxParam -= dEdxDeltaRays;
+			G4double dEdxBetheBloch = betheBlochModel->ComputeDEDXPerVolume(material, genericIon, scaledTransitionEnergy, cutEnergy);
+			dEdxBetheBloch *= transitionChargeSquare;
 
-        // Computing dE/dx from Bethe-Bloch formula at transition
-        // energy
-        G4double transitionChargeSquare =
-              GetChargeSquareRatio(particle, material, transitionEnergy);
+			// Additionally, high order corrections are added
+			dEdxBetheBloch += corrections->ComputeIonCorrections(particle, material, transitionEnergy);
 
-        G4double scaledTransitionEnergy = transitionEnergy * massRatio;
+			// Computing transition factor from both dE/dx values
+			dedxCacheTransitionFactor = (dEdxParam - dEdxBetheBloch) / dEdxBetheBloch * transitionEnergy;
+		} else {
+			dedxCacheParticle = particle;
+			dedxCacheMaterial = material;
+			dedxCacheEnergyCut = cutEnergy;
 
-        G4double dEdxBetheBloch =
-                           betheBlochModel -> ComputeDEDXPerVolume(
-                                        material, genericIon,
-     		 		        scaledTransitionEnergy, cutEnergy);
-        dEdxBetheBloch *= transitionChargeSquare;
+			dedxCacheGenIonMassRatio = genericIonPDGMass / particle -> GetPDGMass();
 
-        // Additionally, high order corrections are added
-        dEdxBetheBloch +=
-            corrections -> ComputeIonCorrections(particle,
-                                                 material, transitionEnergy);
-
-        // Computing transition factor from both dE/dx values
-        dedxCacheTransitionFactor =
-                  	 (dEdxParam - dEdxBetheBloch)/dEdxBetheBloch
-                             * transitionEnergy;
-     }
-     else {
-
-        dedxCacheParticle = particle;
-        dedxCacheMaterial = material;
-        dedxCacheEnergyCut = cutEnergy;
-
-        dedxCacheGenIonMassRatio =
-                             genericIonPDGMass / particle -> GetPDGMass();
-
-        dedxCacheTransitionEnergy = 0.0;
-        dedxCacheTransitionFactor = 0.0;
-     }
-  }
+			dedxCacheTransitionEnergy = 0.0;
+			dedxCacheTransitionFactor = 0.0;
+		}
+	}
 }
 
 // #########################################################################
 
-void G4IonParametrisedLossModel_mod::CorrectionsAlongStep(
-                             const G4MaterialCutsCouple* couple,
-			     const G4DynamicParticle* dynamicParticle,
-			     G4double& eloss,
-			     G4double&,
-                             G4double length) {
+void G4IonParametrisedLossModel_mod::CorrectionsAlongStep(const G4MaterialCutsCouple* couple, const G4DynamicParticle* dynamicParticle, G4double& eloss, G4double&, G4double length) {
 
   // ############## Corrections for along step energy loss calculation ######
   // The computed energy loss (due to electronic stopping) is overwritten
@@ -973,437 +820,348 @@ void G4IonParametrisedLossModel_mod::CorrectionsAlongStep(
   //
   // (Implementation partly adapted from G4BraggIonModel/G4BetheBlochModel)
 
-  const G4ParticleDefinition* particle = dynamicParticle -> GetDefinition();
-  const G4Material* material = couple -> GetMaterial();
+	const G4ParticleDefinition* particle = dynamicParticle->GetDefinition();
+	const G4Material* material = couple->GetMaterial();
 
-  G4double kineticEnergy = dynamicParticle -> GetKineticEnergy();
+	G4double kineticEnergy = dynamicParticle->GetKineticEnergy();
 
-  if(kineticEnergy == eloss) { return; }
+	if (kineticEnergy == eloss)
+		return;
 
-  G4double cutEnergy = DBL_MAX;
-  size_t cutIndex = couple -> GetIndex();
-  cutEnergy = cutEnergies[cutIndex];
+	G4double cutEnergy = DBL_MAX;
+	size_t cutIndex = couple->GetIndex();
+	cutEnergy = cutEnergies[cutIndex];
+	UpdateDEDXCache(particle, material, cutEnergy);
+	LossTableList::iterator iter = dedxCacheIter;
 
-  UpdateDEDXCache(particle, material, cutEnergy);
-
-  LossTableList::iterator iter = dedxCacheIter;
-
-  // If parameterization for ions is available the electronic energy loss
-  // is overwritten
-  if(iter != lossTableList.end()) {
-
-     // The energy loss is calculated using the ComputeDEDXPerVolume function
-     // and the step length (it is assumed that dE/dx does not change
-     // considerably along the step)
-     eloss =
-        length * ComputeDEDXPerVolume(material, particle,
-                                      kineticEnergy, cutEnergy);
+	// If parameterization for ions is available the electronic energy loss
+	// is overwritten
+	if (iter != lossTableList.end()) {
+		// The energy loss is calculated using the ComputeDEDXPerVolume function
+		// and the step length (it is assumed that dE/dx does not change
+		// considerably along the step)
+		eloss = length * ComputeDEDXPerVolume(material, particle, kineticEnergy, cutEnergy);
 
 #ifdef PRINT_DEBUG
-  G4cout.precision(6);
-  G4cout << "########################################################"
-         << G4endl
-         << "# G4IonParametrisedLossModel_mod::CorrectionsAlongStep"
-         << G4endl
-         << "# cut(MeV) = " << cutEnergy/MeV
-         << G4endl;
+		G4cout.precision(6);
+		G4cout << "########################################################"
+				<< G4endl
+				<< "# G4IonParametrisedLossModel_mod::CorrectionsAlongStep"
+				<< G4endl
+				<< "# cut(MeV) = " << cutEnergy/MeV
+				<< G4endl;
 
-  G4cout << "#"
-         << std::setw(13) << std::right << "E(MeV)"
-         << std::setw(14) << "l(um)"
-         << std::setw(14) << "l*dE/dx(MeV)"
-         << std::setw(14) << "(l*dE/dx)/E"
-         << G4endl
-         << "# ------------------------------------------------------"
-         << G4endl;
+		G4cout << "#"
+				<< std::setw(13) << std::right << "E(MeV)"
+				<< std::setw(14) << "l(um)"
+				<< std::setw(14) << "l*dE/dx(MeV)"
+				<< std::setw(14) << "(l*dE/dx)/E"
+				<< G4endl
+				<< "# ------------------------------------------------------"
+				<< G4endl;
 
-  G4cout << std::setw(14) << std::right << kineticEnergy / MeV
-         << std::setw(14) << length / um
-         << std::setw(14) << eloss / MeV
-         << std::setw(14) << eloss / kineticEnergy * 100.0
-         << G4endl;
+		G4cout << std::setw(14) << std::right << kineticEnergy / MeV
+				<< std::setw(14) << length / um
+				<< std::setw(14) << eloss / MeV
+				<< std::setw(14) << eloss / kineticEnergy * 100.0
+				<< G4endl;
 #endif
 
-     // If the energy loss exceeds a certain fraction of the kinetic energy
-     // (the fraction is indicated by the parameter "energyLossLimit") then
-     // the range tables are used to derive a more accurate value of the
-     // energy loss
-     if(eloss > energyLossLimit * kineticEnergy) {
-
-        eloss = ComputeLossForStep(couple, particle,
-                                   kineticEnergy,length);
+		// If the energy loss exceeds a certain fraction of the kinetic energy
+		// (the fraction is indicated by the parameter "energyLossLimit") then
+		// the range tables are used to derive a more accurate value of the
+		// energy loss
+		if (eloss > energyLossLimit * kineticEnergy) {
+			eloss = ComputeLossForStep(couple, particle, kineticEnergy,length);
 
 #ifdef PRINT_DEBUG
-  G4cout << "# Correction applied:"
-         << G4endl;
+		G4cout << "# Correction applied:"
+				<< G4endl;
 
-  G4cout << std::setw(14) << std::right << kineticEnergy / MeV
-         << std::setw(14) << length / um
-         << std::setw(14) << eloss / MeV
-         << std::setw(14) << eloss / kineticEnergy * 100.0
-         << G4endl;
+		G4cout << std::setw(14) << std::right << kineticEnergy / MeV
+				<< std::setw(14) << length / um
+				<< std::setw(14) << eloss / MeV
+				<< std::setw(14) << eloss / kineticEnergy * 100.0
+				<< G4endl;
 #endif
+		}
+	}
 
-     }
-  }
+	// For all corrections below a kinetic energy between the Pre- and
+	// Post-step energy values is used
+	G4double energy = kineticEnergy - eloss * 0.5;
+	if (energy < 0.0)
+		energy = kineticEnergy * 0.5;
 
-  // For all corrections below a kinetic energy between the Pre- and
-  // Post-step energy values is used
-  G4double energy = kineticEnergy - eloss * 0.5;
-  if(energy < 0.0) energy = kineticEnergy * 0.5;
+	G4double chargeSquareRatio = corrections->EffectiveChargeSquareRatio(particle, material, energy);
+	GetModelOfFluctuations()->SetParticleAndCharge(particle, chargeSquareRatio);
 
-  G4double chargeSquareRatio = corrections ->
-                                     EffectiveChargeSquareRatio(particle,
-                                                                material,
-                                                                energy);
-  GetModelOfFluctuations() -> SetParticleAndCharge(particle,
-                                                   chargeSquareRatio);
+	// A correction is applied considering the change of the effective charge
+	// along the step (the parameter "corrFactor" refers to the effective
+	// charge at the beginning of the step). Note: the correction is not
+	// applied for energy loss values deriving directly from parameterized
+	// ion stopping power tables
+	G4double transitionEnergy = dedxCacheTransitionEnergy;
 
-  // A correction is applied considering the change of the effective charge
-  // along the step (the parameter "corrFactor" refers to the effective
-  // charge at the beginning of the step). Note: the correction is not
-  // applied for energy loss values deriving directly from parameterized
-  // ion stopping power tables
-  G4double transitionEnergy = dedxCacheTransitionEnergy;
+	if (iter != lossTableList.end() && transitionEnergy < kineticEnergy) {
+		chargeSquareRatio *= corrections->EffectiveChargeCorrection(particle, material, energy);
+		G4double chargeSquareRatioCorr = chargeSquareRatio / corrFactor;
+		eloss *= chargeSquareRatioCorr;
+	} else if (iter == lossTableList.end()) {
+		chargeSquareRatio *= corrections->EffectiveChargeCorrection(particle, material, energy);
+		G4double chargeSquareRatioCorr = chargeSquareRatio / corrFactor;
+		eloss *= chargeSquareRatioCorr;
+	}
 
-  if(iter != lossTableList.end() && transitionEnergy < kineticEnergy) {
-     chargeSquareRatio *= corrections -> EffectiveChargeCorrection(particle,
-                                                                material,
-                                                                energy);
-
-     G4double chargeSquareRatioCorr = chargeSquareRatio/corrFactor;
-     eloss *= chargeSquareRatioCorr;
-  }
-  else if (iter == lossTableList.end()) {
-
-     chargeSquareRatio *= corrections -> EffectiveChargeCorrection(particle,
-                                                                material,
-                                                                energy);
-
-     G4double chargeSquareRatioCorr = chargeSquareRatio/corrFactor;
-     eloss *= chargeSquareRatioCorr;
-  }
-
-  // Ion high order corrections are applied if the current model does not
-  // overwrite the energy loss (i.e. when the effective charge approach is
-  // used)
-  if(iter == lossTableList.end()) {
-
-     G4double scaledKineticEnergy = kineticEnergy * dedxCacheGenIonMassRatio;
-     G4double lowEnergyLimit = betheBlochModel -> LowEnergyLimit();
-
-     // Corrections are only applied in the Bethe-Bloch energy region
-     if(scaledKineticEnergy > lowEnergyLimit)
-       eloss += length *
-            corrections -> IonHighOrderCorrections(particle, couple, energy);
-  }
+	// Ion high order corrections are applied if the current model does not
+	// overwrite the energy loss (i.e. when the effective charge approach is
+	// used)
+	if (iter == lossTableList.end()) {
+		G4double scaledKineticEnergy = kineticEnergy * dedxCacheGenIonMassRatio;
+		G4double lowEnergyLimit = betheBlochModel->LowEnergyLimit();
+		// Corrections are only applied in the Bethe-Bloch energy region
+		if(scaledKineticEnergy > lowEnergyLimit)
+			eloss += length * corrections->IonHighOrderCorrections(particle, couple, energy);
+	}
 }
 
 // #########################################################################
 
-void G4IonParametrisedLossModel_mod::BuildRangeVector(
-                     const G4ParticleDefinition* particle,
-                     const G4MaterialCutsCouple* matCutsCouple) {
+void G4IonParametrisedLossModel_mod::BuildRangeVector(const G4ParticleDefinition* particle, const G4MaterialCutsCouple* matCutsCouple)
+{
+	G4double cutEnergy = DBL_MAX;
+	size_t cutIndex = matCutsCouple->GetIndex();
+	cutEnergy = cutEnergies[cutIndex];
 
-  G4double cutEnergy = DBL_MAX;
-  size_t cutIndex = matCutsCouple -> GetIndex();
-  cutEnergy = cutEnergies[cutIndex];
+	const G4Material* material = matCutsCouple->GetMaterial();
 
-  const G4Material* material = matCutsCouple -> GetMaterial();
+	G4double massRatio = genericIonPDGMass / particle -> GetPDGMass();
 
-  G4double massRatio = genericIonPDGMass / particle -> GetPDGMass();
+	G4double lowerEnergy = lowerEnergyEdgeIntegr / massRatio;
+	G4double upperEnergy = upperEnergyEdgeIntegr / massRatio;
 
-  G4double lowerEnergy = lowerEnergyEdgeIntegr / massRatio;
-  G4double upperEnergy = upperEnergyEdgeIntegr / massRatio;
+	G4double logLowerEnergyEdge = std::log(lowerEnergy);
+	G4double logUpperEnergyEdge = std::log(upperEnergy);
 
-  G4double logLowerEnergyEdge = std::log(lowerEnergy);
-  G4double logUpperEnergyEdge = std::log(upperEnergy);
+	G4double logDeltaEnergy = (logUpperEnergyEdge - logLowerEnergyEdge) / G4double(nmbBins);
 
-  G4double logDeltaEnergy = (logUpperEnergyEdge - logLowerEnergyEdge) /
-                                                        G4double(nmbBins);
+	G4double logDeltaIntegr = logDeltaEnergy / G4double(nmbSubBins);
+	/*
+	G4LPhysicsFreeVector* energyRangeVector = new G4LPhysicsFreeVector(nmbBins+1, lowerEnergy, upperEnergy);
+	*/
+	G4PhysicsFreeVector* energyRangeVector = new G4PhysicsFreeVector(nmbBins+1, lowerEnergy, upperEnergy, /*spline=*/true);                                                     
 
-  G4double logDeltaIntegr = logDeltaEnergy / G4double(nmbSubBins);
+	G4double dedxLow = ComputeDEDXPerVolume(material, particle, lowerEnergy, cutEnergy);
+	G4double range = 2.0 * lowerEnergy / dedxLow;
+	energyRangeVector->PutValues(0, lowerEnergy, range);
 
-/*
-  G4LPhysicsFreeVector* energyRangeVector =
-                              new G4LPhysicsFreeVector(nmbBins+1,
-                                                       lowerEnergy,
-                                                       upperEnergy);
-                                         */              
-  G4PhysicsFreeVector* energyRangeVector =
-  new G4PhysicsFreeVector(nmbBins+1,
-			    lowerEnergy,
-			    upperEnergy,
-			    /*spline=*/true);                                                     
+	G4double logEnergy = std::log(lowerEnergy);
+	for (size_t i = 1; i < nmbBins+1; i++) {
+		G4double logEnergyIntegr = logEnergy;
+		for (size_t j = 0; j < nmbSubBins; j++) {
+			G4double binLowerBoundary = G4Exp(logEnergyIntegr);
+			logEnergyIntegr += logDeltaIntegr;
+			G4double binUpperBoundary = G4Exp(logEnergyIntegr);
+			G4double deltaIntegr = binUpperBoundary - binLowerBoundary;
+			G4double energyIntegr = binLowerBoundary + 0.5 * deltaIntegr;
+			G4double dedxValue = ComputeDEDXPerVolume(material, particle, energyIntegr, cutEnergy);
 
-  G4double dedxLow = ComputeDEDXPerVolume(material,
-                                          particle,
-                                          lowerEnergy,
-                                          cutEnergy);
-
-  G4double range = 2.0 * lowerEnergy / dedxLow;
-
-  energyRangeVector -> PutValues(0, lowerEnergy, range);
-
-  G4double logEnergy = std::log(lowerEnergy);
-  for(size_t i = 1; i < nmbBins+1; i++) {
-
-      G4double logEnergyIntegr = logEnergy;
-
-      for(size_t j = 0; j < nmbSubBins; j++) {
-
-          G4double binLowerBoundary = G4Exp(logEnergyIntegr);
-          logEnergyIntegr += logDeltaIntegr;
-
-          G4double binUpperBoundary = G4Exp(logEnergyIntegr);
-          G4double deltaIntegr = binUpperBoundary - binLowerBoundary;
-
-          G4double energyIntegr = binLowerBoundary + 0.5 * deltaIntegr;
-
-          G4double dedxValue = ComputeDEDXPerVolume(material,
-                                                    particle,
-                                                    energyIntegr,
-						    cutEnergy);
-
-          if(dedxValue > 0.0) range += deltaIntegr / dedxValue;
+			if (dedxValue > 0.0)
+				range += deltaIntegr / dedxValue;
 
 #ifdef PRINT_DEBUG_DETAILS
-              G4cout << "   E = "<< energyIntegr/MeV
-                     << " MeV -> dE = " << deltaIntegr/MeV
-                     << " MeV -> dE/dx = " << dedxValue/MeV*mm
-                     << " MeV/mm -> dE/(dE/dx) = " << deltaIntegr /
-                                                               dedxValue / mm
-                     << " mm -> range = " << range / mm
-                     << " mm " << G4endl;
+				G4cout << "   E = "<< energyIntegr/MeV
+						<< " MeV -> dE = " << deltaIntegr/MeV
+						<< " MeV -> dE/dx = " << dedxValue/MeV*mm
+						<< " MeV/mm -> dE/(dE/dx) = " << deltaIntegr /
+																dedxValue / mm
+						<< " mm -> range = " << range / mm
+						<< " mm " << G4endl;
 #endif
-      }
-
-      logEnergy += logDeltaEnergy;
-
-      G4double energy = G4Exp(logEnergy);
-
-      energyRangeVector -> PutValues(i, energy, range);
-
+		}
+		logEnergy += logDeltaEnergy;
+		G4double energy = G4Exp(logEnergy);
+		energyRangeVector->PutValues(i, energy, range);
 #ifdef PRINT_DEBUG_DETAILS
-      G4cout << "G4IonParametrisedLossModel_mod::BuildRangeVector() bin = "
-             << i <<", E = "
-             << energy / MeV << " MeV, R = "
-             << range / mm << " mm"
-             << G4endl;
+		G4cout << "G4IonParametrisedLossModel_mod::BuildRangeVector() bin = "
+				<< i <<", E = "
+				<< energy / MeV << " MeV, R = "
+				<< range / mm << " mm"
+				<< G4endl;
 #endif
+	}
+	//energyRangeVector -> SetSpline(true);
+	energyRangeVector->FillSecondDerivatives();
+	G4double lowerRangeEdge = energyRangeVector->Value(lowerEnergy);
+	G4double upperRangeEdge = energyRangeVector->Value(upperEnergy);
+	/*
+	G4LPhysicsFreeVector* rangeEnergyVector = new G4LPhysicsFreeVector(nmbBins + 1, lowerRangeEdge, upperRangeEdge);
+	*/
+	G4PhysicsFreeVector* rangeEnergyVector = new G4PhysicsFreeVector(nmbBins + 1, lowerRangeEdge, upperRangeEdge, /*spline=*/true);
 
-  }
-  //energyRangeVector -> SetSpline(true);
-  energyRangeVector -> FillSecondDerivatives();
+	for (size_t i = 0; i < nmbBins+1; i++) {
+		G4double energy = energyRangeVector->Energy(i);
+		rangeEnergyVector->PutValues(i, energyRangeVector->Value(energy), energy);
+	}
 
-  G4double lowerRangeEdge =
-                    energyRangeVector -> Value(lowerEnergy);
-  G4double upperRangeEdge =
-                    energyRangeVector -> Value(upperEnergy);
-
-/*
-  G4LPhysicsFreeVector* rangeEnergyVector
-                      = new G4LPhysicsFreeVector(nmbBins+1,
-                                                 lowerRangeEdge,
-                                                 upperRangeEdge);
-                            */                     
-   G4PhysicsFreeVector* rangeEnergyVector
-    = new G4PhysicsFreeVector(nmbBins+1,
-			      lowerRangeEdge,
-			      upperRangeEdge,
-			      /*spline=*/true);                                               
-
-  for(size_t i = 0; i < nmbBins+1; i++) {
-      G4double energy = energyRangeVector -> Energy(i);
-      rangeEnergyVector ->
-             PutValues(i, energyRangeVector -> Value(energy), energy);
-  }
-
-  //rangeEnergyVector -> SetSpline(true);
-  rangeEnergyVector -> FillSecondDerivatives();
+	//rangeEnergyVector -> SetSpline(true);
+	rangeEnergyVector->FillSecondDerivatives();
 
 #ifdef PRINT_DEBUG_TABLES
-  G4cout << *energyLossVector
-         << *energyRangeVector
-         << *rangeEnergyVector << G4endl;
+	G4cout << *energyLossVector
+			<< *energyRangeVector
+			<< *rangeEnergyVector << G4endl;
 #endif
 
-  IonMatCouple ionMatCouple = std::make_pair(particle, matCutsCouple);
-
-  E[ionMatCouple] = energyRangeVector;
-  r[ionMatCouple] = rangeEnergyVector;
+	IonMatCouple ionMatCouple = std::make_pair(particle, matCutsCouple);
+	E[ionMatCouple] = energyRangeVector;
+	r[ionMatCouple] = rangeEnergyVector;
 }
 
 // #########################################################################
 
-G4double G4IonParametrisedLossModel_mod::ComputeLossForStep(
-                     const G4MaterialCutsCouple* matCutsCouple,
-                     const G4ParticleDefinition* particle,
-                     G4double kineticEnergy,
-                     G4double stepLength) {
+G4double G4IonParametrisedLossModel_mod::ComputeLossForStep(const G4MaterialCutsCouple* matCutsCouple, const G4ParticleDefinition* particle, G4double kineticEnergy, G4double stepLength)
+{
+	G4double loss = 0.0;
+	UpdateRangeCache(particle, matCutsCouple);
 
-  G4double loss = 0.0;
+	G4PhysicsVector* energyRange = rangeCacheEnergyRange;
+	G4PhysicsVector* rangeEnergy = rangeCacheRangeEnergy;
 
-  UpdateRangeCache(particle, matCutsCouple);
+	if (energyRange != 0 && rangeEnergy != 0) {
 
-  G4PhysicsVector* energyRange = rangeCacheEnergyRange;
-  G4PhysicsVector* rangeEnergy = rangeCacheRangeEnergy;
-
-  if(energyRange != 0 && rangeEnergy != 0) {
-
-     G4double lowerEnEdge = energyRange -> Energy( 0 );
-     G4double lowerRangeEdge = rangeEnergy -> Energy( 0 );
-
-     // Computing range for pre-step kinetic energy:
-     G4double range = energyRange -> Value(kineticEnergy);
-
-     // Energy below vector boundary:
-     if(kineticEnergy < lowerEnEdge) {
-
-        range =  energyRange -> Value(lowerEnEdge);
-        range *= std::sqrt(kineticEnergy / lowerEnEdge);
-     }
+		G4double lowerEnEdge = energyRange->Energy( 0 );
+		G4double lowerRangeEdge = rangeEnergy->Energy( 0 );
+		// Computing range for pre-step kinetic energy:
+		G4double range = energyRange->Value(kineticEnergy);
+		// Energy below vector boundary:
+		if (kineticEnergy < lowerEnEdge) {
+			range =  energyRange->Value(lowerEnEdge);
+			range *= std::sqrt(kineticEnergy / lowerEnEdge);
+		}
 
 #ifdef PRINT_DEBUG
-     G4cout << "G4IonParametrisedLossModel_mod::ComputeLossForStep() range = "
-            << range / mm << " mm, step = " << stepLength / mm << " mm"
-            << G4endl;
+		G4cout << "G4IonParametrisedLossModel_mod::ComputeLossForStep() range = "
+				<< range / mm << " mm, step = " << stepLength / mm << " mm"
+				<< G4endl;
 #endif
+		// Remaining range:
+		G4double remRange = range - stepLength;
+		// If range is smaller than step length, the loss is set to kinetic
+		// energy
+		if(remRange < 0.0)
+			loss = kineticEnergy;
+		else if (remRange < lowerRangeEdge) {
+			G4double ratio = remRange / lowerRangeEdge;
+			loss = kineticEnergy - ratio * ratio * lowerEnEdge;
+		} else {
+			G4double energy = rangeEnergy->Value(range - stepLength);
+			loss = kineticEnergy - energy;
+		}
+	}
 
-     // Remaining range:
-     G4double remRange = range - stepLength;
+	if (loss < 0.0)
+		loss = 0.0;
 
-     // If range is smaller than step length, the loss is set to kinetic
-     // energy
-     if(remRange < 0.0) loss = kineticEnergy;
-     else if(remRange < lowerRangeEdge) {
-
-        G4double ratio = remRange / lowerRangeEdge;
-        loss = kineticEnergy - ratio * ratio * lowerEnEdge;
-     }
-     else {
-
-        G4double energy = rangeEnergy -> Value(range - stepLength);
-        loss = kineticEnergy - energy;
-     }
-  }
-
-  if(loss < 0.0) loss = 0.0;
-
-  return loss;
+	return loss;
 }
 
 // #########################################################################
 
-G4bool G4IonParametrisedLossModel_mod::AddDEDXTable(
-                                const G4String& nam,
-                                G4VIonDEDXTable* table,
-                                G4VIonDEDXScalingAlgorithm* algorithm) {
+G4bool G4IonParametrisedLossModel_mod::AddDEDXTable(const G4String& nam, G4VIonDEDXTable* table, G4VIonDEDXScalingAlgorithm* algorithm) {
 
-  if(table == 0) {
-     G4cout << "G4IonParametrisedLossModel_mod::AddDEDXTable() Cannot "
-            << " add table: Invalid pointer."
-            << G4endl;
+	if (table == 0) {
+		G4cout << "G4IonParametrisedLossModel_mod::AddDEDXTable() Cannot "
+			   << " add table: Invalid pointer."
+			   << G4endl;
+		return false;
+	}
 
-     return false;
-  }
+	// Checking uniqueness of name
+	LossTableList::iterator iter = lossTableList.begin();
+	LossTableList::iterator iter_end = lossTableList.end();
 
-  // Checking uniqueness of name
-  LossTableList::iterator iter = lossTableList.begin();
-  LossTableList::iterator iter_end = lossTableList.end();
+	for (;iter != iter_end; ++iter) {
+		const G4String& tableName = (*iter)->GetName();
+		if (tableName == nam) {
+			G4cout << "G4IonParametrisedLossModel_mod::AddDEDXTable() Cannot "
+				   << " add table: Name already exists."
+				   << G4endl;
+			return false;
+		}
+	}
 
-  for(;iter != iter_end; ++iter) {
-     const G4String& tableName = (*iter)->GetName();
+	G4VIonDEDXScalingAlgorithm* scalingAlgorithm = algorithm;
+	if(scalingAlgorithm == 0)
+		scalingAlgorithm = new G4VIonDEDXScalingAlgorithm;
 
-     if(tableName == nam) {
-        G4cout << "G4IonParametrisedLossModel_mod::AddDEDXTable() Cannot "
-               << " add table: Name already exists."
-               << G4endl;
-
-        return false;
-     }
-  }
-
-  G4VIonDEDXScalingAlgorithm* scalingAlgorithm = algorithm;
-  if(scalingAlgorithm == 0)
-     scalingAlgorithm = new G4VIonDEDXScalingAlgorithm;
-
-  G4IonDEDXHandler* handler =
-                      new G4IonDEDXHandler(table, scalingAlgorithm, nam);
-
-  lossTableList.push_front(handler);
-
-  return true;
+	G4IonDEDXHandler* handler = new G4IonDEDXHandler(table, scalingAlgorithm, nam);
+	lossTableList.push_front(handler);
+	return true;
 }
 
 // #########################################################################
 
-G4bool G4IonParametrisedLossModel_mod::RemoveDEDXTable(
-				 const G4String& nam) {
+G4bool G4IonParametrisedLossModel_mod::RemoveDEDXTable(const G4String& nam)
+{
+	LossTableList::iterator iter = lossTableList.begin();
+	LossTableList::iterator iter_end = lossTableList.end();
 
-  LossTableList::iterator iter = lossTableList.begin();
-  LossTableList::iterator iter_end = lossTableList.end();
+	for (;iter != iter_end; iter++) {
+		G4String tableName = (*iter)->GetName();
 
-  for(;iter != iter_end; iter++) {
-     G4String tableName = (*iter) -> GetName();
+		if (tableName == nam) {
+			delete (*iter);
 
-     if(tableName == nam) {
-        delete (*iter);
+			// Remove from table list
+			lossTableList.erase(iter);
+			// Range vs energy and energy vs range vectors are cleared
+			RangeEnergyTable::iterator iterRange = r.begin();
+			RangeEnergyTable::iterator iterRange_end = r.end();
 
-        // Remove from table list
-        lossTableList.erase(iter);
+			for (;iterRange != iterRange_end; iterRange++)
+				delete iterRange -> second;
+			r.clear();
 
-        // Range vs energy and energy vs range vectors are cleared
-        RangeEnergyTable::iterator iterRange = r.begin();
-        RangeEnergyTable::iterator iterRange_end = r.end();
+			EnergyRangeTable::iterator iterEnergy = E.begin();
+			EnergyRangeTable::iterator iterEnergy_end = E.end();
 
-        for(;iterRange != iterRange_end; iterRange++)
-                                            delete iterRange -> second;
-        r.clear();
+			for (;iterEnergy != iterEnergy_end; iterEnergy++)
+				delete iterEnergy -> second;
+			E.clear();
+			return true;
+		}
+	}
 
-        EnergyRangeTable::iterator iterEnergy = E.begin();
-        EnergyRangeTable::iterator iterEnergy_end = E.end();
-
-        for(;iterEnergy != iterEnergy_end; iterEnergy++)
-                                            delete iterEnergy -> second;
-        E.clear();
-
-        return true;
-     }
-  }
-
-  return false;
+	return false;
 }
 
 G4PhysicsFreeVector* G4IonParametrisedLossModel_mod::FillStopVector(G4String filename, G4int atomic_no)
 {
 	std::ifstream vFileIn;
 	G4cout << " Stopping power filename " << filename << G4endl;
-    	vFileIn.open(filename);
-    	G4String line;
-    	G4int linenum = 0;
-    	G4double value1, value2;
-    	if(!vFileIn)
-    	{
-    	G4cout <<" NO STOPPING POWER VALUES " << G4endl;
-        G4cout <<"Couldn't open the file"<< G4endl; //checks for input
-        exit(1);
-        }
-        G4int i = 0;
+	vFileIn.open(filename);
+	G4String line;
+	G4int linenum = 0;
+	G4double value1, value2;
+	if (!vFileIn) {
+		G4cout <<" NO STOPPING POWER VALUES " << G4endl;
+		G4cout <<"Couldn't open the file"<< G4endl; //checks for input
+		exit(1);
+	}
+	G4int i = 0;
 	vFileIn >> linenum;
 	// sets number of lines for stopping power vector	
-	G4PhysicsFreeVector* fPhysicsVector = new G4PhysicsFreeVector(linenum);	
-	while (getline(vFileIn, line)) 
-	{
-		if(i != linenum)
-		{
+	G4PhysicsFreeVector* fPhysicsVector = new G4PhysicsFreeVector(linenum);
+	while (getline(vFileIn, line)) {
+		if (i != linenum) {
 			vFileIn >> value1 >> value2;
-			fPhysicsVector->PutValue(i,(value1/atomic_no)*CLHEP::MeV,value2*(CLHEP::MeV*CLHEP::cm2/(CLHEP::mg)));
+			fPhysicsVector->PutValue(i, (value1 / atomic_no) *CLHEP::MeV, value2 * (CLHEP::MeV * CLHEP::cm2 / (CLHEP::mg)));
 			i++;
 		}
 	}
 
-    	vFileIn.close();
+	vFileIn.close();
 	return fPhysicsVector;
 
 }

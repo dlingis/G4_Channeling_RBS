@@ -36,17 +36,17 @@ class G4TouchableHistory;
 
 class SensitiveDetector : public G4VSensitiveDetector
 {
-  public:
-      SensitiveDetector(G4String name);
-      virtual ~SensitiveDetector();
+	public:
+		SensitiveDetector(G4String name);
+		virtual ~SensitiveDetector();
 
-      virtual void Initialize(G4HCofThisEvent*HCE);
-      virtual G4bool ProcessHits(G4Step*aStep,G4TouchableHistory*ROhist);
-      virtual void EndOfEvent(G4HCofThisEvent*HCE);
+		virtual void Initialize(G4HCofThisEvent*HCE);
+		virtual G4bool ProcessHits(G4Step*aStep,G4TouchableHistory*ROhist);
+		virtual void EndOfEvent(G4HCofThisEvent*HCE);
 
-  private:
-      SensitiveDetectorHitsCollection * fHitsCollection;
-      G4int fHCID;
+	private:
+		SensitiveDetectorHitsCollection * fHitsCollection;
+		G4int fHCID;
 };
 
 #endif

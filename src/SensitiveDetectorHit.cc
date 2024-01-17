@@ -49,13 +49,13 @@ SensitiveDetectorHitAllocator;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 SensitiveDetectorHit::SensitiveDetectorHit(){
-    fLayerID = -1;
+	fLayerID = -1;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 SensitiveDetectorHit::SensitiveDetectorHit(G4int z){
-    fLayerID = z;
+	fLayerID = z;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -65,85 +65,79 @@ SensitiveDetectorHit::~SensitiveDetectorHit(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-SensitiveDetectorHit::SensitiveDetectorHit(
-                                           const SensitiveDetectorHit &right): G4VHit(){
-    fLayerID = right.fLayerID;
-    fWorldPos = right.fWorldPos;
+SensitiveDetectorHit::SensitiveDetectorHit(const SensitiveDetectorHit &right): G4VHit(){
+	fLayerID = right.fLayerID;
+	fWorldPos = right.fWorldPos;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 const SensitiveDetectorHit&
-SensitiveDetectorHit::operator=(
-                                const SensitiveDetectorHit &right){
-    fLayerID = right.fLayerID;
-    fWorldPos = right.fWorldPos;
-    return *this;
+SensitiveDetectorHit::operator=(const SensitiveDetectorHit &right){
+	fLayerID = right.fLayerID;
+	fWorldPos = right.fWorldPos;
+	return *this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 int SensitiveDetectorHit::operator==
 (const SensitiveDetectorHit &/*right*/) const{
-    return 0;
+	return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void SensitiveDetectorHit::Draw(){
-    G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
-    if(pVVisManager)
-    {
-        G4Circle circle(fWorldPos);
-        circle.SetScreenSize(2);
-        circle.SetFillStyle(G4Circle::filled);
-        G4Colour colour(1.,1.,0.);
-        G4VisAttributes attribs(colour);
-        circle.SetVisAttributes(attribs);
-        pVVisManager->Draw(circle);
-    }
+	G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
+	if (pVVisManager) {
+		G4Circle circle(fWorldPos);
+		circle.SetScreenSize(2);
+		circle.SetFillStyle(G4Circle::filled);
+		G4Colour colour(1.,1.,0.);
+		G4VisAttributes attribs(colour);
+		circle.SetVisAttributes(attribs);
+		pVVisManager->Draw(circle);
+	}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 const std::map<G4String,G4AttDef>*
 SensitiveDetectorHit::GetAttDefs() const{
-    G4bool isNew;
-    std::map<G4String,G4AttDef>* store =
-    G4AttDefStore::GetInstance("SensitiveDetectorHit",isNew);
-    if (isNew) {
-        G4String ID("ID");
-        (*store)[ID] = G4AttDef(ID,"ID","Physics","","G4int");
-        
-        G4String Pos("Pos");
-        (*store)[Pos] =
-        G4AttDef(Pos, "Position","Physics","G4BestUnit","G4ThreeVector");
-    }
-    return store;
+	G4bool isNew;
+	std::map<G4String,G4AttDef>* store =
+	G4AttDefStore::GetInstance("SensitiveDetectorHit",isNew);
+	if (isNew) {
+		G4String ID("ID");
+		(*store)[ID] = G4AttDef(ID,"ID","Physics","","G4int");
+		
+		G4String Pos("Pos");
+		(*store)[Pos] =
+		G4AttDef(Pos, "Position","Physics","G4BestUnit","G4ThreeVector");
+	}
+	return store;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 std::vector<G4AttValue>*
 SensitiveDetectorHit::CreateAttValues() const{
-    std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
-    
-    values->push_back(G4AttValue("ID",
-                                 G4UIcommand::ConvertToString(fLayerID),
-                                 ""));
-    
-    values->push_back(G4AttValue("Pos",G4BestUnit(fWorldPos,"Length"),""));
-    
-    return values;
+	std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
+
+	values->push_back(G4AttValue("ID", G4UIcommand::ConvertToString(fLayerID), ""));
+	values->push_back(G4AttValue("Pos",G4BestUnit(fWorldPos,"Length"),""));
+
+	return values;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void SensitiveDetectorHit::Print(){
-    G4cout << fLayerID <<
-    "," << fWorldPos.x() <<
-    "," << fWorldPos.z() <<
-    "," << fWorldPos.y() << G4endl;
+	G4cout << fLayerID <<
+	"," << fWorldPos.x() <<
+	"," << fWorldPos.z() <<
+	"," << fWorldPos.y() << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

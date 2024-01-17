@@ -38,28 +38,23 @@ class G4TouchableHistory;
 
 class CrystalDetector : public G4VSensitiveDetector
 {
-  public:
-      //CrystalDetector(G4String name);
-      CrystalDetector(G4String name,const G4String& fileName1,const G4String& fileName2,const G4String& fileName3,G4int amorphous);
-      virtual ~CrystalDetector();
+	public:
+		CrystalDetector(G4String name,const G4String& fileName1,const G4String& fileName2,const G4String& fileName3,G4int amorphous);
+		virtual ~CrystalDetector();
+		virtual void Initialize(G4HCofThisEvent*HCE);
+		virtual G4bool ProcessHits(G4Step*aStep,G4TouchableHistory*ROhist);
+		virtual void EndOfEvent(G4HCofThisEvent*HCE);
+	private:
+		CrystalDetectorHitsCollection * fHitsCollection;
+		G4int fHCID;
+		G4int fChannelingID;
 
-      virtual void Initialize(G4HCofThisEvent*HCE);
-      virtual G4bool ProcessHits(G4Step*aStep,G4TouchableHistory*ROhist);
-      virtual void EndOfEvent(G4HCofThisEvent*HCE);
+		G4bool set_name1;
+		G4bool set_name2;
+		G4bool set_name3;
 
-  private:
-    CrystalDetectorHitsCollection * fHitsCollection;
-    G4int fHCID;
-    G4int fChannelingID;
-
-	G4bool set_name1;
-	G4bool set_name2;
-    G4bool set_name3;
-
-    G4ChannelingECHARM* fNucleiDensity_a;
-    G4ChannelingECHARM* fNucleiDensity_b;
-    G4ChannelingECHARM* fNucleiDensity_c;    
+		G4ChannelingECHARM* fNucleiDensity_a;
+		G4ChannelingECHARM* fNucleiDensity_b;
+		G4ChannelingECHARM* fNucleiDensity_c;
 };
-
 #endif
-

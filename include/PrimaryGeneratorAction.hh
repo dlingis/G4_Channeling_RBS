@@ -48,15 +48,16 @@ class G4Event;
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
-  public:
-    PrimaryGeneratorAction();    
-   ~PrimaryGeneratorAction();
+	public:
+		PrimaryGeneratorAction();
+		~PrimaryGeneratorAction();
 
-  public:
-    virtual void GeneratePrimaries(G4Event*);
-    G4GeneralParticleSource* GetParticleGun() {return fParticleGun;};
-  private:
-    G4GeneralParticleSource*  fParticleGun;        //pointer a to G4 service class
+	public:
+		virtual void GeneratePrimaries(G4Event*);
+		G4GeneralParticleSource* GetParticleGun()
+			{return fParticleGun;};
+	private:
+		G4GeneralParticleSource*  fParticleGun; //pointer a to G4 service class
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

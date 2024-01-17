@@ -52,12 +52,12 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::RunAction(DetectorConstruction* det, PrimaryGeneratorAction* prim)
-  : G4UserRunAction(),
-    fDetector(det), fPrimary(prim), fRun(0), fHistoManager(0)
+	: G4UserRunAction(),
+	fDetector(det), fPrimary(prim), fRun(0), fHistoManager(0)
 {
- // Book predefined histograms
- G4RunManager::GetRunManager()->SetPrintProgress(1);
- fHistoManager = new HistoManager(); 
+	// Book predefined histograms
+	G4RunManager::GetRunManager()->SetPrintProgress(1);
+	fHistoManager = new HistoManager(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -69,32 +69,29 @@ RunAction::~RunAction()
 
 G4Run* RunAction::GenerateRun()
 { 
-  fRun = new Run(fDetector); 
-  return fRun;
+	fRun = new Run(fDetector); 
+	return fRun;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::BeginOfRunAction(const G4Run*)
-{    
+{
+	// save Rndm status
+	G4RunManager::GetRunManager()->SetRandomNumberStore(false);
+	if (isMaster) G4Random::showEngineStatus();
 
-  // save Rndm status
-  //G4RunManager::GetRunManager()->SetRandomNumberStore(false);
-  if (isMaster) G4Random::showEngineStatus();
-  
-  // keep run condition
-  if (fPrimary) { 
-    G4ParticleDefinition* particle 
-      = fPrimary->GetParticleGun()->GetParticleDefinition();
-    G4double energy = fPrimary->GetParticleGun()->GetParticleEnergy();
-    fRun->SetPrimary(particle, energy);
-  }
-             
-  //histograms
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  if ( analysisManager->IsActive() ) {
-    analysisManager->OpenFile();
-  }  
+	// keep run condition
+	if (fPrimary) { 
+		G4ParticleDefinition* particle = fPrimary->GetParticleGun()->GetParticleDefinition();
+		G4double energy = fPrimary->GetParticleGun()->GetParticleEnergy();
+		fRun->SetPrimary(particle, energy);
+	}
+
+	//histograms
+	G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
+	if (analysisManager->IsActive())
+		analysisManager->OpenFile();
 
 }
 
@@ -102,16 +99,18 @@ void RunAction::BeginOfRunAction(const G4Run*)
 
 void RunAction::EndOfRunAction(const G4Run*)
 {
-  if (isMaster) fRun->EndOfRun();   
-  //save histograms      
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  if ( analysisManager->IsActive() ) {
-    analysisManager->Write();
-    analysisManager->CloseFile();  
-  }
- 
-  // show Rndm status
-  if (isMaster) G4Random::showEngineStatus();
+	if (isMaster)
+		fRun->EndOfRun();
+	//save histograms
+	G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
+	if (analysisManager->IsActive()) {
+		analysisManager->Write();
+		analysisManager->CloseFile();
+	}
+
+	// show Rndm status
+	if (isMaster)
+		G4Random::showEngineStatus();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

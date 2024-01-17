@@ -79,18 +79,6 @@ void ActionInitialization::Build() const
 
   StackingAction* stackingAction = new StackingAction(event, fDetector);
   SetUserAction(stackingAction);
-  
-  //G4Channeling* chann = new G4Channeling();
-  //SetUserAction(chann);
-  
-  
-}  
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-/*
-G4VSteppingVerbose* ActionInitialization::InitializeSteppingVerbose() const
-{
-  return new SteppingVerbose();
-}  */
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

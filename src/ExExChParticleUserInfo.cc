@@ -31,29 +31,29 @@
 #include "G4SystemOfUnits.hh"
 
 ExExChParticleUserInfo::ExExChParticleUserInfo(){
-    fHasBeenUnderCoherentEffect = 0; 
-    fNucleiDensity = 1.0;
-    fNucleiDensityPreviousStep = 1.0;
-    fDBL = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
-    fElectronDensity = 1.0;
-    fElectronDensityPreviousStep = 1.0;
-    
-    fNumberOfDechanneling = 0;
-    
-    fMomentumInChanneling = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
-    fPositionInChanneling = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
-    
-    fMomentumInChannelingInitial = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
-    fPositionInChannelingInitial = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	fHasBeenUnderCoherentEffect = 0; 
+	fNucleiDensity = 1.0;
+	fNucleiDensityPreviousStep = 1.0;
+	fDBL = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	fElectronDensity = 1.0;
+	fElectronDensityPreviousStep = 1.0;
+	
+	fNumberOfDechanneling = 0;
+	
+	fMomentumInChanneling = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	fPositionInChanneling = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	
+	fMomentumInChannelingInitial = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	fPositionInChannelingInitial = G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
 
-    fLastChannelingPosition	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
-    fLastChannelingMomentum	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	fLastChannelingPosition	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	fLastChannelingMomentum	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
 
-    fLastChannelingWorldPositionPost	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
-    fLastChannelingWorldPositionPre	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
-    fLastChannelingWorldMomentum	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	fLastChannelingWorldPositionPost	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	fLastChannelingWorldPositionPre	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
+	fLastChannelingWorldMomentum	= G4ThreeVector(DBL_MAX,DBL_MAX,DBL_MAX);
 
-    fInTheCrystal = false;
+	fInTheCrystal = false;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -64,120 +64,116 @@ ExExChParticleUserInfo::~ExExChParticleUserInfo(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExExChParticleUserInfo::SetCoherentEffect(G4int flag){
-    fHasBeenUnderCoherentEffect = flag;
+	fHasBeenUnderCoherentEffect = flag;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4int ExExChParticleUserInfo::HasBeenUnderCoherentEffect(){
-    return fHasBeenUnderCoherentEffect;
+	return fHasBeenUnderCoherentEffect;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExExChParticleUserInfo::SetNucleiDensity(G4double density){
-    fNucleiDensity = density;
+	fNucleiDensity = density;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4double ExExChParticleUserInfo::GetNucleiDensity(){
-    return fNucleiDensity;
+	return fNucleiDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExExChParticleUserInfo::SetElectronDensity(G4double density){
-    fElectronDensity = density;
+	fElectronDensity = density;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4double ExExChParticleUserInfo::GetElectronDensity(){
-    return fElectronDensity;
+	return fElectronDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4double ExExChParticleUserInfo::GetNucleiDensityPreviousStep(){
-    return fNucleiDensityPreviousStep;
+	return fNucleiDensityPreviousStep;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4double ExExChParticleUserInfo::GetElectronDensityPreviousStep(){
-    return fElectronDensityPreviousStep;
+	return fElectronDensityPreviousStep;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExExChParticleUserInfo::StoreDensityPreviousStep(){
-    fElectronDensityPreviousStep = fElectronDensity;
-    fNucleiDensityPreviousStep = fNucleiDensity;
+	fElectronDensityPreviousStep = fElectronDensity;
+	fNucleiDensityPreviousStep = fNucleiDensity;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ExExChParticleUserInfo::GetMomentumChanneled(){
-    return fMomentumInChanneling;
+	return fMomentumInChanneling;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExExChParticleUserInfo::SetMomentumChanneled(
-                                        G4ThreeVector momentum){
-    fMomentumInChanneling = momentum;
+void ExExChParticleUserInfo::SetMomentumChanneled(G4ThreeVector momentum){
+	fMomentumInChanneling = momentum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ExExChParticleUserInfo::GetPositionChanneled(){
-    return fPositionInChanneling;
+	return fPositionInChanneling;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExExChParticleUserInfo::SetPositionChanneled(
-                                        G4ThreeVector position){
-    fPositionInChanneling = position;
+void ExExChParticleUserInfo::SetPositionChanneled(G4ThreeVector position){
+	fPositionInChanneling = position;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ExExChParticleUserInfo::GetMomentumChanneledInitial(){
-    return fMomentumInChannelingInitial;
+	return fMomentumInChannelingInitial;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExExChParticleUserInfo::SetMomentumChanneledInitial(
-                                        G4ThreeVector momentum){
-    fMomentumInChannelingInitial = momentum;
+void ExExChParticleUserInfo::SetMomentumChanneledInitial(G4ThreeVector momentum){
+	fMomentumInChannelingInitial = momentum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ExExChParticleUserInfo::GetPositionChanneledInitial(){
-    return fPositionInChannelingInitial;
+	return fPositionInChannelingInitial;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExExChParticleUserInfo::SetPositionChanneledInitial(
-                                        G4ThreeVector position){
-    fPositionInChannelingInitial = position;
+void ExExChParticleUserInfo::SetPositionChanneledInitial(G4ThreeVector position){
+	fPositionInChannelingInitial = position;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4int ExExChParticleUserInfo::GetNumberOfDechanneling(){
-    return fNumberOfDechanneling;
+	return fNumberOfDechanneling;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ExExChParticleUserInfo::IncreaseNumberOfDechanneling(){
-    fNumberOfDechanneling++;
+	fNumberOfDechanneling++;
 }
 
  	// my additions
@@ -185,14 +181,13 @@ void ExExChParticleUserInfo::IncreaseNumberOfDechanneling(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ExExChParticleUserInfo::GetLastChannelingPosition(){
-    return fLastChannelingPosition;
+	return fLastChannelingPosition;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExExChParticleUserInfo::SetLastChannelingPosition(
-                                        G4ThreeVector position){
-    fLastChannelingPosition = position;
+void ExExChParticleUserInfo::SetLastChannelingPosition(G4ThreeVector position){
+	fLastChannelingPosition = position;
 }
 
 	// momentum
@@ -200,55 +195,48 @@ void ExExChParticleUserInfo::SetLastChannelingPosition(
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ExExChParticleUserInfo::GetLastChannelingMomentum(){
-    return fLastChannelingMomentum;
+	return fLastChannelingMomentum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExExChParticleUserInfo::SetLastChannelingMomentum(
-                                        G4ThreeVector momentum){
-    fLastChannelingMomentum = momentum;
+void ExExChParticleUserInfo::SetLastChannelingMomentum(G4ThreeVector momentum){
+	fLastChannelingMomentum = momentum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ExExChParticleUserInfo::GetLastChannelingWorldPositionPost(){
-    return fLastChannelingWorldPositionPost;
+	return fLastChannelingWorldPositionPost;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExExChParticleUserInfo::SetLastChannelingWorldPositionPost(
-                                        G4ThreeVector position){
-    fLastChannelingWorldPositionPost = position;
+void ExExChParticleUserInfo::SetLastChannelingWorldPositionPost(G4ThreeVector position){
+	fLastChannelingWorldPositionPost = position;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ExExChParticleUserInfo::GetLastChannelingWorldPositionPre(){
-    return fLastChannelingWorldPositionPre;
+	return fLastChannelingWorldPositionPre;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExExChParticleUserInfo::SetLastChannelingWorldPositionPre(
-                                        G4ThreeVector position){
-    fLastChannelingWorldPositionPre = position;
+void ExExChParticleUserInfo::SetLastChannelingWorldPositionPre(G4ThreeVector position){
+	fLastChannelingWorldPositionPre = position;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreeVector ExExChParticleUserInfo::GetLastChannelingWorldMomentum(){
-    return fLastChannelingWorldMomentum;
+	return fLastChannelingWorldMomentum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ExExChParticleUserInfo::SetLastChannelingWorldMomentum(
-                                        G4ThreeVector momentum){
-    fLastChannelingWorldMomentum = momentum;
+void ExExChParticleUserInfo::SetLastChannelingWorldMomentum(G4ThreeVector momentum){
+	fLastChannelingWorldMomentum = momentum;
 }
-
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

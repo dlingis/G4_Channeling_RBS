@@ -50,44 +50,42 @@ G4ChannelingPhysics::~G4ChannelingPhysics(){;}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void G4ChannelingPhysics::ConstructParticle(){
-    
-    G4BosonConstructor  pBosonConstructor;
-    pBosonConstructor.ConstructParticle();
-    
-    G4LeptonConstructor pLeptonConstructor;
-    pLeptonConstructor.ConstructParticle();
-    
-    G4MesonConstructor pMesonConstructor;
-    pMesonConstructor.ConstructParticle();
-    
-    G4BaryonConstructor pBaryonConstructor;
-    pBaryonConstructor.ConstructParticle();
-    
-    G4IonConstructor pIonConstructor;
-    pIonConstructor.ConstructParticle();
-    
+	
+	G4BosonConstructor  pBosonConstructor;
+	pBosonConstructor.ConstructParticle();
+	
+	G4LeptonConstructor pLeptonConstructor;
+	pLeptonConstructor.ConstructParticle();
+	
+	G4MesonConstructor pMesonConstructor;
+	pMesonConstructor.ConstructParticle();
+	
+	G4BaryonConstructor pBaryonConstructor;
+	pBaryonConstructor.ConstructParticle();
+	
+	G4IonConstructor pIonConstructor;
+	pIonConstructor.ConstructParticle();
+	
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void G4ChannelingPhysics::ConstructProcess()
 {
-    G4Channeling* channeling = new G4Channeling();
+	G4Channeling* channeling = new G4Channeling();
 
-    G4ParticleTable::G4PTblDicIterator* aParticleIterator =
-        G4ParticleTable::GetParticleTable()->GetIterator();
-    aParticleIterator->reset();
-    
-    while( (*aParticleIterator)() ){
-        G4ParticleDefinition* particle = aParticleIterator->value();
-        G4double particleCharge = particle->GetPDGCharge();
-        G4ProcessManager* pManager = particle->GetProcessManager();
+	G4ParticleTable::G4PTblDicIterator* aParticleIterator = G4ParticleTable::GetParticleTable()->GetIterator();
+	aParticleIterator->reset();
+	
+	while ((*aParticleIterator)()) {
+		G4ParticleDefinition* particle = aParticleIterator->value();
+		G4double particleCharge = particle->GetPDGCharge();
+		G4ProcessManager* pManager = particle->GetProcessManager();
 
-        if (particleCharge !=0) {
-            pManager->AddDiscreteProcess(channeling);
-	    //G4cout << " Procesas pridetas " << G4endl;
-        }
-    }
+		if (particleCharge !=0) {
+			pManager->AddDiscreteProcess(channeling);
+		}
+	}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
