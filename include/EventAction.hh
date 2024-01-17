@@ -60,20 +60,22 @@ class EventAction : public G4UserEventAction
 
 	public:
 		virtual void BeginOfEventAction(const G4Event*);
-		virtual void   EndOfEventAction(const G4Event*);
+		virtual void EndOfEventAction(const G4Event*);
 		
-		void AddEdep (G4double Edep);
-		void AddEflow(G4double Eflow);
-
-		void AddEnergy(G4double edep)             {EnergyDeposit += edep;};
-		void AddNonIonEnergy(G4double enondep)    {NonIonEnergyDeposit += enondep;};
+		void AddEdep (G4double Edep)              {fTotalEnergyDeposit += Edep;};
+		void AddEflow(G4double Eflow)             {fTotalEnergyFlow += Eflow;};
 		void AddTheta(G4double tet)               {theta += tet;};
-		void AddTrakLenPrim(G4double length)      {TrakLenPrim += length;};
-		void CountStepsPrim()                     {nbStepsPrim++ ;};
-		void addStepLayer(G4int layer)            {StepsPrim[layer]++;};
-		void AddTrakLenSec(G4double length)       {TrakLenSec += length;};
+		void AddNiel (G4double niel)              {fTotalNiel += niel;};
+		void AddStepLayer(G4int layer)            {StepsPrim[layer]++;};
 		void AddTrueTrakLen(G4double trueLength)  {TrueTrakLen += trueLength;};
 		void AddProjTrakLen(G4double projLength)  {ProjTrakLen += projLength;};
+		void AddProjectedRange(G4double l)        {projected_range += l;};
+		void AddTrackLenLayer(G4double s, G4int l){step_layer[l] += s;};
+		void AddIonDepLayer(G4double e, G4int l)  {ion_dep_layer[l] += e;};
+		void AddNonDepLayer(G4double n, G4int l)  {non_dep_layer[l] += n;};
+		void AddTrakLenPrim(G4double l)           {trak_len_prim += l;};
+		void AddPrimSteps(void)                   {prim_step++;};
+		void AddTrakLenSec(G4double l)            {trak_len_sec += l;};
 		// RBS
 		G4Physics2DVector* Get2DRTRVector(G4String element, G4int Z);
 		G4double Get2DRTRValue(G4double energy, G4String elname, G4double angle);
@@ -94,11 +96,12 @@ class EventAction : public G4UserEventAction
 		DetectorConstruction* detector;
 		PrimaryGeneratorAction* fPrimary;
 
-		G4double fTotalEnergyDeposit, fTotalEnergyFlow, EnergyDeposit, NonIonEnergyDeposit, theta, TrakLenPrim, TrakLenSec;
-		G4int nbStepsPrim;
+		G4double fTotalEnergyDeposit, fTotalEnergyFlow, fTotalNiel, theta, prim_step, trak_len_prim, trak_len_sec;
+		G4double step_layer[5], ion_dep_layer[5], non_dep_layer[5];
+
 
 		G4int StepsPrim[5];
-		G4double TrueTrakLen, ProjTrakLen, En, Angle, Ma1, Ma2;
+		G4double TrueTrakLen, ProjTrakLen, En, Angle, Ma1, Ma2, projected_range;
 		G4int sdht_ID, sdct_ID, sdxt_ID, sd0_ID,sd1_ID,sd2_ID,sd3_ID,sd4_ID;
 		//2D vectors of rtr values
 		G4Physics2DVector* fVectorSi_total;
@@ -120,9 +123,9 @@ class EventAction : public G4UserEventAction
 		G4Material* sample_material[5];
 		
 		G4int* NoOfElements         = new G4int [5];
-		G4double** Znumb            = new G4double* [5]; //[4]
-		G4double** Mnumb            = new G4double* [5]; //[4]
-		G4double** Adens            = new G4double* [5]; // [4]
+		G4double** Znumb            = new G4double* [5];
+		G4double** Mnumb            = new G4double* [5];
+		G4double** Adens            = new G4double* [5];
 		G4int** HistoBase           = new G4int* [5];
 		G4double** nud_el           = new G4double* [5];
 	

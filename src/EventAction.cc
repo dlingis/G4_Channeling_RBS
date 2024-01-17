@@ -51,9 +51,10 @@
 
 EventAction::EventAction(DetectorConstruction* DE, PrimaryGeneratorAction* PRA )
 :G4UserEventAction(),detector(DE),fPrimary(PRA),
- fTotalEnergyDeposit(0.), fTotalEnergyFlow(0.), EnergyDeposit(0.), NonIonEnergyDeposit(0.),
-  theta(0), TrakLenPrim(0.), nbStepsPrim(0.), TrakLenSec(0.), TrueTrakLen(0.), ProjTrakLen(0.), 
-  sdht_ID(-1), sd0_ID(-1),sd1_ID(-1),sd2_ID(-1),sd3_ID(-1),sd4_ID(-1)
+ fTotalEnergyDeposit(0.), fTotalEnergyFlow(0.), theta(0), fTotalNiel(0),
+ TrueTrakLen(0.), ProjTrakLen(0.), projected_range(0),
+ sdht_ID(-1), sd0_ID(-1),sd1_ID(-1),sd2_ID(-1),sd3_ID(-1),sd4_ID(-1),
+ prim_step(0), trak_len_prim(0), trak_len_sec(0)
 {
 	fVectorSi_total = nullptr;
 	fVectorO_total = nullptr;
@@ -100,53 +101,48 @@ void EventAction::BeginOfEventAction(const G4Event*)
 {
 	fTotalEnergyDeposit = 0.;
 	fTotalEnergyFlow = 0.;
-	// initialisation per event
-	EnergyDeposit  = 0.;
-	NonIonEnergyDeposit=0.;
-	theta=0.;
-	TrakLenPrim=0.;
-	TrakLenSec=0.;
-	nbStepsPrim=0.;
-	TrueTrakLen=0.;
-	ProjTrakLen=0.;
-	for (uint8_t i=0; i<5; ++i) {
+	theta = 0.;
+	TrueTrakLen = 0.;
+	ProjTrakLen = 0.;
+	for (G4int i=0; i<5; ++i) {
 		StepsPrim[i] = 0;
+		step_layer[i] = 0;
+		ion_dep_layer[i] = 0;
+		non_dep_layer[i] = 0;
 	}
+	fTotalNiel = 0;
+	projected_range = 0;
+	trak_len_prim = 0;
+	prim_step = 0;
+	trak_len_sec = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void EventAction::AddEdep(G4double Edep)
-{
-	fTotalEnergyDeposit += Edep;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void EventAction::AddEflow(G4double Eflow)
-{
-	fTotalEnergyFlow += Eflow;
-}
 
 void EventAction::EndOfEventAction(const G4Event* evt)
 {
 	Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
 
-	run->AddEdep (fTotalEnergyDeposit);
+	run->AddEdep(fTotalEnergyDeposit);
 	run->AddEflow(fTotalEnergyFlow);
-	run->AddTrakLenPrim(TrakLenPrim);
-	run->AddNumberOfSteps(nbStepsPrim);
 	run->AddTheta(theta);
-	run->AddTrakLenSec(TrakLenSec);
 	run->AddTrueRange(TrueTrakLen);
 	run->AddProjRange(ProjTrakLen);
+	run->AddProjectedRange(projected_range);
+	run->AddNonIonEnergy(fTotalNiel);
+	run->AddTrakLenPrim(trak_len_prim);
+	run->AddTrakLenSec(trak_len_sec);
+	run->AddNumberOfSteps(prim_step);
 	
-	run->absSTP(StepsPrim[0]);
-	run->abs1STP(StepsPrim[1]);
-	run->abs2STP(StepsPrim[2]);
-	run->abs3STP(StepsPrim[3]);
-	run->abs4STP(StepsPrim[4]);
+	for (G4int i=0; i<5; ++i) {
+		run->absStepLayer(StepsPrim[i], i);
+		run->absTrackLenLayer(step_layer[i], i);
+		run->absIonLayer(ion_dep_layer[i], i);
+		run->absNonLayer(non_dep_layer[i], i);
+	}
 
-	G4AnalysisManager::Instance()->FillH1(1,fTotalEnergyDeposit);
-	G4AnalysisManager::Instance()->FillH1(3,fTotalEnergyFlow);
+	G4AnalysisManager::Instance()->FillH1(1, fTotalEnergyDeposit);
+	G4AnalysisManager::Instance()->FillH1(3, fTotalEnergyFlow);
 	
 	// ******************************
 	for (int i=0; i<NUMBER_OF_MAX_LAYERS; i++) {
@@ -241,20 +237,19 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 		for (int i2=0; i2<4; i2++) {
 			for (int i1=0; i1<n_hit_sd; i1++) {
 				SensitiveDetectorHit* aHit = (*sdht)[i1];
-				if(aHit->GetLayerID()==i2) {
+				if (aHit->GetLayerID() == i2) {
 					ssd[i2] = aHit->GetWorldPos();
 					bTotalHits++; // checks, how many detectors got a hit
 				}
 				if (aHit->GetLayerID() == 2) { // info from the 3rd detector
-					energy  = aHit->GetKinE();
+					energy = aHit->GetKinE();
 					analysisManager->FillH1(36, energy);
 				}
 				// particle hit in the last detector [no 4]
 				if (aHit->GetLayerID() == 3) {
-					run->addh(); // adds hits
+					run->AddDetHits(); // adds hits
 					kinen = aHit->GetKinE(); // takes kinetinic energy
-					//analysisManager->FillH1(36, kinen);
-					run->addkinen(kinen); // add kinetic energy 
+					run->AddKinEn(kinen); // add kinetic energy 
 				}
 			}
 		}
@@ -339,11 +334,11 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 	G4double nudavg_a = 0, nudavg_b = 0, nudavg_c = 0;
 
 	// fill ntuples
-	if(bTotalHits > 3 ) {
+	if (bTotalHits > 3 ) {
 		G4double angXin  = ((ssd[1].x() - ssd[0].x()) / (ssd[1].z() - ssd[0].z()));
 		G4double angYin  = ((ssd[1].y() - ssd[0].y()) / (ssd[1].z() - ssd[0].z()));
-		analysisManager->FillNtupleDColumn(0, atan(angXin)/degree); 
-		analysisManager->FillNtupleDColumn(1, atan(angYin)/degree); 
+		analysisManager->FillNtupleDColumn(0, atan(angXin) /degree); 
+		analysisManager->FillNtupleDColumn(1, atan(angYin) /degree); 
 		G4double posXin = ssd[1].x() - atan(angXin) * ssd[1].z();
 		G4double posYin = ssd[1].y() - atan(angYin) * ssd[1].z();
 		analysisManager->FillNtupleDColumn(3, posXin / CLHEP::mm);
@@ -357,8 +352,8 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 		if(bTotalHits == 4) {
 			angXout = ((ssd[3].x() - ssd[2].x()) / (ssd[3].z() - ssd[2].z()));
 			angYout = ((ssd[3].y() - ssd[2].y()) / (ssd[3].z() - ssd[2].z()));
-			posXout = ssd[2].x() - atan(angXout)*ssd[2].z();
-			posYout = ssd[2].y() - atan(angYout)*ssd[2].z();
+			posXout = ssd[2].x() - atan(angXout) * ssd[2].z();
+			posYout = ssd[2].y() - atan(angYout) * ssd[2].z();
 		}
 		analysisManager->FillNtupleDColumn(42, atan(angXout) /degree); 
 		analysisManager->FillNtupleDColumn(43, atan(angYout) /degree); 
@@ -397,7 +392,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 			efxavg += efx * steps;
 			efyavg += efy * steps;
 
-			G4double z_pos = position.z()+detector->GetLength(0) / 2;
+			G4double z_pos = position.z() + detector->GetLength(0) / 2;
 			if (track_histos) {
 				FillH2ChannelingHistos(z_pos, ch_pos.x(), ch_pos.y(), position.x(), position.y());
 				analysisManager->FillP1(1, z_pos, nud);
@@ -712,7 +707,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 		tot_step =0.;
 		int n_hit_sd = sd4->entries();
 		run->add_entry_sd(n_hit_sd);
-		for(int i1=0; i1<n_hit_sd; i1++){
+		for (int i1=0; i1<n_hit_sd; i1++){
 			CrystalDetectorHit* aHit = (*sd4)[i1];
 			steps = aHit->GetStep();
 			position = aHit->GetWorldPos();
@@ -880,13 +875,13 @@ G4double* EventAction::CalcEnergyLeft(G4double depth, G4double energy)
 
 void EventAction::PrepareDistances()
 {
-	for (uint8_t i=0; i<4; ++i) {
+	for (G4int i=0; i<4; ++i) {
 		thicknesses[i]     = detector->GetLength(i + 1);
 		positions[i]       = (detector->GetLength(0) / 2)+detector->GetPosition(i).z();
 		layer_start_pos[i] = positions[i] - thicknesses[i] / 2;
 		layer_end_pos[i]   = positions[i] + thicknesses[i] / 2;
 	}
-	for (uint8_t i=0; i<3; ++i) {
+	for (G4int i=0; i<3; ++i) {
 		dist_between_l[i]  = layer_start_pos[i + 1] - layer_end_pos[i];
 	}
 	// prepare distance matrices for energy loss calculations
@@ -1059,6 +1054,10 @@ void EventAction::CalculateRBS(G4int layer, G4double energy, G4ThreeVector posit
 					G4double sigma_det_sq = std::pow(detector_fwhm, 2);
 					tot_sigma = sigma_det_sq + bohr_straggling;
 					FillGaussians(final_energy, tot_sigma, steps, RBS_yield, i, layer);
+				} else {
+					Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+					run->MaxRBSDepth(newWorldPosition);
+					run->AddCount();
 				}
 			}
 		}// end of elements

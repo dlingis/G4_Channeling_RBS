@@ -59,24 +59,28 @@
 
 #include "G4SDManager.hh"
 
+#define EC_SAMPLE     "data/Si001ax_100K"
+#define SZ_SAMPLE     G4ThreeVector(1.,1.,1.)
+#define POS_SAMPLE    G4ThreeVector(0.,0.,0.)
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction():
-fECfileName{"data/Si001ax_100K","data/Si001ax_100K","data/Si001ax_100K",
-"data/Si001ax_100K","data/Si001ax_100K","data/Si001ax_100K",
-"data/Si001ax_100K","data/Si001ax_100K","data/Si001ax_100K",
-"data/Si001ax_100K","data/Si001ax_100K","data/Si001ax_100K",
-"data/Si001ax_100K","data/Si001ax_100K","data/Si001ax_100K"},
+fECfileName{EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
+	EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
+	EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
+	EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
+	EC_SAMPLE, EC_SAMPLE, EC_SAMPLE},
 stepLimit(0),
 fMaterialName{"G4_Si","G4_Si","G4_Si","G4_Si","G4_Si"},
-fSizes{G4ThreeVector(1.,1.,1.),G4ThreeVector(1.,1.,1.),G4ThreeVector(1.,1.,1.),G4ThreeVector(1.,1.,1.),G4ThreeVector(1.,1.,1.)},
-fAngles(G4ThreeVector(0.,0.,0.)),
+fSizes{SZ_SAMPLE, SZ_SAMPLE, SZ_SAMPLE, SZ_SAMPLE, SZ_SAMPLE},
+fAngles(POS_SAMPLE),
 fWorldMaterial("G4_Galactic"),
 fDetectorMaterialName(""),
 fDetectorSizes(G4ThreeVector(50. * CLHEP::mm,50. * CLHEP::mm,1 * CLHEP::mm)),
 fDetectorDistance{-20. * CLHEP::cm,-19. * CLHEP::cm,+19. * CLHEP::cm,+20. * CLHEP::cm,+40. * CLHEP::cm}, 
 fCrystalAmorphous{0,0,0,0,0},
-position{G4ThreeVector(0.,0.,0.),G4ThreeVector(0.,0.,0.),G4ThreeVector(0.,0.,0.),G4ThreeVector(0.,0.,0.)},
+position{POS_SAMPLE, POS_SAMPLE, POS_SAMPLE, POS_SAMPLE},
 rbs_angle(160.*degree),sigma_calc(0),rbs_calc(0),rbs_step(0),/*add element or material for mix*/material_mixing(0.), sec_material_ratio(0.),
 detector_resolution(10.*keV),gauss_counter(5),
 //custom material definition
@@ -87,7 +91,7 @@ material_for_mix(0.),mix_material_name("G4_Si"),enable_fwhm_calc(0.),rbs_roi_min
 use_xs_transformation(0),
 histo_tracking(false)
 {
-    fMessenger = new DetectorConstructionMessenger(this); 
+	fMessenger = new DetectorConstructionMessenger(this); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
@@ -133,7 +137,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 		exit(1);
 	}
 
-	for (uint8_t i=1; i<12; i++) {
+	for (G4int i=1; i<12; i++) {
 		if (array_for_histos[i-1] > array_for_histos[i]) {
 			G4cout << " ************************************** " << G4endl;
 			G4cout << " Channeling profile intervals incorrect " << G4endl;
@@ -234,7 +238,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 	G4String gap  = " ";
 
 
-	for (uint8_t i=0; i<5; ++i) {
+	for (G4int i=0; i<5; ++i) {
 		G4cout << " Material " << i << " name: " << fMaterialName[i] << G4endl;
 		if (fMaterialName[i] == "")
 			mat[i] = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
@@ -263,14 +267,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
 	G4cout << "Detector dead layer: " << dead_thickness/nm << " nm of " << dead_material_name << " Z " << dead_material->GetZ() << G4endl;
 
-	G4double a = 1.*um;
+	G4double a = 1.*um, b = 20.*cm;;
 	G4Box* dead_layer_solid = new G4Box("dead_layer_solid",a,a,dead_thickness);
-
 	G4LogicalVolume* dead_layer_log = new G4LogicalVolume (dead_layer_solid, dead_material, "dead_layer_logic");
-
-	G4double b = 20.*cm;
-	G4VPhysicalVolume* dead_layer_phys = new G4PVPlacement(0, G4ThreeVector(b,b,b), dead_layer_log, "dlayer_physic", worldLogic, false, 0,true);
-
+	G4VPhysicalVolume* dead_layer_phys = new G4PVPlacement(0, G4ThreeVector(b, b, b), dead_layer_log, "dlayer_physic", worldLogic, false, 0,true);
 	// end
 
 	if (material_mixing != 0) {
@@ -320,7 +320,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 	G4String el_name = "element";
 	G4double avogadro = 6.022e+23;
 
-	for (uint8_t i=0; i<5; i++) {
+	for (G4int i=0; i<5; i++) {
 		G4int no_of_elements = mat[i]->GetNumberOfElements();
 		for(int j=0; j<no_of_elements; j++) {
 			G4String total_name = mat_name + std::to_string(i) + el_name + std::to_string(j);
@@ -777,7 +777,7 @@ void DetectorConstruction::ConstructSDandField()
 	G4LogicalVolume* ssdLogic = G4LogicalVolumeStore::GetInstance()->GetVolume("ssd.logic");
 	G4VSensitiveDetector* telescope = new SensitiveDetector("/telescope");
 	G4SDManager::GetSDMpointer()->AddNewDetector(telescope);
-	for (uint8_t i1=0; i1<4; i1++) {
+	for (G4int i1=0; i1<4; i1++) {
 		ssdLogic->SetSensitiveDetector(telescope);
 	}
 

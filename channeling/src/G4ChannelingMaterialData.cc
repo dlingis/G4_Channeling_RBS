@@ -45,45 +45,45 @@ fVectorR(0){;}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void G4ChannelingMaterialData::SetFilename(const G4String& fileName){
-    G4String filePot = fileName + "_pot.txt";
-    G4String fileEFX = fileName + "_efx.txt";
-    G4String fileEFY = fileName + "_efy.txt";
-    G4String fileAtD = fileName + "_atd.txt";
-    G4String fileElD = fileName + "_eld.txt";
+	G4String filePot = fileName + "_pot.txt";
+	G4String fileEFX = fileName + "_efx.txt";
+	G4String fileEFY = fileName + "_efy.txt";
+	G4String fileAtD = fileName + "_atd.txt";
+	G4String fileElD = fileName + "_eld.txt";
 
-    fPotential = new G4ChannelingECHARM(filePot,CLHEP::eV);
-    fElectricFieldX =  new G4ChannelingECHARM(fileEFX,CLHEP::eV/CLHEP::m);
-    fElectricFieldY =  new G4ChannelingECHARM(fileEFY,CLHEP::eV/CLHEP::m);
-    fNucleiDensity =   new G4ChannelingECHARM(fileAtD,1.);
-    fElectronDensity = new G4ChannelingECHARM(fileElD,1.);
+	fPotential = new G4ChannelingECHARM(filePot, CLHEP::eV);
+	fElectricFieldX = new G4ChannelingECHARM(fileEFX, CLHEP::eV / CLHEP::m);
+	fElectricFieldY = new G4ChannelingECHARM(fileEFY, CLHEP::eV / CLHEP::m);
+	fNucleiDensity = new G4ChannelingECHARM(fileAtD, 1.);
+	fElectronDensity = new G4ChannelingECHARM(fileElD, 1.);
 
-    G4cout <<  filePot << G4endl;
-    G4cout <<  fileEFX << G4endl;
-    G4cout <<  fileEFY << G4endl;
-    G4cout <<  fileAtD << G4endl;
-    G4cout <<  fileElD << G4endl;
+	G4cout <<  filePot << G4endl;
+	G4cout <<  fileEFX << G4endl;
+	G4cout <<  fileEFY << G4endl;
+	G4cout <<  fileAtD << G4endl;
+	G4cout <<  fileElD << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void G4ChannelingMaterialData::SetFilenameElement(const G4String& fileName,std::string elementName){
-    G4String filePot = fileName + "_pot.txt";
-    G4String fileEFX = fileName + "_efx.txt";
-    G4String fileEFY = fileName + "_efy.txt";
-    G4String fileAtD = fileName + "_atd.txt";
-    G4String fileElD = fileName + "_eld.txt";
-    
-    fPotentialElement[elementName] = new G4ChannelingECHARM(filePot,CLHEP::eV);
-    fElectricFieldXElement[elementName] =  new G4ChannelingECHARM(fileEFX,CLHEP::eV/CLHEP::m);
-    fElectricFieldYElement[elementName] =  new G4ChannelingECHARM(fileEFY,CLHEP::eV/CLHEP::m);
-    fNucleiDensityElement[elementName] =   new G4ChannelingECHARM(fileAtD,1.);
-    fElectronDensityElement[elementName] = new G4ChannelingECHARM(fileElD,1.);
-    
-    G4cout <<  filePot << G4endl;
-    G4cout <<  fileEFX << G4endl;
-    G4cout <<  fileEFY << G4endl;
-    G4cout <<  fileAtD << G4endl;
-    G4cout <<  fileElD << G4endl;
+	G4String filePot = fileName + "_pot.txt";
+	G4String fileEFX = fileName + "_efx.txt";
+	G4String fileEFY = fileName + "_efy.txt";
+	G4String fileAtD = fileName + "_atd.txt";
+	G4String fileElD = fileName + "_eld.txt";
+	
+	fPotentialElement[elementName] = new G4ChannelingECHARM(filePot, CLHEP::eV);
+	fElectricFieldXElement[elementName] = new G4ChannelingECHARM(fileEFX, CLHEP::eV / CLHEP::m);
+	fElectricFieldYElement[elementName] = new G4ChannelingECHARM(fileEFY, CLHEP::eV / CLHEP::m);
+	fNucleiDensityElement[elementName] = new G4ChannelingECHARM(fileAtD, 1.);
+	fElectronDensityElement[elementName] = new G4ChannelingECHARM(fileElD, 1.);
+	
+	G4cout <<  filePot << G4endl;
+	G4cout <<  fileEFX << G4endl;
+	G4cout <<  fileEFY << G4endl;
+	G4cout <<  fileAtD << G4endl;
+	G4cout <<  fileElD << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

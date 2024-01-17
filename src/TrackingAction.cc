@@ -95,7 +95,8 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track)
 	Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
 	G4VPhysicalVolume* volume = track->GetTouchableHandle()->GetVolume();
 
-	if(volume == fDetector->GetIntAbsorber(0) || volume == fDetector->GetIntAbsorber(1) || volume == fDetector->GetIntAbsorber(2) || volume == fDetector->GetIntAbsorber(3) || volume == fDetector->GetIntAbsorber(4)) {
+	if (volume == fDetector->GetIntAbsorber(0) || volume == fDetector->GetIntAbsorber(1) || volume == fDetector->GetIntAbsorber(2) 
+		|| volume == fDetector->GetIntAbsorber(3) || volume == fDetector->GetIntAbsorber(4)) {
 		G4String parName = track->GetDefinition()->GetParticleName();
 		G4double Trleng = track->GetTrackLength() + fPrimary->GetParticleGun()->GetParticlePosition().z() + 0.5 * fDetector->GetLength(0);
 
@@ -108,7 +109,8 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track)
 
 		if (track->GetTrackID() == 1) {
 			G4double z = track->GetPosition().z() + 0.5 * fDetector->GetLength(0);
-			run->AddProjectedRange(z);
+			fEventAction->AddProjectedRange(z);
+			// run->AddProjectedRange(z);
 			G4AnalysisManager* analysis = G4AnalysisManager::Instance();
 			analysis->FillH1(16, z);
 		}
@@ -132,7 +134,7 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track)
 		return;
 
 	if (track->GetParentID() == 0)
-		run->countEmerging();
+		run->AddEmerging();
 
 	const G4ParticleDefinition* particle = track->GetParticleDefinition();
 	G4String name = particle->GetParticleName();
@@ -142,7 +144,6 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track)
 	run->ParticleFlux(name,energy);
 
 	// histograms: enery flow
-	//
 	G4AnalysisManager* analysis = G4AnalysisManager::Instance();
 
 	G4int ih = 0;

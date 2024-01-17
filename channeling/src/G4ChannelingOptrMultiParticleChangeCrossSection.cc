@@ -39,68 +39,68 @@ G4ChannelingOptrMultiParticleChangeCrossSection::G4ChannelingOptrMultiParticleCh
 G4VBiasingOperator("ChannelingChangeXS-Many"),
 fCurrentOperator(0),
 fnInteractions(0){
-    AddChargedParticles();
+	AddChargedParticles();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void G4ChannelingOptrMultiParticleChangeCrossSection::AddParticle(G4String particleName){
-  const G4ParticleDefinition* particle =
-    G4ParticleTable::GetParticleTable()->FindParticle( particleName );
-  
-  if ( particle == 0 )
-    {
-      G4ExceptionDescription ed;
-      ed << "Particle `" << particleName << "' not found !" << G4endl;
-      G4Exception("G4ChannelingOptrMultiParticleChangeCrossSection::AddParticle(...)",
-                  "G4Channeling",
-                  JustWarning,
-                  ed);
-      return;
-    }
-  
-  G4ChannelingOptrChangeCrossSection* optr = new G4ChannelingOptrChangeCrossSection(particleName);
-  fParticlesToBias.push_back( particle );
-  fBOptrForParticle[ particle ] = optr;
+void G4ChannelingOptrMultiParticleChangeCrossSection::AddParticle(G4String particleName)
+{
+	const G4ParticleDefinition* particle = G4ParticleTable::GetParticleTable()->FindParticle( particleName );
+	if (particle == 0) {
+		G4ExceptionDescription ed;
+		ed << "Particle `" << particleName << "' not found !" << G4endl;
+		G4Exception("G4ChannelingOptrMultiParticleChangeCrossSection::AddParticle(...)",
+					"G4Channeling",
+					JustWarning,
+					ed);
+		return;
+	}
+
+	G4ChannelingOptrChangeCrossSection* optr = new G4ChannelingOptrChangeCrossSection(particleName);
+	fParticlesToBias.push_back( particle );
+	fBOptrForParticle[ particle ] = optr;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void G4ChannelingOptrMultiParticleChangeCrossSection::AddChargedParticles(){
-    G4ParticleTable::G4PTblDicIterator* aParticleIterator =
-        (G4ParticleTable::GetParticleTable())->GetIterator();
+void G4ChannelingOptrMultiParticleChangeCrossSection::AddChargedParticles() {
+	G4ParticleTable::G4PTblDicIterator* aParticleIterator = (G4ParticleTable::GetParticleTable())->GetIterator();
 
-    aParticleIterator->reset();
-    
-    while( (*aParticleIterator)() ){
-        G4ParticleDefinition* particle = aParticleIterator->value();
-        if (particle->GetPDGCharge() !=0) {
-            AddParticle(particle->GetParticleName());
-        }
-    }
+	aParticleIterator->reset();
+	
+	while ((*aParticleIterator)()) {
+		G4ParticleDefinition* particle = aParticleIterator->value();
+		if (particle->GetPDGCharge() !=0) {
+			AddParticle(particle->GetParticleName());
+		}
+	}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4VBiasingOperation*
 G4ChannelingOptrMultiParticleChangeCrossSection::
-ProposeOccurenceBiasingOperation(const G4Track* track,
-                                 const G4BiasingProcessInterface* callingProcess){
-  
-  if ( fCurrentOperator ) return fCurrentOperator->
-                            GetProposedOccurenceBiasingOperation(track, callingProcess);
-  else                    return 0;
+ProposeOccurenceBiasingOperation(const G4Track* track, const G4BiasingProcessInterface* callingProcess)
+{
+
+	if (fCurrentOperator)
+		return fCurrentOperator->GetProposedOccurenceBiasingOperation(track, callingProcess);
+	else
+		return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void G4ChannelingOptrMultiParticleChangeCrossSection::StartTracking( const G4Track* track ){
-  const G4ParticleDefinition* definition = track->GetParticleDefinition();
-  std::map < const G4ParticleDefinition*, G4ChannelingOptrChangeCrossSection* > :: iterator
-    it = fBOptrForParticle.find( definition );
-  fCurrentOperator = 0;
-  if ( it != fBOptrForParticle.end() ) fCurrentOperator = (*it).second;
-  fnInteractions = 0;
+void G4ChannelingOptrMultiParticleChangeCrossSection::StartTracking( const G4Track* track )
+{
+	const G4ParticleDefinition* definition = track->GetParticleDefinition();
+	std::map < const G4ParticleDefinition*, G4ChannelingOptrChangeCrossSection* > :: iterator
+	it = fBOptrForParticle.find(definition);
+	fCurrentOperator = 0;
+	if (it != fBOptrForParticle.end())
+		fCurrentOperator = (*it).second;
+	fnInteractions = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -108,18 +108,14 @@ void G4ChannelingOptrMultiParticleChangeCrossSection::StartTracking( const G4Tra
 void 
 G4ChannelingOptrMultiParticleChangeCrossSection::
 OperationApplied( const G4BiasingProcessInterface*               callingProcess, 
-                  G4BiasingAppliedCase                              biasingCase,
-                  G4VBiasingOperation*                occurenceOperationApplied, 
-                  G4double                        weightForOccurenceInteraction,
-                  G4VBiasingOperation*               finalStateOperationApplied, 
-                  const G4VParticleChange*               particleChangeProduced ){
-  fnInteractions++;
-  if ( fCurrentOperator ) fCurrentOperator->ReportOperationApplied( callingProcess,
-                                                                    biasingCase,
-                                                                    occurenceOperationApplied,
-                                                                    weightForOccurenceInteraction,
-                                                                    finalStateOperationApplied,
-                                                                    particleChangeProduced );
+				  G4BiasingAppliedCase                              biasingCase,
+				  G4VBiasingOperation*                occurenceOperationApplied, 
+				  G4double                        weightForOccurenceInteraction,
+				  G4VBiasingOperation*               finalStateOperationApplied, 
+				  const G4VParticleChange*               particleChangeProduced ){
+	fnInteractions++;
+	if (fCurrentOperator)
+		fCurrentOperator->ReportOperationApplied(callingProcess, biasingCase, occurenceOperationApplied, weightForOccurenceInteraction, finalStateOperationApplied, particleChangeProduced );
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -77,9 +77,8 @@ G4Run* RunAction::GenerateRun()
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
-
 	// save Rndm status
-	//G4RunManager::GetRunManager()->SetRandomNumberStore(false);
+	G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 	if (isMaster) G4Random::showEngineStatus();
 
 	// keep run condition

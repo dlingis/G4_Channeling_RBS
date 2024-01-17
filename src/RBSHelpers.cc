@@ -166,7 +166,7 @@ G4double CalculateTotalBohrStraggling(G4double energy, G4ParticleDefinition* par
 // energy loss in detector dead layer
 G4double CalculateDeadLayerEffect(G4double energy, const G4Material* material, G4double thickness,G4ParticleDefinition* particle)
 {
-	G4double steps = 100.;
+	G4double steps = 20.;
 	G4double stp = (thickness / steps) / cm;
 	G4EmCalculator emCalculator;
 	for (int i=1; i<=steps; i++) {

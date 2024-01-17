@@ -46,67 +46,60 @@ class G4Channeling;
 #include "G4VAuxiliaryTrackInformation.hh"
 #include "G4ThreeVector.hh"
 
-class G4ChannelingTrackData : public G4VAuxiliaryTrackInformation {
-    friend class G4Channeling;
-    
-public:
-    G4ChannelingTrackData();
-    ~G4ChannelingTrackData();
-    
-    void Print() const;
-    
-private:
-    const G4Channeling* fChannelingProcess;
-    
-public:
-    void Reset(){
-        fChannelingProcess = nullptr;
-        fNuD = fElD = 1.;
-        fPosCh = fMomCh = fDBL;
-    }
-    
-public:
-    G4double GetDensity() {return (fNuD + fElD) * 0.5;}
-    
-    void SetNuD(G4double aDouble) {fNuD = aDouble;};
-    G4double GetNuD() {return fNuD;};
-    
-    void SetElD(G4double aDouble) {fElD = aDouble;};
-    G4double GetElD() {return fElD;};
+class G4ChannelingTrackData : public G4VAuxiliaryTrackInformation 
+{
+	friend class G4Channeling;
+	
+	public:
+		G4ChannelingTrackData();
+		~G4ChannelingTrackData();
+		
+		void Print() const;
+		
+	private:
+		const G4Channeling* fChannelingProcess;
+		
+	public:
+		void Reset()
+		{
+			fChannelingProcess = nullptr;
+			fNuD = fElD = 1.;
+			fPosCh = fMomCh = fDBL;
+		}
+		
+	public:
+		G4double GetDensity()               {return (fNuD + fElD) * 0.5;}
+		
+		void SetNuD(G4double aDouble)       {fNuD = aDouble;};
+		G4double GetNuD()                   {return fNuD;};
+		
+		void SetElD(G4double aDouble)       {fElD = aDouble;};
+		G4double GetElD()                   {return fElD;};
 
-    void SetEFX(G4double aDouble) {fEFX = aDouble;};
-    G4double GetEFX() {return fEFX;};
+		void SetEFX(G4double aDouble)       {fEFX = aDouble;};
+		G4double GetEFX()                   {return fEFX;};
 
-    void SetEFY(G4double aDouble) {fEFY = aDouble;};
-    G4double GetEFY() {return fEFY;};
-    
-    G4ThreeVector GetMomCh() {return fMomCh;}
-    void SetMomCh(G4ThreeVector a3vec) {fMomCh = a3vec;}
-    
-    G4ThreeVector GetPosCh() {return fPosCh;}
-    void SetPosCh(G4ThreeVector a3vec) {fPosCh = a3vec;}
- 
-    G4ThreeVector GetSpinCh() {return fSpinCh;}
-    void SetSpinCh(G4ThreeVector a3vec) {fSpinCh = a3vec;}
-   
-private:
-    // ----------
-    // DBL_MAX vector for reset
-    // ----------
-    G4ThreeVector fDBL;
-
-    // ----------
-    // Positiona and momentum in the crystal reference frame
-    // ----------
-    G4ThreeVector fMomCh;
-    G4ThreeVector fPosCh;
-    G4ThreeVector fSpinCh;
-
-    G4double fNuD;
-    G4double fElD;
-
-    G4double fEFX;
-    G4double fEFY;
+		void SetEFY(G4double aDouble)       {fEFY = aDouble;};
+		G4double GetEFY()                   {return fEFY;};
+		
+		G4ThreeVector GetMomCh()            {return fMomCh;}
+		void SetMomCh(G4ThreeVector a3vec)  {fMomCh = a3vec;}
+		
+		G4ThreeVector GetPosCh()            {return fPosCh;}
+		void SetPosCh(G4ThreeVector a3vec)  {fPosCh = a3vec;}
+	
+		G4ThreeVector GetSpinCh()           {return fSpinCh;}
+		void SetSpinCh(G4ThreeVector a3vec) {fSpinCh = a3vec;}
+	private:
+		// ----------
+		// DBL_MAX vector for reset
+		// ----------
+		G4ThreeVector fDBL;
+		// ----------
+		// Positiona and momentum in the crystal reference frame
+		// ----------
+		G4ThreeVector fMomCh, fPosCh, fSpinCh;
+		G4double fNuD, fElD, fEFX, fEFY;
 };
 
 #endif

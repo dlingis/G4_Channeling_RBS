@@ -50,53 +50,50 @@ class G4ParticleDefinition;
 #include <unordered_map>
 
 enum G4ChannelingDensityRatio{
-    fDensityRatioNotDefined = -1,
-    fDensityRatioNone = 0,
-    fDensityRatioNuDElD = 1,
-    fDensityRatioNuD = 2,
-    fDensityRatioElD = 3
+	fDensityRatioNotDefined = -1,
+	fDensityRatioNone = 0,
+	fDensityRatioNuDElD = 1,
+	fDensityRatioNuD = 2,
+	fDensityRatioElD = 3
 };
 
-class G4ChannelingOptrChangeCrossSection : public G4VBiasingOperator {
-public:
-    // ------------------------------------------------------------
-    // -- Constructor: takes the name of the particle type to bias:
-    // ------------------------------------------------------------
-    G4ChannelingOptrChangeCrossSection(G4String particleToBias, G4String name = "ChannelingChangeXS");
-    virtual ~G4ChannelingOptrChangeCrossSection();
-    virtual void StartRun();
-    
-private:
-    G4int fChannelingID;
-    
-private:
-    virtual G4VBiasingOperation*
-    ProposeOccurenceBiasingOperation(const G4Track*                            track,
-                                     const G4BiasingProcessInterface* callingProcess);
-    virtual G4VBiasingOperation*
-    ProposeFinalStateBiasingOperation(const G4Track*, const G4BiasingProcessInterface*)
-    {return 0;}
-    virtual G4VBiasingOperation*
-    ProposeNonPhysicsBiasingOperation(const G4Track*, const G4BiasingProcessInterface*)
-    {return 0;}
-    
-private:
-    using G4VBiasingOperator::OperationApplied;
-    virtual void OperationApplied( const G4BiasingProcessInterface*                callingProcess,
-                                  G4BiasingAppliedCase                               biasingCase,
-                                  G4VBiasingOperation*                 occurenceOperationApplied,
-                                  G4double                         weightForOccurenceInteraction,
-                                  G4VBiasingOperation*                finalStateOperationApplied,
-                                  const G4VParticleChange*                particleChangeProduced );
-    
-private:
-    std::map< const G4BiasingProcessInterface*,
-    G4BOptnChangeCrossSection*       > fChangeCrossSectionOperations;
-    G4bool                                  fSetup;
-    const G4ParticleDefinition*    fParticleToBias;
-    
-private:
-    std::unordered_map<std::string,G4ChannelingDensityRatio> fProcessToDensity;
+class G4ChannelingOptrChangeCrossSection : public G4VBiasingOperator
+{
+	public:
+		// ------------------------------------------------------------
+		// -- Constructor: takes the name of the particle type to bias:
+		// ------------------------------------------------------------
+		G4ChannelingOptrChangeCrossSection(G4String particleToBias, G4String name = "ChannelingChangeXS");
+		virtual ~G4ChannelingOptrChangeCrossSection();
+		virtual void StartRun();
+		
+	private:
+		G4int fChannelingID;
+		
+	private:
+		virtual G4VBiasingOperation* ProposeOccurenceBiasingOperation(const G4Track* track, const G4BiasingProcessInterface* callingProcess);
+		virtual G4VBiasingOperation* ProposeFinalStateBiasingOperation(const G4Track*, const G4BiasingProcessInterface*)
+			{return 0;}
+		virtual G4VBiasingOperation* ProposeNonPhysicsBiasingOperation(const G4Track*, const G4BiasingProcessInterface*)
+			{return 0;}
+		
+	private:
+		using G4VBiasingOperator::OperationApplied;
+		virtual void OperationApplied( const G4BiasingProcessInterface*                callingProcess,
+									G4BiasingAppliedCase                               biasingCase,
+									G4VBiasingOperation*                 occurenceOperationApplied,
+									G4double                         weightForOccurenceInteraction,
+									G4VBiasingOperation*                finalStateOperationApplied,
+									const G4VParticleChange*                particleChangeProduced );
+		
+	private:
+		std::map< const G4BiasingProcessInterface*,
+		G4BOptnChangeCrossSection*> fChangeCrossSectionOperations;
+		G4bool fSetup;
+		const G4ParticleDefinition* fParticleToBias;
+		
+	private:
+		std::unordered_map<std::string,G4ChannelingDensityRatio> fProcessToDensity;
 };
 
 #endif

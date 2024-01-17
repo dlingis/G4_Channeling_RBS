@@ -123,12 +123,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 								else return physAbsor;
 								};
 
-		G4VPhysicalVolume* GetAbsorber()                    {return physAbsor;};
-		G4VPhysicalVolume* GetAbsorber2()                   {return physAbsor2;};
-		G4VPhysicalVolume* GetAbsorber3()                   {return physAbsor3;};
-		G4VPhysicalVolume* GetAbsorber4()                   {return physAbsor4;};
-		G4VPhysicalVolume* GetAbsorber5()                   {return physAbsor5;};
-		
 		const G4VPhysicalVolume* GetWorld()                 {return worldPhysical;};
 		G4Material* GetMaterialM(G4int i)                   {return mat[i];};
 		G4Material* GetMaterialComponents(G4int i, G4int j) {return mat_components[i][j];};
@@ -229,13 +223,13 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 		void SetMixingMaterial(G4String a)                  {mix_material_name = a;}
 		
 		// calculate detector fwhm
-		G4bool GetCalcFWHM()                                 {return enable_fwhm_calc;}
+		G4bool GetCalcFWHM()                                {return enable_fwhm_calc;}
 		void SetCalcFWHM(bool a)                            {enable_fwhm_calc = a;}
 		
 		G4double GetRBSROImin()                             {return rbs_roi_min;}
 		void SetRBSROImin(G4double a)                       {rbs_roi_min = a;}
 		
-		G4bool GetConstAngle()                               {return use_const_angle;}
+		G4bool GetConstAngle()                              {return use_const_angle;}
 		void UseConstAngle(bool a)                          {use_const_angle = a;}
 
 		void UseXStranformation(bool a)                     {use_xs_transformation = a;}

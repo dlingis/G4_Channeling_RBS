@@ -107,55 +107,16 @@ StackingAction::ClassifyNewTrack(const G4Track* aTrack)
 	if (IDp > 0 && charge > 0) {
 		G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 		// MAIN LAYER
-		if (aTrack->GetTouchableHandle()->GetVolume() == detector->GetIntAbsorber(0)) {
-			G4Material* material  = detector->GetMaterialM(0);
-			G4double mA2 = material->GetDensity() / (material->GetTotNbOfAtomsPerVolume() *amu);
-			G4double mZ2 = material->GetTotNbOfElectPerVolume() / material->GetTotNbOfAtomsPerVolume();
-			partition = DamagePartitionFunction(energy, A1, mA2, Z1, mZ2);
-			run->abssumTL(partition * energy); // damage energy
-			run->absnbrec(1); // recoil
-			run->abssumT(energy); // kinetic energy
-		}
-		// FIRST LAYER
-		else if (touchable_vol == detector->GetIntAbsorber(1)) {
-			G4Material* material = detector->GetMaterialM(1);
-			G4double mA2 = material->GetDensity() / (material->GetTotNbOfAtomsPerVolume() *amu);
-			G4double mZ2 = material->GetTotNbOfElectPerVolume() / material->GetTotNbOfAtomsPerVolume();
-			partition = DamagePartitionFunction(energy, A1, mA2, Z1, mZ2);
-			run->abs1sumTL(partition * energy); // damage energy
-			run->abs1nbrec(1); // recoil
-			run->abs1sumT(energy); // kinetic energy
-		}
-		// SECOND LAYER
-		else if (touchable_vol == detector->GetIntAbsorber(2)) {
-			G4Material* material = detector->GetMaterialM(2);
-			G4double mA2 = material->GetDensity() / (material->GetTotNbOfAtomsPerVolume() *amu);
-			G4double mZ2 = material->GetTotNbOfElectPerVolume() / material->GetTotNbOfAtomsPerVolume();
-			partition = DamagePartitionFunction(energy, A1, mA2, Z1, mZ2);
-			run->abs2sumTL(partition * energy); // damage energy
-			run->abs2nbrec(1); // recoil
-			run->abs2sumT(energy); // kinetic energy
-		}
-		// THIRD LAYER
-		else if (touchable_vol == detector->GetIntAbsorber(3)) {
-			G4Material* material = detector->GetMaterialM(3);
-			G4double mA2 = material->GetDensity() / (material->GetTotNbOfAtomsPerVolume() *amu);
-			G4double mZ2 = material->GetTotNbOfElectPerVolume() / material->GetTotNbOfAtomsPerVolume();
-			partition = DamagePartitionFunction(energy, A1, mA2, Z1, mZ2);
-			run->abs3sumTL(partition * energy); // damage energy
-			run->abs3nbrec(1); // recoil
-			run->abs3sumT(energy); // kinetic energy
-		}	
-		// FOURTH LAYER
-		else if (touchable_vol == detector->GetIntAbsorber(4)) {
-			G4Material* material = detector->GetMaterialM(4);
-			G4double mA2 = material->GetDensity() / (material->GetTotNbOfAtomsPerVolume() *amu);
-			G4double mZ2 = material->GetTotNbOfElectPerVolume() / material->GetTotNbOfAtomsPerVolume();
-			partition = DamagePartitionFunction(energy, A1, mA2, Z1, mZ2);
-			dam_energy = partition * energy;
-			run->abs4sumTL(dam_energy); // damage energy
-			run->abs4nbrec(1); // recoil
-			run->abs4sumT(energy); // kinetic energy
+		for (uint8_t i=0; i<NUMB_MAX_LAYERS; ++i) {
+			if (aTrack->GetTouchableHandle()->GetVolume() == detector->GetIntAbsorber(i)) {
+				G4Material* material  = detector->GetMaterialM(i);
+				G4double mA2 = material->GetDensity() / (material->GetTotNbOfAtomsPerVolume() *amu);
+				G4double mZ2 = material->GetTotNbOfElectPerVolume() / material->GetTotNbOfAtomsPerVolume();
+				partition = DamagePartitionFunction(energy, A1, mA2, Z1, mZ2);
+				run->absSumTLLayer(partition * energy, i); // damage energy
+				run->absRecLayer(1, i); // recoil
+				run->absSumTLayer(energy, i); // kinetic energy
+			}
 		}
 		analysisManager->FillH1(14, Spoint, dam_energy);
 		run->NumberRec(1);
@@ -163,10 +124,8 @@ StackingAction::ClassifyNewTrack(const G4Track* aTrack)
 
 	//stack or delete secondaries
 	G4ClassificationOfNewTrack status = fUrgent;
-	if (killSecondary) {
-		if (killSecondary == 1)
-			status = fKill;
-	}
+	if (killSecondary == 1)
+		status = fKill;
 
 	return status;
 }
