@@ -60,18 +60,13 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 	G4double edep = aStep->GetTotalEnergyDeposit();
 	if (edep <= 0.)
 		return;
-	G4VPhysicalVolume* preMAT = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
-	G4VPhysicalVolume* posMAT = aStep->GetPostStepPoint()->GetTouchableHandle()->GetVolume();
-	G4double charge = aStep->GetTrack()->GetDynamicParticle()->GetCharge();
-	G4String parName = aStep->GetTrack()->GetDynamicParticle()->GetDefinition()->GetParticleName();
-
+	const G4StepPoint* endPoint = aStep->GetPostStepPoint();
+	G4VPhysicalVolume* preMAT = aStep->GetPreStepPoint()->GetPhysicalVolume();
+	G4VPhysicalVolume* posMAT = endPoint->GetPhysicalVolume();
 	G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-	G4ThreeVector end = aStep->GetPostStepPoint()->GetPosition();
-	G4ThreeVector start = aStep->GetPreStepPoint()->GetPosition();
-	G4double depth = (start + G4UniformRand() * (end - start)).z() + (detector->GetLength(0) / 2);
 	// primary particles 
 	G4int IDp =  aStep->GetTrack()->GetParentID();
-	Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+	
 
 	for (G4int i=0; i<NUMB_MAX_LAYERS; ++i) {
 		if (preMAT == detector->GetIntAbsorber(i) && posMAT == detector->GetIntAbsorber(i)) {
@@ -89,6 +84,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 				fEventAction->AddNiel(niel);
 
 				if (niel > 0.) {
+					G4ThreeVector end = aStep->GetPostStepPoint()->GetPosition();
+					G4ThreeVector start = aStep->GetPreStepPoint()->GetPosition();
+					G4double depth = (start + G4UniformRand() * (end - start)).z() + (detector->GetLength(0) / 2);
 					// NIEL
 					analysisManager->FillH1(17, depth, niel /keV);
 					analysisManager->FillH1(18, niel);
@@ -98,14 +96,15 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 				}
 			}
 			// secondaries
+			G4double charge = aStep->GetTrack()->GetDynamicParticle()->GetCharge();
 			if (IDp > 0 && charge > 0) {
 				fEventAction->AddTrakLenSec(aStep->GetStepLength());
 			}
 		}
 	}
 
-	const G4StepPoint* endPoint = aStep->GetPostStepPoint();
-	const G4VProcess* process   = endPoint->GetProcessDefinedStep();
+	Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+	const G4VProcess* process = endPoint->GetProcessDefinedStep();
 	run->CountProcesses(process);
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
