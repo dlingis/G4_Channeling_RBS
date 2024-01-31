@@ -566,7 +566,7 @@ void Run::EndOfRun()
 		G4cout << " \n"; 
 	}
 
-	G4cout << " **************************************************************\n"; 
+	G4cout << " ==================================================\n";
 	G4cout << " Max Step size : \t\t\t" <<G4BestUnit(fDetector->GetMaxStep(),"Length")<<  G4endl;
 	G4double rbs_angle = fDetector->GetRBSAngle() /degree;
 	G4cout << " RBS detector angle: \t\t\t" << rbs_angle << " degrees " << G4endl;
@@ -600,21 +600,18 @@ void Run::EndOfRun()
 		detKinEn2 /= hit;
 		rmssum_kinen = GetVariation(detKinEn2, detKinEn);
 	}
-
-	G4cout << " **************************************************** " << G4endl;
+	G4cout << " ==================================================\n";
 	G4cout << " Projected range = " << G4BestUnit(projectedR, "Length") << " +- " << G4BestUnit(rmsPR, "Length")<< G4endl;
 	G4cout << " Rotation of the sample: " << fDetector->GetAngles() /degree << " degrees " << G4endl;
-	G4cout << " **************************************************** " << G4endl;
 	G4cout << " # of particles that reaches last detector " << hit / 4 << G4endl;
 	G4cout << " part of total particles " << std::fixed << std::setprecision(2) << totchan * 100 << " % " <<G4endl;
 	G4cout << " part of emitted particles " << std::setprecision(2) << totem * 100 << " % "<< G4endl;
 	G4cout << " Mean KinEn of particles reaching 4th detector = "<<G4BestUnit(detKinEn, "Energy") <<" +/- "  <<G4BestUnit(rmssum_kinen, "Energy") << G4endl; 
-	G4cout << " ****************************************************** " << G4endl;
 	G4double no_of_steps_per_particle = entry_sd / numberOfEvent;
 	G4double no_of_reach_per_particle = entry_reach / numberOfEvent;
-	G4cout << " number of steps : " << no_of_steps_per_particle << G4endl; 
-	G4cout << " number of entries reached histo : " << no_of_reach_per_particle << G4endl;
-	G4cout << " average number of entries per step : " << no_of_reach_per_particle / no_of_steps_per_particle << G4endl;
+	G4cout << " Number of steps : " << no_of_steps_per_particle << G4endl; 
+	G4cout << " Number of entries reached histo : " << no_of_reach_per_particle << G4endl;
+	G4cout << " Average number of entries per step : " << no_of_reach_per_particle / no_of_steps_per_particle << G4endl;
 	G4double total_step_length = total_step / numberOfEvent;
 	G4cout << " Total step : " << G4BestUnit(total_step_length, "Length") << G4endl;
 	G4cout << " Average step length: " << G4BestUnit(total_step_length / no_of_steps_per_particle, "Length") << G4endl;
