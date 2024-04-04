@@ -93,6 +93,11 @@ G4ChannelingMessenger(G4Channeling* mpgax)
 	fMeanFPSizeValue->SetParameterName("mfp_size",true);
 	fMeanFPSizeValue->SetDefaultValue(1.);
 	fMeanFPSizeValue->SetDefaultUnit("nm");
+
+	fPrintDebugInfo = new G4UIcmdWithABool("/chan/print_debug",this);
+	fPrintDebugInfo->SetGuidance("Print debug info");
+	fPrintDebugInfo->SetParameterName("debug_info",true);
+	fPrintDebugInfo->SetDefaultValue(false);
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
@@ -109,6 +114,7 @@ G4ChannelingMessenger::
 	delete fManualStepSizeValue;
 	delete fMeanFPSizeValue;
 	delete fChannelingDirectory;
+	delete fPrintDebugInfo;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -134,6 +140,8 @@ void G4ChannelingMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 		fTarget->SetStepSizeUnit(fManualStepSizeValue->GetNewDoubleValue(newValue));
 	if (command == fMeanFPSizeValue)
 		fTarget->SetMFPSizeUnit(fMeanFPSizeValue->GetNewDoubleValue(newValue));
+	if (command == fPrintDebugInfo)
+		fTarget->SetPrintDebugInfo(true);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

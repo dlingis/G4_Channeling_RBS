@@ -49,6 +49,7 @@ density_limit(0),
 v11_algo(0),
 org_step_size(0),
 use_step_size(0),
+print_debug(0),
 step_size_value(1.*nm),
 mfp_value(1.*nm),
 fChMessenger(0)
@@ -112,11 +113,7 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 
 	aLCV->RotateToLattice(posPre);
 	aLCV->RotateToLattice(posPost);
-	/*
-	G4cout << " CRIT ANGLE = " << GetCriticalAngle2(aTrack)/degree << " crit angle 2 = " << GetCritAngleLimitAxial(aTrack)/degree<< G4endl;
-	G4cout << " Crit angle v3 = " << GetCriticalAngle3(aTrack)/degree << G4endl;
-	G4cout << " CRIT ENERGY = " << GetCriticalEnergy(aTrack)/MeV << G4endl;
-	*/
+
 	G4double integrationLimit = std::fabs(posPost.z() - posPre.z());
 
 	if (integrationLimit > 0.) {
@@ -135,11 +132,8 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 		// randomly generates a position of the particle to evaluate the transverse energy
 		// if transverse energy (potential + kinetic energy) is lower than maximum potential
 		G4ThreeVector preChanPos;
-		/*
-		G4double kinetic_energy = (mom.x()*mom.x()+mom.y()*mom.y()+mom.z()*mom.z())/(2*aTrack.GetParticleDefinition()->GetPDGMass());
-		G4cout << " Kinetic energy = " << kinetic_energy/MeV << G4endl;
-		*/
 
+		// check if no channeling position is present
 		if (GetTrackData(aTrack)->GetPosCh().x() == DBL_MAX){
 		// check whether it's the first step in crystal, then randomly generate position for potential evaluation
 			if (enable_rechanneling == 1) {
@@ -155,6 +149,7 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 					preChanPos = chanPos + newWorldPos;
 				}
 			} else {
+				// rechanneling disabled, generate new position in channel
 				G4double positX = G4UniformRand() * matData->GetPot()->GetIntSp(0);
 				G4double positY = G4UniformRand() * matData->GetPot()->GetIntSp(1);
 				preChanPos = G4ThreeVector(positX, positY, 0.);
@@ -162,29 +157,28 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 		} else
 			preChanPos = GetTrackData(aTrack)->GetPosCh();
 
-		G4double momentas = mom.x() * mom.x() + mom.y() * mom.y();
-		G4double momentas_z = mom.z() * mom.z();
+		G4double mom_xy = mom.x() * mom.x() + mom.y() * mom.y();
+		G4double transverse_potential_en = GetMatData(aTrack)->GetPot()->GetEC(preChanPos) * GetEffectiveCharge(aTrack);
+		G4double transverse_kinetic_en = mom_xy / (2 * mass);
+		G4double total_transverse_energy = transverse_kinetic_en + transverse_potential_en;
 
-		//G4double vTotalEnergy = aTrack.GetStep()->GetPreStepPoint()->GetTotalEnergy();
-		//G4double kinetic_energy = ((mom.x()*mom.x()+mom.y()*mom.y())/(2*mass));
-		//G4double transverse_energy = potential + kinetic_energy; 
-		//G4double potential_maximum = GetMatData(aTrack)->GetPot()->GetMax();
-		//G4double potential_at_pos = GetMatData(aTrack)->GetPot()->GetEC(preChanPos);
-		// G4ThreeVector mom_dir = aTrack.GetStep()->GetPreStepPoint()->GetMomentumDirection();
-		// G4ThreeVector mom_rotated = (*theTouchable->GetRotation())(mom_dir);
-		//G4double momentas_dir = mom_dir.x()*mom_dir.x() + mom_dir.y()*mom_dir.y();
-		//G4double momentas_dir_z = mom_dir.z()*mom_dir.z();
-		//G4double angle_non_rot = atan(sqrt(momentas_dir/momentas_dir_z));
-		//G4int potential_limit = (potential_at_pos > 0.90*potential_maximum);
-		G4int angle_lim = (atan(sqrt(momentas / momentas_z)) > 1.01*GetCriticalAngle2(aTrack));
-		if (angle_lim ) { // critical angle overcome, reset channeling
-			//G4cout << " angle " << angle_non_rot/degree << G4endl;
+		// check for channeling condition
+		// maybe also check for distance to the string?
+		G4double max_potential = (GetMatData(aTrack)->GetPot()->GetMax() * GetEffectiveCharge(aTrack));
+		if (total_transverse_energy > max_potential) {
+			if (print_debug) {
+				G4cout << " *********** " << G4endl;
+				G4cout << " Dechanneling occured! Information: " << G4endl;
+				G4cout << " Depth = " << posPre.z()/nm << " [nm], kinetic energy = " << aTrack.GetKineticEnergy() /keV << " [keV] " << G4endl;
+				G4cout << " Crystal potential = " << transverse_potential_en /eV << " [eV], transverse kinetic energy = " << transverse_kinetic_en /eV << " [eV] " << G4endl;
+			}
 			GetTrackData(aTrack)->Reset();
 			GetInfo(aTrack)->Reset();
 			return false;
 		}
+
 		//----------------------------------------
-		// Get the m omentum in the solid reference 
+		// Get the momentum in the solid reference 
 		// frame and rotate to the crystal reference frame
 		//----------------------------------------
 		aLCV->RotateToLattice(mom);
@@ -230,7 +224,6 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 				momk1 = step / beta * Z * efxy;
 			else
 				momk1 = step / beta * Z * efxy * 0.5;
-			//if(isBent) momk1.setX(momk1.x() - step * mom.z() * beta / (matData->GetBR(pos)).x());
 			
 			GetEF(matData,pos_temp = pos + posk1 * 0.5,efxy);
 			posk2 = step / mom.z() * (mom + momk1 * 0.5);
@@ -238,7 +231,6 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 				momk2 = step / beta * Z * efxy;
 			else
 				momk2 = step / beta * Z * efxy * 0.5;
-			//if(isBent) momk2.setX(momk2.x() - step * mom.z() * beta / (matData->GetBR(pos_temp)).x());
 
 			GetEF(matData,pos_temp = pos + posk2 * 0.5,efxy);
 			posk3 = step / mom.z() * (mom + momk2 * 0.5);
@@ -246,7 +238,6 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 				momk3 = step / beta * Z * efxy;
 			else
 				momk3 = step / beta * Z * efxy * 0.5;
-			//if(isBent) momk3.setX(momk3.x() - step * mom.z() * beta / (matData->GetBR(pos_temp)).x());
 			
 			GetEF(matData,pos_temp = pos + posk3,efxy);
 			posk4 = step / mom.z() * (mom + momk3);
@@ -254,7 +245,6 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 				momk4 = step / beta * Z * efxy;
 			else
 				momk4 = step / beta * Z * efxy * 0.5;
-			//if(isBent) momk4.setX(momk4.x() - step * mom.z() * beta / (matData->GetBR(pos_temp)).x());
 
 			pos = pos + oneSixth * (posk1 + 2.*posk2 + 2.*posk3 + posk4);
 			mom = mom + oneSixth * (momk1 + 2.*momk2 + 2.*momk3 + momk4);
@@ -323,7 +313,7 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 		GetTrackData(aTrack)->SetMomCh(mom);
 		GetTrackData(aTrack)->SetPosCh(pos);
 
-		GetInfo(aTrack)->SetMomentumChanneled(mom);	
+		GetInfo(aTrack)->SetMomentumChanneled(mom);
 		GetInfo(aTrack)->SetPositionChanneled(pos);
 
 		GetInfo(aTrack)->SetLastChannelingPosition(pos);
@@ -346,7 +336,6 @@ UpdateIntegrationStep(G4ChannelingMaterialData* matData, const G4Track& aTrack, 
 {
 	if (mom.x() != 0.0 || mom.y() != 0.0) {
 		double xy2 = mom.x() * mom.x() + mom.y()*mom.y();
-		//G4cout << " use step size = " << use_step_size << " step size = " << step_size_value/nm << G4endl;
 		if (use_step_size)
 			step = step_size_value;
 		else {
@@ -388,19 +377,20 @@ GetMeanFreePath(const G4Track& aTrack, G4double /*previousStepSize */, G4ForceCo
 
 	if (G4LogicalCrystalVolume::IsLattice(aLV) == true && G4LogicalCrystalVolume::IsLattice(aNLV) == true && aTrack.GetKineticEnergy() > fMinimumEnergy) {
 		GetInfo(aTrack)->SetInTheCrystal(true);
-		G4double osc_per = GetOscillationPeriod(aTrack);
-		G4double osc_per2 = GetOscillationPeriod2(aTrack);
+		
 		if (use_step_size) {
 			fTimeStepMin = step_size_value;
 			return mfp_value;
 		}
 
 		if (org_step_size) {
+			G4double osc_per = GetOscillationPeriod(aTrack);
 			fTimeStepMin = osc_per * 2.e-4;
 			return osc_per * 0.01;
 		} else {
-			fTimeStepMin = osc_per2*chan_step*1e-4;
-			return osc_per2*chan_step;
+			G4double osc_per2 = GetOscillationPeriod2(aTrack);
+			fTimeStepMin = osc_per2 * chan_step * 1e-4;
+			return osc_per2 * chan_step;
 		}
 	} else {
 		GetTrackData(aTrack)->Reset();

@@ -61,7 +61,7 @@ class G4Channeling : public G4VDiscreteProcess
 		G4hIonEffChargeSquare* eff_charge = new G4hIonEffChargeSquare("");
 		G4ParticleDefinition* GetParticleDefinition(const G4Track& aTrack)
 			{return const_cast<G4ParticleDefinition*>(aTrack.GetParticleDefinition());}
-		ExExChParticleUserInfo* GetInfo(const G4Track&);	
+		ExExChParticleUserInfo* GetInfo(const G4Track&);
 
 	private:
 		G4StepPoint* GetPre(const G4Track& aTrack){return aTrack.GetStep()->GetPreStepPoint();}
@@ -77,25 +77,20 @@ class G4Channeling : public G4VDiscreteProcess
 				return nullptr;
 			}
 		}
-
+		//----------------------------------------
+		// Functions for the calculations of
+		// parameters related to channeling
+		//----------------------------------------
+	public:
 		G4double GetEffectiveCharge(const G4Track& aTrack) {
 			const G4ParticleDefinition* particle = aTrack.GetParticleDefinition();
 			G4Material* material = aTrack.GetMaterial();
 			G4double kinetic_energy = aTrack.GetKineticEnergy();
 			return sqrt(eff_charge->TheValue(particle,material,kinetic_energy));
 		}
-		//----------------------------------------
-		// Functions for the calculations of
-		// parameters related to channeling
-		//----------------------------------------
-	public:
+
 		G4double GetCriticalAngle2(const G4Track& aTrack)
 			{return (std::sqrt(GetMatData(aTrack)->GetPot()->GetMaxMin() / GetPre(aTrack)->GetKineticEnergy()));}
-
-		G4double GetCriticalAngle4(const G4Track& aTrack) {
-			G4double pot_diff = GetMatData(aTrack)->GetPot()->GetMax() - abs(GetMatData(aTrack)->GetPot()->GetMin());
-			return (std::sqrt(pot_diff/GetPre(aTrack)->GetKineticEnergy()));
-		}
 
 		G4double GetCriticalAngle3(const G4Track& aTrack)
 			{return std::sqrt((GetMatData(aTrack)->GetPot()->GetMax() * GetEffectiveCharge(aTrack)) / GetPre(aTrack)->GetKineticEnergy());}
@@ -189,6 +184,7 @@ class G4Channeling : public G4VDiscreteProcess
 		void SetStepSizeUnit(G4double aDouble)           {step_size_value = aDouble;}
 		void SetMFPSizeUnit(G4double aDouble)            {mfp_value = aDouble;}
 		void UseStepSize(bool a)                         {use_step_size = a;}
+		void SetPrintDebugInfo(bool a)                   {print_debug = a;}
 		
 	private:
 		G4double fMinimumEnergy, fMaximumMomentumRatio;
@@ -197,7 +193,7 @@ class G4Channeling : public G4VDiscreteProcess
 		
 		const G4ThreeVector k010;
 
-		G4bool enable_rechanneling, v11_algo, org_step_size, use_step_size;
+		G4bool enable_rechanneling, v11_algo, org_step_size, use_step_size, print_debug;
 		G4double density_limit, step_size_value, mfp_value, chan_step;
 		G4ChannelingMessenger* fChMessenger;
 };
