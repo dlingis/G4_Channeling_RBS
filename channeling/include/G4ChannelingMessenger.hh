@@ -58,6 +58,7 @@ class G4ChannelingMessenger: public G4UImessenger
 		G4UIcmdWithABool* fGeantV11AlgorithmCmd;
 		G4UIcmdWithABool* fOrgChanStepSizeCmd;
 		G4UIcmdWithABool* fManualStepSizeCmd;
+		G4UIcmdWithABool* fPrintDebugInfo;
 
 		G4UIcmdWithADoubleAndUnit* fMinimumEnergyCmd;
 		G4UIcmdWithADoubleAndUnit* fManualStepSizeValue;

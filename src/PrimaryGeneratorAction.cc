@@ -35,7 +35,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "PrimaryGeneratorAction.hh"
-
+#include "PrimaryGeneratorMessenger.hh"
 
 #include "G4GeneralParticleSource.hh"
 #include "G4Event.hh"
@@ -48,9 +48,10 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
-: G4VUserPrimaryGeneratorAction(), fParticleGun(0)
+: G4VUserPrimaryGeneratorAction(), fParticleGun(0), fPGM(0), useDirAngle(0), DirAngle(0)
 {
 	fParticleGun  = new G4GeneralParticleSource();
+	fPGM = new PrimaryGeneratorMessenger(this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -64,6 +65,18 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+	if (useDirAngle) {
+		G4double deg_to_rad = 0.0174532925;
+		G4double theta = (180. - DirAngle) * deg_to_rad;
+		G4double fi = 0;
+		G4double px = -sin(theta)*cos(fi);
+		G4double py = -sin(theta)*sin(fi);
+		G4double pz = -cos(theta);
+		G4ThreeVector dir = G4ThreeVector(px, py, pz);
+		G4cout << " direction vector is " << dir << G4endl;
+		fParticleGun->GetCurrentSource()->GetAngDist()->SetParticleMomentumDirection(dir);
+	}
+	
 	fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 

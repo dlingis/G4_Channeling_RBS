@@ -43,6 +43,7 @@
 #include "globals.hh"
 
 class G4Event;
+class PrimaryGeneratorMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -56,8 +57,14 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 		virtual void GeneratePrimaries(G4Event*);
 		G4GeneralParticleSource* GetParticleGun()
 			{return fParticleGun;};
+		void SetUseDirAngle(G4bool a)                  {useDirAngle = a;}
+		void SetParticleDirectionAngle(G4double angle) {DirAngle = angle;}
+
 	private:
 		G4GeneralParticleSource*  fParticleGun; //pointer a to G4 service class
+		PrimaryGeneratorMessenger* fPGM;
+		G4bool useDirAngle;
+		G4double DirAngle;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
