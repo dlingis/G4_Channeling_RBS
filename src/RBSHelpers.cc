@@ -29,9 +29,10 @@ G4double CalcDiffRuthXsec(G4double E, G4double M1, G4double M2, G4double angle, 
 	return fullTerm * 10; //fm^2 conversion to milibarns
 }
 
-G4double CalcRBSYield(G4double xsec, G4double dist, G4double solidAngle, G4double atomDens, G4double inc_angle)
+G4double CalcRBSYield(G4double xsec, G4double solidAngle, G4double atomDens, G4double inc_angle)
 {
 	G4double crossSect = xsec * 1e-27; // mbarn to cm2 = 1e−27
+	G4double dist = 0.1*nm;
 	G4double z = dist / cm;
 	G4double atom_thickness = atomDens * z;
 	G4double yield = (solidAngle * crossSect * atom_thickness / cos(inc_angle));
@@ -88,9 +89,9 @@ G4double CalcTotEnLoss(G4double E, G4double distance, G4int steps, G4ParticleDef
 {
 	G4EmCalculator emCalculator;
 	G4double stp = (distance / steps) / cm;
-	for (int i=1; i<=steps; i++) {
+	for (G4int i=1; i<=steps; i++) {
 		//G4double stop = emCalculator.ComputeTotalDEDX(E,fParticle,mat)/(MeV/cm);	// buvo anksciau, gal del srim?
-		G4double stop = emCalculator.GetDEDX(E, fParticle,mat) / (MeV / cm);// naudoti su channeling
+		G4double stop = emCalculator.GetDEDX(E, fParticle,mat) / (MeV / cm); // naudoti su channeling
 		E -= stop * stp;
 		if (E / keV <= 10)
 			break;
@@ -99,15 +100,15 @@ G4double CalcTotEnLoss(G4double E, G4double distance, G4int steps, G4ParticleDef
 }
 
 // function for Total RBS yield, combining other functions into single one
-G4double CalculateTotalRBSYield(G4double energy, G4double M1, G4double M2, G4double Z1, G4double Z2, G4double angle, G4double dist,G4double solidAngle, G4double xsecmod, G4double atomDensity,G4double inc_angle)
+G4double CalculateTotalRBSYield(G4double energy, G4double M1, G4double M2, G4double Z1, G4double Z2, G4double angle, G4double solidAngle, G4double xsecmod, G4double atomDensity,G4double inc_angle)
 {
-	G4double CMangleX 	= CalcAngleCMFrame(angle, M1, M2);
-	G4double CMenergyX 	= CalcEnergyCMFrame(energy, M1, M2);
-	G4double CMxsecX 	= CalcDiffRuthXsecCM(CMenergyX, CMangleX, Z1, Z2);
+	G4double CMangleX        = CalcAngleCMFrame(angle, M1, M2);
+	G4double CMenergyX       = CalcEnergyCMFrame(energy, M1, M2);
+	G4double CMxsecX         = CalcDiffRuthXsecCM(CMenergyX, CMangleX, Z1, Z2);
 	G4double andersen_factor = CalcAndersenScreening(CMenergyX, CMangleX, Z1, Z2);
-	G4double CMxsecModX	= CMxsecX * andersen_factor;
-	G4double CMtoLABxsecX	= CalcDiffRuthXsecLAB(M1, M2, CMangleX, CMxsecModX);
-	return CalcRBSYield((CMtoLABxsecX * xsecmod), dist, solidAngle, atomDensity, inc_angle);
+	G4double CMxsecModX      = CMxsecX * andersen_factor;
+	G4double CMtoLABxsecX    = CalcDiffRuthXsecLAB(M1, M2, CMangleX, CMxsecModX);
+	return CalcRBSYield((CMtoLABxsecX * xsecmod), solidAngle, atomDensity, inc_angle);
 }
 
 // yang+chu
@@ -119,10 +120,10 @@ G4double CalculateTotalBohrStraggling(G4double energy, G4ParticleDefinition* par
 	G4double straggling, nucl_strag, elec_strag;
 	straggling = nucl_strag = elec_strag = 0;
 	
-	G4int elements    	= mat->GetNumberOfElements();
-	G4double *Z2 		= new G4double[elements];
-	G4double *M2 		= new G4double[elements];
-	G4double *aDensity 	= new G4double[elements];	
+	G4int elements      = mat->GetNumberOfElements();
+	G4double *Z2        = new G4double[elements];
+	G4double *M2        = new G4double[elements];
+	G4double *aDensity  = new G4double[elements];
 
 	//functions for en loss straggling evaluation
 	G4hIonEffChargeSquare* eff_charge = new G4hIonEffChargeSquare(""); // gets effective charge square of ion based on energy
@@ -156,11 +157,14 @@ G4double CalculateTotalBohrStraggling(G4double energy, G4ParticleDefinition* par
 		if (nucl_strag < 0)
 			nucl_strag = 0.;
 	}
-	straggling = elec_strag+nucl_strag;
+	straggling = elec_strag + nucl_strag;
 
 	delete []Z2;
 	delete []M2;
 	delete []aDensity;
+	delete eff_charge;
+	delete model_yang;
+	delete model_chu;
 	return straggling;
 }
 // energy loss in detector dead layer

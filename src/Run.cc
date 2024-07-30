@@ -384,7 +384,7 @@ void Run::EndOfRun()
 	// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	//************************************************
 	// --------------------------------------------
-	G4double sum_Tl, sum_Tl2, rmsSumTl;
+	G4double sum_Tl, sum_Tl2;
 	for (G4int i=0; i<NUMB_MAX_LAYERS; ++i) {
 		for (G4int j=0; j<2; ++j) {
 			edepLayer[i][j] /= TotNbofEvents;
@@ -529,8 +529,6 @@ void Run::EndOfRun()
 	for (G4int i=1; i<NUMB_MAX_LAYERS - 1; ++i) {
 		TFU_mid[i] = (mat_matrix[0]->GetTotNbOfAtomsPerVolume() /(1/cm3) * neigh_dist[i - 1] /cm) / tfu_norm;
 	}
-
-	G4double num_el_mat;
 
 	G4cout << " >>>>>>>>>>>>>>>>> MAIN LAYER <<<<<<<<<<<<<<<<<<<<<<<<\n";
 	G4cout << " Total thickness = " << G4BestUnit(half_tot_len * 2, "Length") << " and surface layer thickness " << TFU_mid[0] << " [TFU] " << G4endl;

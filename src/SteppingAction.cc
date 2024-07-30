@@ -78,7 +78,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 				// totals
 				fEventAction->AddTrakLenPrim(aStep->GetStepLength());
 				fEventAction->AddPrimSteps();
-				G4double edep = aStep->GetTotalEnergyDeposit();
 				G4double niel = aStep->GetNonIonizingEnergyDeposit();
 				fEventAction->AddEdep(edep);
 				fEventAction->AddNiel(niel);

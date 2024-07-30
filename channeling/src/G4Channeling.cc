@@ -39,19 +39,10 @@
 G4Channeling::G4Channeling():
 G4VDiscreteProcess("channeling"),
 fChannelingID(G4PhysicsModelCatalog::GetModelID("model_channeling")),
-fMinimumEnergy(1.*CLHEP::keV),  
-fMaximumMomentumRatio(0.01), 
-fTimeStepMin(0.),
-fTimeStepMax(0.),
-fTransverseVariationMax(2.E-2 * CLHEP::angstrom),
-chan_step(0),
-density_limit(0),
-v11_algo(0),
-org_step_size(0),
-use_step_size(0),
-print_debug(0),
-step_size_value(1.*nm),
-mfp_value(1.*nm),
+fMinimumEnergy(1.*CLHEP::keV), fMaximumMomentumRatio(0.01), 
+fTimeStepMin(0.), fTimeStepMax(0.), fTransverseVariationMax(2.E-2 * CLHEP::angstrom),
+enable_rechanneling(0), v11_algo(0), org_step_size(0), use_step_size(0), print_debug(0),
+dynamic_step_size(0), density_limit(0), step_size_value(1.*nm), mfp_value(1.*nm), chan_step(0.1),
 fChMessenger(0)
 {
 	fChMessenger = new G4ChannelingMessenger(this);
@@ -60,6 +51,7 @@ fChMessenger(0)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 G4Channeling::~G4Channeling(){
+	delete fChMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -117,6 +109,8 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 	G4double integrationLimit = std::fabs(posPost.z() - posPre.z());
 
 	if (integrationLimit > 0.) {
+		if (print_debug)
+			G4cout << " integration limit = " << integrationLimit/nm << "[nm]" << G4endl;
 		//----------------------------------------
 		// Initialize particle variables
 		//---------
@@ -217,14 +211,16 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 			// Function integration algorithm
 			// 4th Order Runge-Kutta
 			//----------------------------------------
-			//G4cout << " step = " << step/nm << G4endl;
-			GetEF(matData,pos,efxy);
+			if (print_debug) {
+				G4cout << " step = " << step/nm << " nm " << G4endl;
+			}
+			GetEF(matData, pos, efxy);
 			posk1 = step / mom.z() * mom;
 			if(v11_algo)
 				momk1 = step / beta * Z * efxy;
 			else
-				momk1 = step / beta * Z * efxy * 0.5;
-			
+			momk1 = step / beta * Z * efxy * 0.5;
+
 			GetEF(matData,pos_temp = pos + posk1 * 0.5,efxy);
 			posk2 = step / mom.z() * (mom + momk1 * 0.5);
 			if(v11_algo)
@@ -267,7 +263,7 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 			efx += (step * matData->GetEFX()->GetEC(pos));
 			efy += (step * matData->GetEFY()->GetEC(pos));
 			//----------------------------------------
-		} while (stepTot<integrationLimit);
+		} while (stepTot < integrationLimit);
  
 		nud /= stepTot;
 		eld /= stepTot;
@@ -334,13 +330,16 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 G4bool G4Channeling::
 UpdateIntegrationStep(G4ChannelingMaterialData* matData, const G4Track& aTrack, G4ThreeVector& mom, G4double& step)
 {
-	if (mom.x() != 0.0 || mom.y() != 0.0) {
-		double xy2 = mom.x() * mom.x() + mom.y()*mom.y();
-		if (use_step_size)
-			step = step_size_value;
-		else {
+	if (use_step_size) {
+		step = step_size_value;
+		if (step < fTimeStepMin)
+			step = fTimeStepMin;
+		return true;
+	} else {
+		if (mom.x() != 0.0 || mom.y() != 0.0) {
+			G4double xy2 = mom.x() * mom.x() + mom.y() * mom.y();
 			if (xy2 != 0.) {
-				step = std::fabs(fTransverseVariationMax * GetPre(aTrack)->GetKineticEnergy() / std::pow(xy2,0.5));
+				step = std::fabs(fTransverseVariationMax * GetPre(aTrack)->GetKineticEnergy() / std::pow(xy2, 0.5));
 				if (step < fTimeStepMin)
 					step = fTimeStepMin;
 				else {
@@ -351,13 +350,11 @@ UpdateIntegrationStep(G4ChannelingMaterialData* matData, const G4Track& aTrack, 
 			} else {
 				step = fTimeStepMin;
 			}
-		}
-		return true;
-	} else {
-		if (use_step_size)
-			step = step_size_value;
-		else
+			return true;
+		} else {
 			step = fTimeStepMin;
+		}
+		return false;
 	}
 	return false;
 }
@@ -380,16 +377,22 @@ GetMeanFreePath(const G4Track& aTrack, G4double /*previousStepSize */, G4ForceCo
 		
 		if (use_step_size) {
 			fTimeStepMin = step_size_value;
+			if (print_debug)
+				G4cout << " mfp = " << mfp_value/nm << " [nm], timestepmin = " << fTimeStepMin << G4endl;
 			return mfp_value;
 		}
 
 		if (org_step_size) {
 			G4double osc_per = GetOscillationPeriod(aTrack);
 			fTimeStepMin = osc_per * 2.e-4;
+			if (print_debug)
+				G4cout << " mfp = " << osc_per * 0.01 << " [nm], timestepmin = " << fTimeStepMin << G4endl;
 			return osc_per * 0.01;
 		} else {
 			G4double osc_per2 = GetOscillationPeriod2(aTrack);
-			fTimeStepMin = osc_per2 * chan_step * 1e-4;
+			fTimeStepMin = osc_per2 * chan_step * 0.01;
+			if (print_debug)
+				G4cout << " mfp = " << osc_per2 * chan_step << " [nm], timestepmin = " << fTimeStepMin << G4endl;
 			return osc_per2 * chan_step;
 		}
 	} else {

@@ -146,13 +146,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
 		void SetAmorphous(G4int la, bool a)                 {fCrystalAmorphous[la] = a;}
 		G4int GetAmorphous(G4int la)                        {return fCrystalAmorphous[la];}
-
-		G4int GetTracking()                                 {return tracking;}
-		void SetTracking(bool a)                            {tracking = a;}
-
-		void SetLatticeConstants(G4int la, G4ThreeVector a) {lattice[la] = a;}
-		G4ThreeVector GetLatticeConstants(G4int la)         {return lattice[la];}
-
+	
 		G4double GetMaxStep()                               {return maxStep;}
 		void SetMaxStep(G4double stp)                       {maxStep = stp;}
 
@@ -244,13 +238,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 		G4ThreeVector           fDetectorSizes;
 		G4double                fDetectorDistance[5];
 
-		G4ThreeVector           lattice[5];
 		G4bool                  fCrystalAmorphous[5];
 
 		G4double                maxStep, rbs_angle, rbs_step, sec_material_ratio, detector_resolution;
 		G4ThreeVector           position[4];
 
-		G4bool                  sigma_calc, rbs_calc, material_mixing, enable_custom_material, tracking, use_const_angle, enable_fwhm_calc, use_xs_transformation, histo_tracking;
+		G4bool                  sigma_calc, rbs_calc, material_mixing, enable_custom_material, use_const_angle, enable_fwhm_calc, use_xs_transformation, histo_tracking;
 		G4int                   gauss_counter, material_for_mix;
 
 		G4String                element1, element2, element3, dead_material_name, mix_material_name;

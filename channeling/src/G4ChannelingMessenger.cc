@@ -55,7 +55,7 @@ G4ChannelingMessenger(G4Channeling* mpgax)
 	fStepCmd = new G4UIcmdWithADouble("/chan/set_channeling_step",this);
 	fStepCmd->SetGuidance("Set channeling simulation step size.");
 	fStepCmd->SetParameterName("max_step",true);
-	fStepCmd->SetDefaultValue(0.001);
+	fStepCmd->SetDefaultValue(0.1);
 
 	fRechannelingCmd = new G4UIcmdWithABool("/chan/set_allow_rechanneling",this);
 	fRechannelingCmd->SetGuidance("Allow rechanneling to occur");

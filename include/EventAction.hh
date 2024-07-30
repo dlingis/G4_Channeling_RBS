@@ -81,7 +81,7 @@ class EventAction : public G4UserEventAction
 		G4double Get2DRTRValue(G4double energy, G4String elname, G4double angle);
 		// distribution functions
 		G4double GenerateGaussian(G4double x, G4double y, G4double sigma_sq);
-		G4double* CalcEnergyLeft(G4double depth, G4double energy);
+		void CalcEnergyLeft(G4double depth, G4double energy, G4double ptr_pars[2]);
 		void PrepareDistances();
 		G4double CalcLossInLayer(G4int i, G4double dist, G4double energy, G4ParticleDefinition* particle);
 		G4double CalcStragglingInLayer(G4int i, G4double dist, G4double energy, G4ParticleDefinition* particle);
@@ -91,6 +91,7 @@ class EventAction : public G4UserEventAction
 		void PrepareHistoBase(void);
 		void FillH2ChannelingHistos(G4double z_pos, G4double x_pos, G4double y_pos, G4double wo_x_pos, G4double wo_y_pos);
 		void FillSigmaCalcVectors(void);
+		G4double GetDetectorSigmaSq(G4int Z1, G4double final_energy);
 
 	private:
 		DetectorConstruction* detector;

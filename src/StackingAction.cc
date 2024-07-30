@@ -90,21 +90,20 @@ G4ClassificationOfNewTrack
 StackingAction::ClassifyNewTrack(const G4Track* aTrack)
 {
 	G4int IDp= aTrack->GetParentID();
-	G4double energy = aTrack->GetKineticEnergy();
 	G4double charge = aTrack->GetDefinition()->GetPDGCharge();
-	G4double u = 931.49410242;
-	G4double A1 = aTrack->GetParticleDefinition()->GetPDGMass()/u;
-	G4double Z1 = aTrack->GetParticleDefinition()->GetPDGCharge();
-	G4double Spoint  = (aTrack->GetPosition()).mag();
 
 	//keep primary particle
 	if (IDp == 0)
 		return fUrgent;
 	Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
 
-	G4double partition, dam_energy;
-	G4VPhysicalVolume* touchable_vol = aTrack->GetTouchableHandle()->GetVolume();
+	G4double partition;
 	if (IDp > 0 && charge > 0) {
+		G4double energy = aTrack->GetKineticEnergy();
+		G4double u = 931.49410242;
+		G4double A1 = aTrack->GetParticleDefinition()->GetPDGMass()/u;
+		G4double Z1 = aTrack->GetParticleDefinition()->GetPDGCharge();
+		G4double Spoint  = (aTrack->GetPosition()).mag();
 		G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 		// MAIN LAYER
 		for (uint8_t i=0; i<NUMB_MAX_LAYERS; ++i) {
@@ -118,7 +117,7 @@ StackingAction::ClassifyNewTrack(const G4Track* aTrack)
 				run->absSumTLayer(energy, i); // kinetic energy
 			}
 		}
-		analysisManager->FillH1(14, Spoint, dam_energy);
+		analysisManager->FillH1(14, Spoint, partition * energy);
 		run->NumberRec(1);
 	}
 

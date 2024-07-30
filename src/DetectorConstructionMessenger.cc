@@ -309,24 +309,22 @@ DetectorConstructionMessenger::
 	delete fRBSROICmd;
 	delete fEnLossStepCmd;
 
-	// size matrix
+	//
 	for (uint8_t i=0; i<5; i++) {
 		delete fSizeCmd[i];
-	}
-	// material name matrix
-	for (uint8_t i=0; i<5; i++) {
 		delete fMaterialCmd[i];
+		delete fXtalAmorphous[i];
+		for (uint8_t j=0; j<3; j++) {
+			delete fXtalEC[i][j];
+		}
 	}
 	// material position matrix
 	for (uint8_t i=0; i<4; i++) {
 		delete fPosCmd[i];
 	}
-	// amo and crystal characs
-	for (uint8_t i=0; i<5; i++) {
-		delete fXtalAmorphous[i];
-		for (uint8_t j=0; j<3; j++) {
-			delete fXtalEC[i][j];
-		}
+	// histo depth map
+	for (uint8_t i=0; i<12; i++) {
+		delete fDepthForHistos[i];
 	}
 
 	delete fXtalTrackCmd;
@@ -362,6 +360,8 @@ DetectorConstructionMessenger::
 	delete fMyXtalDirectory;
 	delete fMyDetDirectory;
 	delete fHistoTrackingCmd;
+	delete fTarget;
+	delete fDetMaterialCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -370,8 +370,8 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand *command, G4String n
 {
 	if (command == fWorldMaterial)
 		fTarget->SetWorldMaterial(newValue);
-	if (command == fXtalTrackCmd)
-		fTarget->SetTracking(true);
+	// if (command == fXtalTrackCmd)
+	// 	fTarget->SetTracking(true);
 	if (command == fMatMixCmd)
 		fTarget->SetMixing(true);
 	if (command == fMatMixRatioCmd)

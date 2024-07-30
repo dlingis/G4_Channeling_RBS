@@ -51,10 +51,10 @@
 
 EventAction::EventAction(DetectorConstruction* DE, PrimaryGeneratorAction* PRA )
 :G4UserEventAction(),detector(DE),fPrimary(PRA),
- fTotalEnergyDeposit(0.), fTotalEnergyFlow(0.), theta(0), fTotalNiel(0),
+ fTotalEnergyDeposit(0.), fTotalEnergyFlow(0.), fTotalNiel(0), theta(0),
+ prim_step(0), trak_len_prim(0), trak_len_sec(0),
  TrueTrakLen(0.), ProjTrakLen(0.), projected_range(0),
- sdht_ID(-1), sd0_ID(-1),sd1_ID(-1),sd2_ID(-1),sd3_ID(-1),sd4_ID(-1),
- prim_step(0), trak_len_prim(0), trak_len_sec(0)
+ sdht_ID(-1), sd0_ID(-1),sd1_ID(-1),sd2_ID(-1),sd3_ID(-1),sd4_ID(-1)
 {
 	fVectorSi_total = nullptr;
 	fVectorO_total = nullptr;
@@ -79,6 +79,7 @@ EventAction::~EventAction()
 		delete[] Adens[i];
 		delete[] HistoBase[i];
 		delete[] nud_el[i];
+		delete[] mat_matrix[i];
 	}
 	delete[] NoOfElements;
 	delete[] Znumb;
@@ -93,6 +94,20 @@ EventAction::~EventAction()
 	delete[] start_pos;
 	delete[] HistoBase;
 	delete[] nud_el;
+	//
+	delete fVectorB_total;
+	delete fVectorC_total;
+	delete fVectorCu_total;
+	delete fVectorF_total;
+	delete fVectorN_total;
+	delete fVectorNa_total;
+	delete fVectorNi_total;
+	delete fVectorO_total;
+	delete fVectorSi_total;
+	//
+	delete ElementVector;
+	delete Element;
+	delete Isotope;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -163,7 +178,6 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 	//detector energy resolution
 	G4int rbs_eval = detector->GetRBSCalc();
 	G4ParticleDefinition* fParticle = fPrimary->GetParticleGun()->GetParticleDefinition();
-	G4double A1 = fPrimary->GetParticleGun()->GetParticleDefinition()->GetAtomicMass();
 	G4double primary_energy = fPrimary->GetParticleGun()->GetParticleEnergy();
 	run->PrimaryEnergy(primary_energy);
 	G4int track_histos = detector->GetTrackingHistos();
@@ -184,8 +198,8 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 	G4ThreeVector ch_pos;
 
 	for (int i=0; i<NUMBER_OF_MAX_LAYERS; i++) {
-		sample_material[i] 	= detector->GetMaterialM(i);
-		NoOfElements[i]    	= sample_material[i]->GetNumberOfElements();
+		sample_material[i] = detector->GetMaterialM(i);
+		NoOfElements[i]    = sample_material[i]->GetNumberOfElements();
 	}
 	G4int max_M = 0;
 
@@ -398,7 +412,8 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 				analysisManager->FillP1(1, z_pos, nud);
 				analysisManager->FillP1(2, z_pos, eld);
 			}
-			CalculateRBS(0, sample_energy, position, momDir, steps, fParticle);
+			if (sample_energy > detector->GetRBSROImin())
+				CalculateRBS(0, sample_energy, position, momDir, steps, fParticle);
 		}
 		run->add_total_step(tot_step);
 	}
@@ -486,7 +501,8 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 				analysisManager->FillP1(3, z_pos, nud);
 				analysisManager->FillP1(4, z_pos, eld);
 			}
-			CalculateRBS(1, sample_energy, position, momDir, steps, fParticle);
+			if (sample_energy > detector->GetRBSROImin())
+				CalculateRBS(1, sample_energy, position, momDir, steps, fParticle);
 		}
 		run->add_total_step(tot_step);
 	}// end of layer1 sensitive detector
@@ -572,7 +588,8 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 				analysisManager->FillP1(5, z_pos, nud);
 				analysisManager->FillP1(6, z_pos, eld);
 			}
-			CalculateRBS(2, sample_energy, position, momDir, steps, fParticle);
+			if (sample_energy > detector->GetRBSROImin())
+				CalculateRBS(2, sample_energy, position, momDir, steps, fParticle);
 		}
 		run->add_total_step(tot_step); //all hits
 	}// end of layer2 sensitive detector
@@ -656,7 +673,8 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 				analysisManager->FillP1(7, z_pos, nud);
 				analysisManager->FillP1(8, z_pos, eld);
 			}
-			CalculateRBS(3, sample_energy, position, momDir, steps, fParticle);
+			if (sample_energy > detector->GetRBSROImin())
+				CalculateRBS(3, sample_energy, position, momDir, steps, fParticle);
 		}
 		run->add_total_step(tot_step);
 	}
@@ -741,7 +759,8 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 				analysisManager->FillP1(9, z_pos, nud);
 				analysisManager->FillP1(10, z_pos, eld);
 			}
-			CalculateRBS(4, sample_energy, position, momDir, steps, fParticle);
+			if (sample_energy > detector->GetRBSROImin())
+				CalculateRBS(4, sample_energy, position, momDir, steps, fParticle);
 		}
 		run->add_total_step(tot_step);
 	}
@@ -818,32 +837,33 @@ G4double EventAction::Get2DRTRValue(G4double energy, G4String elname, G4double a
 
 	G4double value = 1.;
 	if(elname == "Si")
-		value = fVectorSi_total->Value(angle /degree,energy /keV, fIndx, fIndy);
+		value = fVectorSi_total->Value(angle /degree, energy /keV, fIndx, fIndy);
 	else if(elname == "O")
-		value = fVectorO_total->Value(angle /degree,energy /keV, fIndx, fIndy);
+		value = fVectorO_total->Value(angle /degree, energy /keV, fIndx, fIndy);
 	else if(elname == "Na")
-		value = fVectorNa_total->Value(angle /degree,energy /keV, fIndx, fIndy);
+		value = fVectorNa_total->Value(angle /degree, energy /keV, fIndx, fIndy);
 	else if(elname == "N")
-		value = fVectorN_total->Value(angle /degree,energy /keV, fIndx, fIndy);
+		value = fVectorN_total->Value(angle /degree, energy /keV, fIndx, fIndy);
 	else if(elname == "C")
-		value = fVectorC_total->Value(angle /degree,energy /keV, fIndx, fIndy);
+		value = fVectorC_total->Value(angle /degree, energy /keV, fIndx, fIndy);
 	else if(elname == "F")
-		value = fVectorF_total->Value(angle /degree,energy /keV, fIndx, fIndy);
+		value = fVectorF_total->Value(angle /degree, energy /keV, fIndx, fIndy);
 	else if(elname == "B")
-		value = fVectorB_total->Value(angle /degree,energy /keV, fIndx, fIndy);
+		value = fVectorB_total->Value(angle /degree, energy /keV, fIndx, fIndy);
 	else if(elname == "Ni")
-		value = fVectorNi_total->Value(angle /degree,energy /keV, fIndx, fIndy);
+		value = fVectorNi_total->Value(angle /degree, energy /keV, fIndx, fIndy);
 	else if(elname == "Cu")
-		value = fVectorCu_total->Value(angle /degree,energy /keV, fIndx, fIndy);
+		value = fVectorCu_total->Value(angle /degree, energy /keV, fIndx, fIndy);
 	return value;
 }
-// calculates energy loss, energy fwhm, multiple scattering
-G4double* EventAction::CalcEnergyLeft(G4double depth, G4double energy)
+// calculates energy loss, energy fwhm
+void EventAction::CalcEnergyLeft(G4double depth, G4double energy, G4double ptr_pars[2])
 {
-	G4double* final_parameters = new G4double[2];
 	G4int location = 0;
 	G4ParticleDefinition* particle = fPrimary->GetParticleGun()->GetParticleDefinition();
 	G4double start_distance = 0;
+	G4double ROI_region = detector->GetRBSROImin();
+	ptr_pars[0] = ptr_pars[1] = 0.;
 
 	if (depth < layer_start_pos[0])                                     location = 1;
 	else if (depth > layer_start_pos[0] && depth < layer_end_pos[0])    location = 2;
@@ -856,21 +876,25 @@ G4double* EventAction::CalcEnergyLeft(G4double depth, G4double energy)
 	else if (depth > layer_end_pos[3])                                  location = 9;
 	else                                                                exit(1);
 
-	G4double test_fwhm = 0;
-	G4double test_energy = energy;
+	G4double final_fwhm = 0;
+	G4double final_energy = energy;
 	start_distance = depth - start_pos[location-1];
 
 	while (location > 0) {
-		test_fwhm = test_fwhm + CalcStragglingInLayer(location, start_distance, test_energy, particle);
-		test_energy = CalcLossInLayer(location, start_distance, test_energy, particle);
+		final_fwhm += CalcStragglingInLayer(location, start_distance, final_energy, particle);
+		final_energy = CalcLossInLayer(location, start_distance, final_energy, particle);
 		location--;
 		start_distance = 0;
+		// if final energy less than ROI, stop evaluation
+		if (final_energy < ROI_region) {
+			final_energy = 0;
+			final_fwhm = 0;
+			break;
+		}
 	}
 	
-	final_parameters[0] = test_energy;
-	final_parameters[1] = test_fwhm;
-
-	return final_parameters;
+	ptr_pars[0] = final_energy;
+	ptr_pars[1] = final_fwhm;
 }
 
 void EventAction::PrepareDistances()
@@ -925,36 +949,39 @@ void EventAction::PrepareDistances()
 G4double EventAction::CalcLossInLayer(G4int i, G4double dist, G4double energy, G4ParticleDefinition* particle)
 {
 	G4double final_energy = 0, distance = 0;
-	G4double ROI = detector->GetRBSROImin();
 	G4double step_number = detector->GetEnLossStep();
 	 
 	if (dist == 0)
 		distance = (dist_matrix[i] / cos(angle_of_exit));
 	else
 		distance = dist / cos(angle_of_exit);
-	if ((distance/step_number) /nm < 1.)
+	//
+	if ((distance / step_number) /nm < 1.)
 		step_number = ceil(distance / (1. *nm));
-
-	G4Material* mat = mat_matrix[i];
-	if (energy > ROI)
+	//
+	if (energy > detector->GetRBSROImin()) {
+		G4Material* mat = mat_matrix[i];
 		final_energy = CalcTotEnLoss(energy, distance, step_number, particle, mat);
+	}
 	return final_energy;
 }
 
 G4double EventAction::CalcStragglingInLayer(G4int i, G4double dist, G4double energy, G4ParticleDefinition* particle)
 {
 	G4double final_stragg = 0, distance = 0;
-	G4double ROI = detector->GetRBSROImin();
 	G4double step_number = detector->GetEnLossStep();
 	if (dist == 0)
 		distance = (dist_matrix[i] / cos(angle_of_exit));
 	else
 		distance = dist / cos(angle_of_exit);
+	//
 	if ((distance / step_number) /nm < 1.)
 		step_number = ceil(distance / (1. *nm));
-	G4Material* mat = mat_matrix[i];
-	if (energy > ROI)
+	//
+	if (energy > detector->GetRBSROImin()) {
+		G4Material* mat = mat_matrix[i];
 		final_stragg = CalculateTotalBohrStraggling(energy, particle, mat, distance);
+	}
 	return final_stragg;
 }
 
@@ -997,67 +1024,56 @@ void EventAction::FillGaussians(G4double energy, G4double sigma, G4double steps,
 
 void EventAction::CalculateRBS(G4int layer, G4double energy, G4ThreeVector position, G4ThreeVector momDir, G4double steps, G4ParticleDefinition* fParticle)
 {
-	G4int A1 = fPrimary->GetParticleGun()->GetParticleDefinition()->GetAtomicMass();
-	G4int Z1 = fPrimary->GetParticleGun()->GetParticleDefinition()->GetAtomicNumber();
 	G4double angle_of_incidence = atan(fPrimary->GetParticleGun()->GetParticleMomentumDirection().x() / fPrimary->GetParticleGun()->GetParticleMomentumDirection().z());
 	G4double scattering_angle = (Angle - angle_of_incidence);
-	G4String dead_material_name = detector->GetDeadLayer();
-	const G4Material* dead_material = G4NistManager::Instance()->FindOrBuildMaterial(dead_material_name);
-	G4Material* d_mat = G4NistManager::Instance()->FindOrBuildMaterial(dead_material_name);
+	G4double xsecRTR = 0, RBS_yield = 0, tot_sigma = 0, primary_energy = energy, final_energy = 0, bohr_straggling = 0, diff_angle = 0;
 
-	G4double det_FWHM = detector->GetDetectorResolution();
-	G4double xsecRTR = 0, RBS_yield = 0, tot_sigma = 0, primary_energy = energy, final_energy = 0, bohr_straggling = 0, detector_fwhm = 0;
-	G4double* parameters;
-	if (det_FWHM < 10. *keV)
-		detector_fwhm = (10. *keV) / 2.355;
-	else
-		detector_fwhm = det_FWHM / 2.355;
-
-	G4int use_const_angle     = detector->GetConstAngle();
-	G4int rbs_eval            = detector->GetRBSCalc();
-	G4double ROI_region       = detector->GetRBSROImin();
-	G4int fwhm_calc           = detector->GetCalcFWHM();
-	G4double RBS_norm_dist    = 0.1*nm;
-	G4double dead_thickness   = detector->GetDeadLayerThickness();
-	G4double solidAngle       = detector->GetSolidAngle();
-
-	G4double newWorldPosition = (position.z() + detector->GetLength(0) / 2);
-	G4double curr_angle = atan(momDir.x() / momDir.z()), diff_angle = 0;
-	
-	if (use_const_angle == 1)
-		//diff_angle = Angle;
+	if (detector->GetConstAngle())
 		diff_angle = scattering_angle;
-	else
+	else {
+		G4double curr_angle = atan(momDir.x() / momDir.z());
 		diff_angle = Angle - curr_angle;
-	if (rbs_eval) {
+	}
+	//
+	if (detector->GetRBSCalc()) {
+		G4String dead_material_name = detector->GetDeadLayer();
+		const G4Material* dead_material = G4NistManager::Instance()->FindOrBuildMaterial(dead_material_name);
+		G4Material* d_mat = G4NistManager::Instance()->FindOrBuildMaterial(dead_material_name);
 		for (uint8_t i=0; i<NoOfElements[layer]; i++) {
+			G4int A1 = fPrimary->GetParticleGun()->GetParticleDefinition()->GetAtomicMass();
 			G4double RecEn = RecoilEnergy(primary_energy, diff_angle, A1, Mnumb[layer][i]);
-			G4String el_name = sample_material[layer]->GetElement(i)->GetName();
-			xsecRTR = 1.;
-			if (detector->GetSigmaCalc())
-				xsecRTR = Get2DRTRValue(primary_energy, el_name, diff_angle);
-			//
-			if (RecEn /MeV > ROI_region) {
-				xsecRTR = xsecRTR * nud_el[layer][i];
-				RBS_yield = CalculateTotalRBSYield(primary_energy, A1, Mnumb[layer][i], Z1, Znumb[layer][i], diff_angle, RBS_norm_dist, solidAngle, xsecRTR, Adens[layer][i],angle_of_incidence);
-				parameters = CalcEnergyLeft(newWorldPosition, RecEn);
-				final_energy = parameters[0];
-				bohr_straggling = parameters[1];
-				parameters[0] = parameters[1] = 0;
-				// filling of RBS histograms
+			G4double ROI_region = detector->GetRBSROImin();
+			if (RecEn > ROI_region) {
+				G4double ptr_pars[2];
+				G4double newWorldPosition = (position.z() + detector->GetLength(0) / 2);
+				CalcEnergyLeft(newWorldPosition, RecEn, ptr_pars);
+				final_energy = ptr_pars[0];
+				bohr_straggling = ptr_pars[1];
 				if (final_energy > ROI_region) {
-					final_energy = CalculateDeadLayerEffect(final_energy, dead_material,dead_thickness,fParticle);
+					xsecRTR = 1.;
+					if (detector->GetSigmaCalc()) {
+						G4String el_name = sample_material[layer]->GetElement(i)->GetName();
+						xsecRTR = Get2DRTRValue(primary_energy, el_name, diff_angle);
+					}
+					xsecRTR = xsecRTR * nud_el[layer][i];
+					//
+					G4double solidAngle = detector->GetSolidAngle();
+					G4double dead_thickness = detector->GetDeadLayerThickness();
+					G4int Z1 = fPrimary->GetParticleGun()->GetParticleDefinition()->GetAtomicNumber();
+					//
+					RBS_yield = CalculateTotalRBSYield(primary_energy, A1, Mnumb[layer][i], Z1, Znumb[layer][i], diff_angle, solidAngle, xsecRTR, Adens[layer][i], angle_of_incidence);
+					final_energy = CalculateDeadLayerEffect(final_energy, dead_material, dead_thickness, fParticle);
 					G4double dead_layer_straggling = CalculateTotalBohrStraggling(final_energy, fParticle, d_mat, dead_thickness);
 					bohr_straggling += dead_layer_straggling;
-					if (Z1 == 3 && fwhm_calc)
-						detector_fwhm = (CalcDetectorFWHM(final_energy,Z1) / 1000 *MeV) / 2.355;
-					G4double sigma_det_sq = std::pow(detector_fwhm, 2);
-					tot_sigma = sigma_det_sq + bohr_straggling;
+
+					tot_sigma = GetDetectorSigmaSq(Z1, final_energy) + bohr_straggling;
 					FillGaussians(final_energy, tot_sigma, steps, RBS_yield, i, layer);
 				} else {
-					Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
-					run->MaxRBSDepth(newWorldPosition);
-					run->AddCount();
+					if (final_energy > 0.95 * ROI_region) {
+						Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+						run->MaxRBSDepth(newWorldPosition);
+						run->AddCount();
+					}
 				}
 			}
 		}// end of elements
@@ -1108,7 +1124,7 @@ void EventAction::FillSigmaCalcVectors(void)
 	for (uint8_t i=0; i<NUMBER_OF_MAX_LAYERS; i++) {
 		for (uint8_t j=0; j<NoOfElements[i]; j++) {
 			mat_name = sample_material[i]->GetElement(j)->GetName();
-			if (mat_name == "Si" && fVectorSi_total == nullptr) { 
+			if (mat_name == "Si" && fVectorSi_total == nullptr) {
 				fVectorSi_total = Get2DRTRVector("Si", A1);
 				fVectorSi_total->SetBicubicInterpolation(true);
 			} else if (mat_name == "O" && fVectorO_total == nullptr) {
@@ -1138,4 +1154,20 @@ void EventAction::FillSigmaCalcVectors(void)
 			}
 		} // end of cycle throu elements
 	} // end of cycle throu materials
+}
+
+G4double EventAction::GetDetectorSigmaSq(G4int Z1, G4double final_energy)
+{
+	G4double detector_fwhm = 0;
+	G4double det_FWHM = detector->GetDetectorResolution();
+
+	if (det_FWHM < 10. *keV)
+		detector_fwhm = (10. *keV) / 2.355;
+	else
+		detector_fwhm = det_FWHM / 2.355;
+
+	if (Z1 == 3 && detector->GetCalcFWHM())
+		detector_fwhm = (CalcDetectorFWHM(final_energy, Z1) / 1000 *MeV) / 2.355;
+	G4double sigma_det_sq = std::pow(detector_fwhm, 2);
+	return sigma_det_sq;
 }

@@ -58,7 +58,6 @@ class G4Channeling : public G4VDiscreteProcess
 		virtual G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition*);
 
 	private:
-		G4hIonEffChargeSquare* eff_charge = new G4hIonEffChargeSquare("");
 		G4ParticleDefinition* GetParticleDefinition(const G4Track& aTrack)
 			{return const_cast<G4ParticleDefinition*>(aTrack.GetParticleDefinition());}
 		ExExChParticleUserInfo* GetInfo(const G4Track&);
@@ -83,10 +82,13 @@ class G4Channeling : public G4VDiscreteProcess
 		//----------------------------------------
 	public:
 		G4double GetEffectiveCharge(const G4Track& aTrack) {
+			G4hIonEffChargeSquare* eff_charge = new G4hIonEffChargeSquare("");
 			const G4ParticleDefinition* particle = aTrack.GetParticleDefinition();
 			G4Material* material = aTrack.GetMaterial();
 			G4double kinetic_energy = aTrack.GetKineticEnergy();
-			return sqrt(eff_charge->TheValue(particle,material,kinetic_energy));
+			G4double charge = sqrt(eff_charge->TheValue(particle, material, kinetic_energy));
+			delete eff_charge;
+			return charge;
 		}
 
 		G4double GetCriticalAngle2(const G4Track& aTrack)
@@ -190,10 +192,8 @@ class G4Channeling : public G4VDiscreteProcess
 		G4double fMinimumEnergy, fMaximumMomentumRatio;
 		G4double fTimeStepMin, fTimeStepMax;
 		G4double fTransverseVariationMax;
-		
-		const G4ThreeVector k010;
 
-		G4bool enable_rechanneling, v11_algo, org_step_size, use_step_size, print_debug;
+		G4bool enable_rechanneling, v11_algo, org_step_size, use_step_size, print_debug, dynamic_step_size;
 		G4double density_limit, step_size_value, mfp_value, chan_step;
 		G4ChannelingMessenger* fChMessenger;
 };
