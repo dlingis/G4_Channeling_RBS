@@ -62,34 +62,26 @@
 #define EC_SAMPLE     "data/Si001ax_100K"
 #define SZ_SAMPLE     G4ThreeVector(1.,1.,1.)
 #define POS_SAMPLE    G4ThreeVector(0.,0.,0.)
+#define MAT_SAMPLE    "G4_Si"
+#define DETSZ_SAMPLE  G4ThreeVector(50.*mm, 50.*mm, 1.*mm)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction():
-fECfileName{EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
-	EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
-	EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
-	EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
-	EC_SAMPLE, EC_SAMPLE, EC_SAMPLE},
-stepLimit(0),
-fMaterialName{"G4_Si","G4_Si","G4_Si","G4_Si","G4_Si"},
+fECfileName{EC_SAMPLE, EC_SAMPLE, EC_SAMPLE, EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
+			EC_SAMPLE, EC_SAMPLE, EC_SAMPLE, EC_SAMPLE, EC_SAMPLE, EC_SAMPLE,
+			EC_SAMPLE, EC_SAMPLE, EC_SAMPLE},
+stepLimit(0), fMaterialName{MAT_SAMPLE, MAT_SAMPLE, MAT_SAMPLE, MAT_SAMPLE, MAT_SAMPLE},
 fSizes{SZ_SAMPLE, SZ_SAMPLE, SZ_SAMPLE, SZ_SAMPLE, SZ_SAMPLE},
-fAngles(POS_SAMPLE),
-fWorldMaterial("G4_Galactic"),
-fDetectorMaterialName(""),
-fDetectorSizes(G4ThreeVector(50. * CLHEP::mm,50. * CLHEP::mm,1 * CLHEP::mm)),
-fDetectorDistance{-20. * CLHEP::cm,-19. * CLHEP::cm,+19. * CLHEP::cm,+20. * CLHEP::cm,+40. * CLHEP::cm}, 
-fCrystalAmorphous{0,0,0,0,0},
-position{POS_SAMPLE, POS_SAMPLE, POS_SAMPLE, POS_SAMPLE},
-rbs_angle(160.*degree),sigma_calc(0),rbs_calc(0),rbs_step(0),/*add element or material for mix*/material_mixing(0.), sec_material_ratio(0.),
-detector_resolution(10.*keV),gauss_counter(5),
-//custom material definition
-enable_custom_material(0),element1(""),element2(""),element3(""),custom_density(0.),part1(0),part2(0),part3(0),
-// other parameters
-dead_thickness(100.),solidAngle(1.),
-material_for_mix(0.),mix_material_name("G4_Si"),enable_fwhm_calc(0.),rbs_roi_min(50.*keV),use_const_angle(0.),
-use_xs_transformation(0),
-histo_tracking(false)
+fAngles(POS_SAMPLE), fWorldMaterial("G4_Galactic"),
+fDetectorMaterialName(""), fDetectorSizes(DETSZ_SAMPLE), fDetectorDistance{-20. *cm, -19. *cm, +19. *cm, +20. *cm, +40. *cm}, 
+fCrystalAmorphous{0,0,0,0,0}, maxStep(0.), rbs_angle(160.*degree), rbs_step(0), sec_material_ratio(0.),
+detector_resolution(10.*keV), position{POS_SAMPLE, POS_SAMPLE, POS_SAMPLE, POS_SAMPLE}, 
+sigma_calc(0), rbs_calc(0), material_mixing(0), enable_custom_material(0), use_const_angle(false), enable_fwhm_calc(0.),
+use_xs_transformation(0), histo_tracking(false), gauss_counter(5), material_for_mix(0),
+element1(""), element2(""), element3(""), dead_material_name(MAT_SAMPLE), mix_material_name(MAT_SAMPLE),
+custom_density(0.), part1(0), part2(0), part3(0), dead_thickness(100.), solidAngle(1.), rbs_roi_min(50. *keV),
+array_for_histos{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 {
 	fMessenger = new DetectorConstructionMessenger(this); 
 }
@@ -206,8 +198,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 	G4Element* elSi = G4NistManager::Instance()->FindOrBuildElement(14);
 	G4Element* elC = G4NistManager::Instance()->FindOrBuildElement(6);
 	//G4Element* elAr = G4NistManager::Instance()->FindOrBuildElement(18);
-
-	G4int ncomponents, natoms;
 
 	// Nb2O5
 	G4Material* Nb2O5 = new G4Material("Nb2O5", 4.6 *g/cm3, 2);
@@ -683,43 +673,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 		}
 	}
 
-	G4ChannelingMaterialData* matData;
-	G4double LatConst1, LatConst2, LatConst3;
-	if (!fCrystalAmorphous[0]) {
-		matData = GetMatData(crystalLogic_cry);
-		LatConst1 = matData->GetPot()->GetIntSp(0);
-		LatConst2 = matData->GetPot()->GetIntSp(1);
-		LatConst3 = matData->GetPot()->GetIntSp(2);
-		SetLatticeConstants(0,G4ThreeVector(LatConst1,LatConst2,LatConst3));
-	}
-	if (!fCrystalAmorphous[1]) {
-		matData = GetMatData(crystalLogic2_cry);
-		LatConst1 = matData->GetPot()->GetIntSp(0);
-		LatConst2 = matData->GetPot()->GetIntSp(1);
-		LatConst3 = matData->GetPot()->GetIntSp(2);
-		SetLatticeConstants(1,G4ThreeVector(LatConst1,LatConst2,LatConst3));
-	}
-	if (!fCrystalAmorphous[2]) {
-		matData = GetMatData(crystalLogic3_cry);
-		LatConst1 = matData->GetPot()->GetIntSp(0);
-		LatConst2 = matData->GetPot()->GetIntSp(1);
-		LatConst3 = matData->GetPot()->GetIntSp(2);
-		SetLatticeConstants(2,G4ThreeVector(LatConst1,LatConst2,LatConst3));
-	}
-	if (!fCrystalAmorphous[3]) {
-		matData = GetMatData(crystalLogic4_cry);
-		LatConst1 = matData->GetPot()->GetIntSp(0);
-		LatConst2 = matData->GetPot()->GetIntSp(1);
-		LatConst3 = matData->GetPot()->GetIntSp(2);
-		SetLatticeConstants(3,G4ThreeVector(LatConst1,LatConst2,LatConst3));
-	}
-	if (!fCrystalAmorphous[4]) {
-		matData = GetMatData(crystalLogic5_cry);
-		LatConst1 = matData->GetPot()->GetIntSp(0);
-		LatConst2 = matData->GetPot()->GetIntSp(1);
-		LatConst3 = matData->GetPot()->GetIntSp(2);
-		SetLatticeConstants(4,G4ThreeVector(LatConst1,LatConst2,LatConst3));
-	}
 	return worldPhysical;
 }
 

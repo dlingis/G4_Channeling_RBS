@@ -61,7 +61,6 @@ class DetectorConstructionMessenger: public G4UImessenger
 
 		G4UIdirectory*                  fMyXtalDirectory;
 		G4UIdirectory*                  fMyDetDirectory;
-		G4UIdirectory*                  fMyChanDirectory;
 
 		G4UIcmdWith3VectorAndUnit*      fSizeCmd[5];
 		G4UIcmdWith3VectorAndUnit*      fPosCmd[4];

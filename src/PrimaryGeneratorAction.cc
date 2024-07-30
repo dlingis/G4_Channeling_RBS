@@ -59,6 +59,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
 	delete fParticleGun;
+	delete fPGM;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -73,10 +74,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		G4double py = -sin(theta)*sin(fi);
 		G4double pz = -cos(theta);
 		G4ThreeVector dir = G4ThreeVector(px, py, pz);
-		G4cout << " direction vector is " << dir << G4endl;
 		fParticleGun->GetCurrentSource()->GetAngDist()->SetParticleMomentumDirection(dir);
 	}
-	
 	fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
