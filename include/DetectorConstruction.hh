@@ -62,11 +62,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
 	private:
 		DetectorConstructionMessenger* fMessenger;
-		G4VPhysicalVolume* physAbsor;
-		G4VPhysicalVolume* physAbsor2;
-		G4VPhysicalVolume* physAbsor3;
-		G4VPhysicalVolume* physAbsor4;
-		G4VPhysicalVolume* physAbsor5;
 		G4VPhysicalVolume* worldPhysical; 
 
 		G4String fECfileName[LAYERS][3];
@@ -77,51 +72,25 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 		G4ThreeVector fAngles;
 		G4String fWorldMaterial;
 
-		G4LogicalVolume*        crystalLogic_amo;
-		G4LogicalVolume*        crystalLogic2_amo;
-		G4LogicalVolume*        crystalLogic3_amo;
-		G4LogicalVolume*        crystalLogic4_amo;
-		G4LogicalVolume*        crystalLogic5_amo;
-
-		G4LogicalCrystalVolume* crystalLogic_cry;
-		G4LogicalCrystalVolume* crystalLogic2_cry;
-		G4LogicalCrystalVolume* crystalLogic3_cry;
-		G4LogicalCrystalVolume* crystalLogic4_cry;
-		G4LogicalCrystalVolume* crystalLogic5_cry;
-
-		G4ExtendedMaterial*     Crystal;
-		G4ExtendedMaterial*     Crystal2;
-		G4ExtendedMaterial*     Crystal3;
-		G4ExtendedMaterial*     Crystal4;
-		G4ExtendedMaterial*     Crystal5;
-
-		G4LogicalVolume*        crystalLogic;
-		G4LogicalVolume*        crystalLogic2;
-		G4LogicalVolume*        crystalLogic3;
-		G4LogicalVolume*        crystalLogic4;
-		G4LogicalVolume*        crystalLogic5;
+		G4LogicalVolume*        crystal_logic_v_amo[LAYERS];
+		G4LogicalCrystalVolume* crystal_logic_v_cry[LAYERS];
+		G4LogicalVolume*        crystal_logic_v[LAYERS];
+		G4VPhysicalVolume*      crystal_physical_v[LAYERS];
 	
 	public:
-		G4String GetEC(G4int la, G4int el) {return fECfileName[la][el];}
-		void SetEC(G4int la, G4int el, G4String name) {fECfileName[la][el] = name;}
+		G4String GetEC(G4int la, G4int el)                  {return fECfileName[la][el];}
+		void SetEC(G4int la, G4int el, G4String name)       {fECfileName[la][el] = name;}
 
-		G4String GetMaterial(G4int i) {return fMaterialName[i];}
-		void SetMaterial(G4int i,G4String aString) {fMaterialName[i] = aString;}
+		G4String GetMaterial(G4int i)                       {return fMaterialName[i];}
+		void SetMaterial(G4int i,G4String aString)          {fMaterialName[i] = aString;}
 
-		G4ThreeVector GetSize(G4int i) {return fSizes[i];}
-		void SetSize(G4int i, G4ThreeVector a3vec) {fSizes[i] = a3vec;}
+		G4ThreeVector GetSize(G4int i)                      {return fSizes[i];}
+		void SetSize(G4int i, G4ThreeVector a3vec)          {fSizes[i] = a3vec;}
 
-		G4ThreeVector GetAngles() {return fAngles;}
-		void SetAngles(G4ThreeVector a3vec) {fAngles = a3vec;}
+		G4ThreeVector GetAngles()                           {return fAngles;}
+		void SetAngles(G4ThreeVector a3vec)                 {fAngles = a3vec;}
 
-		G4VPhysicalVolume* GetIntAbsorber(G4int i) {
-								if(i == 0) return physAbsor;
-								else if(i == 1) return physAbsor2;
-								else if(i == 2) return physAbsor3;
-								else if(i == 3) return physAbsor4;
-								else if(i == 4) return physAbsor5;
-								else return physAbsor;
-								};
+		G4VPhysicalVolume* GetIntAbsorber(G4int i)          {return crystal_physical_v[i];};
 
 		const G4VPhysicalVolume* GetWorld()                 {return worldPhysical;};
 		G4Material* GetMaterialM(G4int i)                   {return mat[i];};
@@ -236,9 +205,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 	private:
 		G4String                fDetectorMaterialName;
 		G4ThreeVector           fDetectorSizes;
-		G4double                fDetectorDistance[5];
+		G4double                fDetectorDistance[LAYERS];
 
-		G4bool                  fCrystalAmorphous[5];
+		G4bool                  fCrystalAmorphous[LAYERS];
 
 		G4double                maxStep, rbs_angle, rbs_step, sec_material_ratio, detector_resolution;
 		G4ThreeVector           position[4];
@@ -249,10 +218,10 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 		G4String                element1, element2, element3, dead_material_name, mix_material_name;
 		G4double                custom_density, part1, part2, part3, dead_thickness, solidAngle, rbs_roi_min;
 		
-		G4Material*             mat[5];
+		G4Material*             mat[LAYERS];
 		G4Material*             dead_material;
 		G4Material*             mixing_material;
-		G4Material*             mat_components[5][5];
+		G4Material*             mat_components[LAYERS][5];
 		G4double                array_for_histos[12];
 
 	G4ChannelingMaterialData* GetMatData(G4LogicalVolume* aLV) {

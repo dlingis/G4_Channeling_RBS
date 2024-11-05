@@ -682,7 +682,7 @@ void Run::EndOfRun()
 		analysisManager->ScaleH1(16,fcc);
 
 		binWidth = analysisManager->GetH1Width(17) * analysisManager->GetH1Unit(17);
-			fcc = (1. / (binWidth * numberOfEvent)) *(cm/eV);	
+		fcc = (1. / (binWidth * numberOfEvent)) *(cm/eV);	
 		analysisManager->ScaleH1(17,fcc);
 	}
 	//remove all contents in fProcCounter, fCount 

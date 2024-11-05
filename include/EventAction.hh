@@ -42,6 +42,9 @@
 #include "G4Element.hh"
 #include "G4Isotope.hh"
 #include "G4UAtomicDeexcitation.hh"
+#include "CrystalDetectorHit.hh"
+#include "HistoManager.hh"
+#include "Run.hh"
 
 #define NUMBER_OF_LOCATIONS    10
 #define NUMBER_OF_MAX_LAYERS    5
@@ -80,14 +83,16 @@ class EventAction : public G4UserEventAction
 		G4Physics2DVector* Get2DRTRVector(G4String element, G4int Z);
 		G4double Get2DRTRValue(G4double energy, G4String elname, G4double angle);
 		// distribution functions
+		void ProcessDetHits(CrystalDetectorHitsCollection* sd, G4int layer, G4int elements);
 		G4double GenerateGaussian(G4double x, G4double y, G4double sigma_sq);
 		void CalcEnergyLeft(G4double depth, G4double energy, G4double ptr_pars[2]);
 		void PrepareDistances();
-		G4double CalcLossInLayer(G4int i, G4double dist, G4double energy, G4ParticleDefinition* particle);
-		G4double CalcStragglingInLayer(G4int i, G4double dist, G4double energy, G4ParticleDefinition* particle);
 		G4double GetGaussSum(G4double energy, G4double sigma);
 		void FillGaussians(G4double energy, G4double sigma, G4double steps, G4double yield, G4int element, G4int layer);
-		void CalculateRBS(G4int layer, G4double energy, G4ThreeVector position, G4ThreeVector momDir, G4double steps, G4ParticleDefinition* fParticle);
+		void CalculateRBS(G4int layer, G4double energy, G4ThreeVector position, G4ThreeVector momDir, G4double steps, G4ParticleDefinition* fParticle, G4int elements, G4double* nud_el);
+		bool CalculateFinalEnergy(G4double recoil_energy, G4ThreeVector position, G4double& final_energy, G4double& bohr_straggling, G4double detector_length, G4double ROI_region);
+		void ProcessRBSYield(G4double primary_energy, G4double& final_energy, G4double& bohr_straggling, G4int layer, G4int element_idx, G4double diff_angle, G4int A1, G4ParticleDefinition* fParticle, const G4Material* dead_material, G4double steps, G4double angle_of_incidence, G4double nud_el);
+		G4double GetCrossSection(G4double primary_energy, G4int layer, G4int element_idx, G4double diff_angle, G4double nud);
 		void PrepareHistoBase(void);
 		void FillH2ChannelingHistos(G4double z_pos, G4double x_pos, G4double y_pos, G4double wo_x_pos, G4double wo_y_pos);
 		void FillSigmaCalcVectors(void);

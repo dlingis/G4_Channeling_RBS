@@ -320,8 +320,7 @@ G4bool G4Channeling::UpdateParameters(const G4Track& aTrack)
 		GetInfo(aTrack)->SetLastChannelingWorldMomentum(momWorld);
 
 		return true;
-	} else
-		return false;
+	}
 	return false;
 }
 
@@ -378,7 +377,7 @@ GetMeanFreePath(const G4Track& aTrack, G4double /*previousStepSize */, G4ForceCo
 		if (use_step_size) {
 			fTimeStepMin = step_size_value;
 			if (print_debug)
-				G4cout << " mfp = " << mfp_value/nm << " [nm], timestepmin = " << fTimeStepMin << G4endl;
+				G4cout << " mfp = " << mfp_value/nm << " [nm], timestepmin = " << fTimeStepMin/nm << " [nm] " << G4endl;
 			return mfp_value;
 		}
 
@@ -386,13 +385,13 @@ GetMeanFreePath(const G4Track& aTrack, G4double /*previousStepSize */, G4ForceCo
 			G4double osc_per = GetOscillationPeriod(aTrack);
 			fTimeStepMin = osc_per * 2.e-4;
 			if (print_debug)
-				G4cout << " mfp = " << osc_per * 0.01 << " [nm], timestepmin = " << fTimeStepMin << G4endl;
+				G4cout << " mfp = " << osc_per * 0.01 << " [nm], timestepmin = " << fTimeStepMin/nm << " [nm] " << G4endl;
 			return osc_per * 0.01;
 		} else {
 			G4double osc_per2 = GetOscillationPeriod2(aTrack);
 			fTimeStepMin = osc_per2 * chan_step * 0.01;
 			if (print_debug)
-				G4cout << " mfp = " << osc_per2 * chan_step << " [nm], timestepmin = " << fTimeStepMin << G4endl;
+				G4cout << " mfp = " << osc_per2 * chan_step << " [nm], timestepmin = " << fTimeStepMin/nm << " [nm] " << G4endl;
 			return osc_per2 * chan_step;
 		}
 	} else {

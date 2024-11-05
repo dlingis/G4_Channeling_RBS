@@ -34,12 +34,9 @@
 
 #include "EventAction.hh"
 #include "RunAction.hh"
-#include "Run.hh"
-#include "HistoManager.hh"
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
-#include "CrystalDetectorHit.hh"
 #include "SensitiveDetectorHit.hh"
 #include "G4Material.hh"
 #include "DetectorConstruction.hh"
@@ -180,7 +177,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 	G4ParticleDefinition* fParticle = fPrimary->GetParticleGun()->GetParticleDefinition();
 	G4double primary_energy = fPrimary->GetParticleGun()->GetParticleEnergy();
 	run->PrimaryEnergy(primary_energy);
-	G4int track_histos = detector->GetTrackingHistos();
+	// G4int track_histos = detector->GetTrackingHistos();
 	//**************************************************************************
 	// Incidence angle
 	G4double angle_of_incidence = atan(fPrimary->GetParticleGun()->GetParticleMomentumDirection().x() / fPrimary->GetParticleGun()->GetParticleMomentumDirection().z());
@@ -193,9 +190,9 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 	//scattering angle
 	Angle = detector->GetRBSAngle();
 	angle_of_exit = pi - Angle;
-	G4EmCalculator emCalculator;
+	// G4EmCalculator emCalculator;
 	G4String dead_material_name = detector->GetDeadLayer();
-	G4ThreeVector ch_pos;
+	// G4ThreeVector ch_pos;
 
 	for (int i=0; i<NUMBER_OF_MAX_LAYERS; i++) {
 		sample_material[i] = detector->GetMaterialM(i);
@@ -233,7 +230,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 		G4String sdName;
 		if (SDman->FindSensitiveDetector(sdName="telescope",0)){
 			sdht_ID = SDman->GetCollectionID(sdName="telescope/collection");
-	}
+		}
 	}
 
 	SensitiveDetectorHitsCollection* sdht = 0;
@@ -272,24 +269,24 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 	// sensitive detectors
 	G4String sdName;
 	if (sd0_ID == -1) {
-		if(SDman->FindSensitiveDetector(sdName="crystaldetector",0))
-			sd0_ID = SDman->GetCollectionID(sdName="crystaldetector/collection");
+		if(SDman->FindSensitiveDetector(sdName="crystaldetector0",0))
+			sd0_ID = SDman->GetCollectionID(sdName="crystaldetector0/collection");
 	}
 	if (sd1_ID == -1) {
-		if(SDman->FindSensitiveDetector(sdName="crystaldetector2",0))
-			sd1_ID = SDman->GetCollectionID(sdName="crystaldetector2/collection");
+		if(SDman->FindSensitiveDetector(sdName="crystaldetector1",0))
+			sd1_ID = SDman->GetCollectionID(sdName="crystaldetector1/collection");
 	}
 	if (sd2_ID == -1) {
-		if(SDman->FindSensitiveDetector(sdName="crystaldetector3",0))
-			sd2_ID = SDman->GetCollectionID(sdName="crystaldetector3/collection");
+		if(SDman->FindSensitiveDetector(sdName="crystaldetector2",0))
+			sd2_ID = SDman->GetCollectionID(sdName="crystaldetector2/collection");
 	}
 	if (sd3_ID == -1) {
-		if(SDman->FindSensitiveDetector(sdName="crystaldetector4",0))
-			sd3_ID = SDman->GetCollectionID(sdName="crystaldetector4/collection");
+		if(SDman->FindSensitiveDetector(sdName="crystaldetector3",0))
+			sd3_ID = SDman->GetCollectionID(sdName="crystaldetector3/collection");
 	}
 	if (sd4_ID == -1) {
-		if(SDman->FindSensitiveDetector(sdName="crystaldetector5",0))
-			sd4_ID = SDman->GetCollectionID(sdName="crystaldetector5/collection");
+		if(SDman->FindSensitiveDetector(sdName="crystaldetector4",0))
+			sd4_ID = SDman->GetCollectionID(sdName="crystaldetector4/collection");
 	}
 
 	CrystalDetectorHitsCollection* sd0 = 0;
@@ -375,426 +372,93 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 		analysisManager->FillNtupleDColumn(41, posYout / CLHEP::mm);
 	}
 
-	// mother volume sensitive detector
-	if (sd0) {
-		G4int n_hit_sd = sd0->entries();
-		run->add_entry_sd(n_hit_sd);
-		for (int i1=0; i1<n_hit_sd; i1++) {
-			CrystalDetectorHit* aHit = (*sd0)[i1];
-			steps = aHit->GetStep();
-			position = aHit->GetWorldPos();
-			sample_energy = aHit->GetKinECR();
-			ch_pos = aHit->GetChPos();
-			nud = aHit->GetNud();
-			efx = aHit->GetEFX();
-			efy = aHit->GetEFY();
-			eld = aHit->GetEld();
-			momDir = aHit->GetWorldMomentumDirection();
-			if (nud == 1.)
-				nud_el[0][0] = nud_el[0][1] = nud_el[0][2] = 1;
-			else {
-				nud_el[0][0] = aHit->GetNuD_a();
-				nud_el[0][1] = aHit->GetNuD_b();
-				nud_el[0][2] = aHit->GetNuD_c();
-			}
-			tot_step +=steps;
-			eldavg += eld * steps;
-			nudavg += nud * steps;
-			nudavg_a += nud_el[0][0] * steps;
-			nudavg_b += nud_el[0][1] * steps;
-			nudavg_c += nud_el[0][2] * steps;
-			efxavg += efx * steps;
-			efyavg += efy * steps;
+	ProcessDetHits(sd0, 0, NoOfElements[0]);
+	ProcessDetHits(sd1, 1, NoOfElements[1]);
+	ProcessDetHits(sd2, 2, NoOfElements[2]);
+	ProcessDetHits(sd3, 3, NoOfElements[3]);
+	ProcessDetHits(sd4, 4, NoOfElements[4]);
 
-			G4double z_pos = position.z() + detector->GetLength(0) / 2;
-			if (track_histos) {
-				FillH2ChannelingHistos(z_pos, ch_pos.x(), ch_pos.y(), position.x(), position.y());
-				analysisManager->FillP1(1, z_pos, nud);
-				analysisManager->FillP1(2, z_pos, eld);
-			}
-			if (sample_energy > detector->GetRBSROImin())
-				CalculateRBS(0, sample_energy, position, momDir, steps, fParticle);
-		}
-		run->add_total_step(tot_step);
-	}
-	if (tot_step > 0) {
-		nudavg /= tot_step;
-		eldavg /= tot_step;
-		efxavg /= tot_step;
-		efyavg /= tot_step;
-		nudavg_a /= tot_step;
-		nudavg_b /= tot_step;
-		nudavg_c /= tot_step;
-	} else {
-		nudavg = 0;
-		eldavg = 0;
-		efxavg = 0;
-		efyavg = 0;
-		nudavg_a = 0;
-		nudavg_b = 0;
-		nudavg_c = 0;
-	}
-	analysisManager->FillNtupleDColumn(5, efxavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(6, efyavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(7, nudavg);
-	analysisManager->FillNtupleDColumn(8, eldavg);
-	// elements
-	/*
-	analysisManager->FillNtupleDColumn(28, nudavg_a);
-	analysisManager->FillNtupleDColumn(29, nudavg_b);
-	analysisManager->FillNtupleDColumn(30, nudavg_c);
-	*/
-	//analysisManager->AddNtupleRow();
-	// end of mother sensitive detector
-
-//======================================================
-// LAYER 1
-//======================================================
-	efx = 0;
-	efy = 0;
-	eld = 0;
-	nud = 0;
-	efxavg = 0;
-	efyavg = 0;
-	eldavg = 0;
-	nudavg = 0;
-	nudavg_a = 0;
-	nudavg_b = 0;
-	nudavg_c = 0;
-
-	// layer1 sensitive detector
-	if (sd1) {
-		tot_step =0.;
-		int n_hit_sd = sd1->entries();
-		run->add_entry_sd(n_hit_sd);
-		for (int i1=0; i1<n_hit_sd; i1++) {
-			CrystalDetectorHit* aHit = (*sd1)[i1];
-			steps = aHit->GetStep();
-			position = aHit->GetWorldPos();
-			sample_energy = aHit->GetKinECR();
-			ch_pos = aHit->GetChPos();
-			nud = aHit->GetNud();
-			efx = aHit->GetEFX();
-			efy = aHit->GetEFY();
-			eld = aHit->GetEld();
-			momDir = aHit->GetWorldMomentumDirection();
-			if (nud == 1.)
-				nud_el[1][0] = nud_el[1][1] = nud_el[1][2] = 1;
-			else {
-				nud_el[1][0] = aHit->GetNuD_a();
-				nud_el[1][1] = aHit->GetNuD_b();
-				nud_el[1][2] = aHit->GetNuD_c();
-			}
-
-			tot_step += steps;
-			eldavg += eld * steps;
-			nudavg += nud * steps;
-			nudavg_a += nud_el[1][0] * steps;
-			nudavg_b += nud_el[1][1] * steps;
-			nudavg_c += nud_el[1][2] * steps;
-			efxavg += efx * steps;
-			efyavg += efy * steps;
-
-			G4double z_pos = position.z() + detector->GetLength(0) / 2;
-			if (track_histos) {
-				FillH2ChannelingHistos(z_pos, ch_pos.x(), ch_pos.y(), position.x(), position.y());
-				analysisManager->FillP1(3, z_pos, nud);
-				analysisManager->FillP1(4, z_pos, eld);
-			}
-			if (sample_energy > detector->GetRBSROImin())
-				CalculateRBS(1, sample_energy, position, momDir, steps, fParticle);
-		}
-		run->add_total_step(tot_step);
-	}// end of layer1 sensitive detector
-
-	if (tot_step > 0) {
-		nudavg /= tot_step;
-		eldavg /= tot_step;
-		efxavg /= tot_step;
-		efyavg /= tot_step;
-		nudavg_a /= tot_step;
-		nudavg_b /= tot_step;
-		nudavg_c /= tot_step;
-	} else {
-		nudavg = 0;
-		eldavg = 0;
-		efxavg = 0;
-		efyavg = 0;
-		nudavg_a = 0;
-		nudavg_b = 0;
-		nudavg_c = 0;
-	}
-	analysisManager->FillNtupleDColumn(9, efxavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(10, efyavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(11, nudavg);
-	analysisManager->FillNtupleDColumn(12, eldavg);
-	// elements
-	/*
-	analysisManager->FillNtupleDColumn(31, nudavg_a);
-	analysisManager->FillNtupleDColumn(32, nudavg_b);
-	analysisManager->FillNtupleDColumn(33, nudavg_c);
-	*/
-
-//======================================================
-// LAYER 2
-//======================================================
-	efx = 0;
-	efy = 0;
-	eld = 0;
-	nud = 0;
-	efxavg = 0;
-	efyavg = 0;
-	eldavg = 0;
-	nudavg = 0;
-	nudavg_a = 0;
-	nudavg_b = 0;
-	nudavg_c = 0;
-	// layer2 sensitive detector
-	if (sd2) {
-		tot_step =0.;
-		int n_hit_sd = sd2->entries();
-		run->add_entry_sd(n_hit_sd);
-		for (int i1=0; i1<n_hit_sd; i1++) {
-			CrystalDetectorHit* aHit = (*sd2)[i1];
-			steps = aHit->GetStep();
-			position = aHit->GetWorldPos();
-			sample_energy = aHit->GetKinECR();
-			ch_pos = aHit->GetChPos();
-			nud = aHit->GetNud();
-			efx = aHit->GetEFX();
-			efy = aHit->GetEFY();
-			eld = aHit->GetEld();
-			momDir = aHit->GetWorldMomentumDirection();
-			if (nud == 1.)
-				nud_el[2][0] = nud_el[2][1] = nud_el[2][2] = 1;
-			else {
-				nud_el[2][0] = aHit->GetNuD_a();
-				nud_el[2][1] = aHit->GetNuD_b();
-				nud_el[2][2] = aHit->GetNuD_c();
-			}
-
-			tot_step += steps;
-			eldavg += eld * steps;
-			nudavg += nud * steps;
-			nudavg_a += nud_el[2][0] * steps;
-			nudavg_b += nud_el[2][1] * steps;
-			nudavg_c += nud_el[2][2] * steps;
-			efxavg += efx * steps;
-			efyavg += efy * steps;
-
-			G4double z_pos = position.z() + detector->GetLength(0) / 2;
-			if (track_histos) {
-				FillH2ChannelingHistos(z_pos, ch_pos.x(), ch_pos.y(), position.x(), position.y());
-				analysisManager->FillP1(5, z_pos, nud);
-				analysisManager->FillP1(6, z_pos, eld);
-			}
-			if (sample_energy > detector->GetRBSROImin())
-				CalculateRBS(2, sample_energy, position, momDir, steps, fParticle);
-		}
-		run->add_total_step(tot_step); //all hits
-	}// end of layer2 sensitive detector
-	if (tot_step > 0) {
-		nudavg /= tot_step;
-		eldavg /= tot_step;
-		efxavg /= tot_step;
-		efyavg /= tot_step;
-		nudavg_a /= tot_step;
-		nudavg_b /= tot_step;
-		nudavg_c /= tot_step;
-	} else {
-		nudavg = 0;
-		eldavg = 0;
-		efxavg = 0;
-		efyavg = 0;
-		nudavg_a = 0;
-		nudavg_b = 0;
-		nudavg_c = 0;
-	}
-	analysisManager->FillNtupleDColumn(13, efxavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(14, efyavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(15, nudavg);
-	analysisManager->FillNtupleDColumn(16, eldavg);
-	// elements
-	/*
-	analysisManager->FillNtupleDColumn(34, nudavg_a);
-	analysisManager->FillNtupleDColumn(35, nudavg_b);
-	analysisManager->FillNtupleDColumn(36, nudavg_c);
-	*/
-//======================================================
-// LAYER 3
-//======================================================
-	efx = 0;
-	efy = 0;
-	eld = 0;
-	nud = 0;
-	efxavg = 0;
-	efyavg = 0;
-	eldavg = 0;
-	nudavg = 0;
-	nudavg_a = 0;
-	nudavg_b = 0;
-	nudavg_c = 0;
-	// layer3 sensitive detector
-	if (sd3) {
-		tot_step =0.;
-		int n_hit_sd = sd3->entries();
-		run->add_entry_sd(n_hit_sd);
-		for (int i1=0; i1<n_hit_sd; i1++) {
-			CrystalDetectorHit* aHit = (*sd3)[i1];
-			steps = aHit->GetStep();
-			position = aHit->GetWorldPos();
-			sample_energy = aHit->GetKinECR();
-			ch_pos = aHit->GetChPos();
-			nud = aHit->GetNud();
-			efx = aHit->GetEFX();
-			efy = aHit->GetEFY();
-			eld = aHit->GetEld();
-			momDir = aHit->GetWorldMomentumDirection();
-			if (nud == 1.)
-				nud_el[3][0] = nud_el[3][1] = nud_el[3][2] = 1;
-			else {
-				nud_el[3][0] = aHit->GetNuD_a();
-				nud_el[3][1] = aHit->GetNuD_b();
-				nud_el[3][2] = aHit->GetNuD_c();
-			}
-
-			tot_step += steps;
-			eldavg += eld * steps;
-			nudavg += nud * steps;
-			nudavg_a += nud_el[3][0] * steps;
-			nudavg_b += nud_el[3][1] * steps;
-			nudavg_c += nud_el[3][2] * steps;
-			efxavg += efx * steps;
-			efyavg += efy * steps;
-
-			G4double z_pos = position.z() + detector->GetLength(0) / 2;
-			if (track_histos) {
-				FillH2ChannelingHistos(z_pos, ch_pos.x(), ch_pos.y(), position.x(), position.y());
-				analysisManager->FillP1(7, z_pos, nud);
-				analysisManager->FillP1(8, z_pos, eld);
-			}
-			if (sample_energy > detector->GetRBSROImin())
-				CalculateRBS(3, sample_energy, position, momDir, steps, fParticle);
-		}
-		run->add_total_step(tot_step);
-	}
-	if (tot_step > 0) {
-		nudavg /= tot_step;
-		eldavg /= tot_step;
-		efxavg /= tot_step;
-		efyavg /= tot_step;
-		nudavg_a /= tot_step;
-		nudavg_b /= tot_step;
-		nudavg_c /= tot_step;
-	} else {
-		nudavg = 0;
-		eldavg = 0;
-		efxavg = 0;
-		efyavg = 0;
-		nudavg_a = 0;
-		nudavg_b = 0;
-		nudavg_c = 0;
-	}
-	analysisManager->FillNtupleDColumn(17, efxavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(18, efyavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(19, nudavg);
-	analysisManager->FillNtupleDColumn(20, eldavg);
-	// elements
-	/*
-	analysisManager->FillNtupleDColumn(37, nudavg_a);
-	analysisManager->FillNtupleDColumn(38, nudavg_b);
-	analysisManager->FillNtupleDColumn(39, nudavg_c);
-	*/
-
-//======================================================
-// LAYER 4
-//======================================================
-	efx = 0;
-	efy = 0;
-	eld = 0;
-	nud = 0;
-	efxavg = 0;
-	efyavg = 0;
-	eldavg = 0;
-	nudavg = 0;
-	nudavg_a = 0;
-	nudavg_b = 0;
-	nudavg_c = 0;
-	// layer4 sensitive detector
-	if (sd4) {
-		tot_step =0.;
-		int n_hit_sd = sd4->entries();
-		run->add_entry_sd(n_hit_sd);
-		for (int i1=0; i1<n_hit_sd; i1++){
-			CrystalDetectorHit* aHit = (*sd4)[i1];
-			steps = aHit->GetStep();
-			position = aHit->GetWorldPos();
-			sample_energy = aHit->GetKinECR();
-			ch_pos = aHit->GetChPos();
-			nud = aHit->GetNud();
-			efx = aHit->GetEFX();
-			efy = aHit->GetEFY();
-			eld = aHit->GetEld();
-			momDir = aHit->GetWorldMomentumDirection();
-			if (nud == 1.)
-				nud_el[4][0] = nud_el[4][1] = nud_el[4][2] = 1;
-			else {
-				nud_el[4][0] = aHit->GetNuD_a();
-				nud_el[4][1] = aHit->GetNuD_b();
-				nud_el[4][2] = aHit->GetNuD_c();
-			}
-
-			tot_step += steps;
-			eldavg += eld * steps;
-			nudavg += nud * steps;
-			nudavg_a += nud_el[4][0] * steps;
-			nudavg_b += nud_el[4][1] * steps;
-			nudavg_c += nud_el[4][2] * steps;
-			efxavg += efx * steps;
-			efyavg += efy * steps;
-
-			G4double z_pos = position.z() + detector->GetLength(0) / 2;
-			if (track_histos) {
-				FillH2ChannelingHistos(z_pos, ch_pos.x(), ch_pos.y(), position.x(), position.y());
-				analysisManager->FillP1(9, z_pos, nud);
-				analysisManager->FillP1(10, z_pos, eld);
-			}
-			if (sample_energy > detector->GetRBSROImin())
-				CalculateRBS(4, sample_energy, position, momDir, steps, fParticle);
-		}
-		run->add_total_step(tot_step);
-	}
-	if (tot_step > 0) {
-		nudavg /= tot_step;
-		eldavg /= tot_step;
-		efxavg /= tot_step;
-		efyavg /= tot_step;
-		nudavg_a /= tot_step;
-		nudavg_b /= tot_step;
-		nudavg_c /= tot_step;
-	} else {
-		nudavg = 0;
-		eldavg = 0;
-		efxavg = 0;
-		efyavg = 0;
-		nudavg_a = 0;
-		nudavg_b = 0;
-		nudavg_c = 0;
-	}
-	analysisManager->FillNtupleDColumn(21, efxavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(22, efyavg/ CLHEP::eV * CLHEP::angstrom);
-	analysisManager->FillNtupleDColumn(23, nudavg);
-	analysisManager->FillNtupleDColumn(24, eldavg);
-	// elements
-	/*
-	analysisManager->FillNtupleDColumn(40, nudavg_a);
-	analysisManager->FillNtupleDColumn(41, nudavg_b);
-	analysisManager->FillNtupleDColumn(42, nudavg_c);
-	*/
 	analysisManager->AddNtupleRow();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
+void EventAction::ProcessDetHits(CrystalDetectorHitsCollection* sd, G4int layer, G4int elements)
+{
+	if (!sd)
+		return;
+
+	Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+	G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
+	G4int track_histos = detector->GetTrackingHistos();
+	G4double RBSROImin = detector->GetRBSROImin();
+	G4ParticleDefinition* fParticle = fPrimary->GetParticleGun()->GetParticleDefinition();
+
+	G4double efx = 0, efy = 0, eld = 0, nud = 0;
+	G4double efxavg = 0, efyavg = 0, eldavg = 0, nudavg = 0;
+	G4double nudavg_a = 0, nudavg_b = 0, nudavg_c = 0;
+	G4double tot_step = 0;
+	int n_hit_sd = sd->entries();
+	run->add_entry_sd(n_hit_sd);
+
+	for (int i = 0; i < n_hit_sd; ++i) {
+		CrystalDetectorHit* aHit = (*sd)[i];
+		G4double steps = aHit->GetStep();
+		G4ThreeVector position = aHit->GetWorldPos();
+		G4double sample_energy = aHit->GetKinECR();
+		G4ThreeVector ch_pos = aHit->GetChPos();
+		G4double nud = aHit->GetNud();
+		G4double efx = aHit->GetEFX();
+		G4double efy = aHit->GetEFY();
+		G4double eld = aHit->GetEld();
+		G4ThreeVector momDir = aHit->GetWorldMomentumDirection();
+		G4double nud_el[3];
+		if (nud == 1.)
+			nud_el[0] = nud_el[1] = nud_el[2] = 1;
+		else {
+			nud_el[0] = aHit->GetNuD_a();
+			nud_el[1] = aHit->GetNuD_b();
+			nud_el[2] = aHit->GetNuD_c();
+		}
+
+		tot_step += steps;
+		eldavg += eld * steps;
+		nudavg += nud * steps;
+		nudavg_a += nud_el[0] * steps;
+		nudavg_b += nud_el[1] * steps;
+		nudavg_c += nud_el[2] * steps;
+		efxavg += efx * steps;
+		efyavg += efy * steps;
+
+		G4double z_pos = position.z() + detector->GetLength(0) / 2;
+		if (track_histos) {
+			FillH2ChannelingHistos(z_pos, ch_pos.x(), ch_pos.y(), position.x(), position.y());
+			analysisManager->FillP1(2 * layer + 1, z_pos, nud);
+			analysisManager->FillP1(2 * layer + 2, z_pos, eld);
+		}
+
+		if (sample_energy > RBSROImin) {
+			CalculateRBS(layer, sample_energy, position, momDir, steps, fParticle, elements, nud_el);
+		}
+	}
+
+	if (tot_step > 0) {
+		nudavg /= tot_step;
+		eldavg /= tot_step;
+		efxavg /= tot_step;
+		efyavg /= tot_step;
+		nudavg_a /= tot_step;
+		nudavg_b /= tot_step;
+		nudavg_c /= tot_step;
+	}
+	run->add_total_step(tot_step);
+
+	G4AnalysisManager::Instance()->FillNtupleDColumn(4 * layer + 1, efxavg / CLHEP::eV * CLHEP::angstrom);
+	G4AnalysisManager::Instance()->FillNtupleDColumn(4 * layer + 2, efyavg / CLHEP::eV * CLHEP::angstrom);
+	G4AnalysisManager::Instance()->FillNtupleDColumn(4 * layer + 3, nudavg);
+	G4AnalysisManager::Instance()->FillNtupleDColumn(4 * layer + 4, eldavg);
+}
 
 G4double EventAction::GenerateGaussian(G4double x, G4double y, G4double sigma_sq)
 {
@@ -863,6 +527,7 @@ void EventAction::CalcEnergyLeft(G4double depth, G4double energy, G4double ptr_p
 	G4ParticleDefinition* particle = fPrimary->GetParticleGun()->GetParticleDefinition();
 	G4double start_distance = 0;
 	G4double ROI_region = detector->GetRBSROImin();
+	G4double step_number = detector->GetEnLossStep();
 	ptr_pars[0] = ptr_pars[1] = 0.;
 
 	if (depth < layer_start_pos[0])                                     location = 1;
@@ -878,11 +543,20 @@ void EventAction::CalcEnergyLeft(G4double depth, G4double energy, G4double ptr_p
 
 	G4double final_fwhm = 0;
 	G4double final_energy = energy;
+	G4double distance = 0;
+	G4double cosine = cos(angle_of_exit);
 	start_distance = depth - start_pos[location-1];
 
 	while (location > 0) {
-		final_fwhm += CalcStragglingInLayer(location, start_distance, final_energy, particle);
-		final_energy = CalcLossInLayer(location, start_distance, final_energy, particle);
+		G4Material* mat = mat_matrix[location];
+		if (start_distance == 0)
+			distance = (dist_matrix[location] / cosine);
+		else
+			distance = (start_distance / cosine);
+		if ((distance / step_number) /nm < 1.)
+			step_number = ceil(distance / (1. *nm));
+		final_fwhm += CalculateTotalBohrStraggling(final_energy, particle, mat, distance);
+		final_energy = CalcTotEnLoss(final_energy, distance, step_number, particle, mat);
 		location--;
 		start_distance = 0;
 		// if final energy less than ROI, stop evaluation
@@ -946,53 +620,15 @@ void EventAction::PrepareDistances()
 	// }
 }
 
-G4double EventAction::CalcLossInLayer(G4int i, G4double dist, G4double energy, G4ParticleDefinition* particle)
-{
-	G4double final_energy = 0, distance = 0;
-	G4double step_number = detector->GetEnLossStep();
-	 
-	if (dist == 0)
-		distance = (dist_matrix[i] / cos(angle_of_exit));
-	else
-		distance = dist / cos(angle_of_exit);
-	//
-	if ((distance / step_number) /nm < 1.)
-		step_number = ceil(distance / (1. *nm));
-	//
-	if (energy > detector->GetRBSROImin()) {
-		G4Material* mat = mat_matrix[i];
-		final_energy = CalcTotEnLoss(energy, distance, step_number, particle, mat);
-	}
-	return final_energy;
-}
-
-G4double EventAction::CalcStragglingInLayer(G4int i, G4double dist, G4double energy, G4ParticleDefinition* particle)
-{
-	G4double final_stragg = 0, distance = 0;
-	G4double step_number = detector->GetEnLossStep();
-	if (dist == 0)
-		distance = (dist_matrix[i] / cos(angle_of_exit));
-	else
-		distance = dist / cos(angle_of_exit);
-	//
-	if ((distance / step_number) /nm < 1.)
-		step_number = ceil(distance / (1. *nm));
-	//
-	if (energy > detector->GetRBSROImin()) {
-		G4Material* mat = mat_matrix[i];
-		final_stragg = CalculateTotalBohrStraggling(energy, particle, mat, distance);
-	}
-	return final_stragg;
-}
-
 G4double EventAction::GetGaussSum(G4double energy, G4double sigma)
 {
 	G4int GK = detector->GetGaussCounter();
 	G4double Gauss_sum = 0;
+	G4double gaussian_denominator = GenerateGaussian(0, 0, sigma);
 	for (int k=-GK; k<=GK; k++)	{
 		G4double coef = k;
 		G4double Gauss_en = energy * (1 - (coef / 1000));
-		G4double Gauss_value = (GenerateGaussian(Gauss_en, energy, sigma)) / GenerateGaussian(0, 0, sigma);
+		G4double Gauss_value = (GenerateGaussian(Gauss_en, energy, sigma)) / gaussian_denominator;
 		Gauss_sum += Gauss_value;
 	}
 	return Gauss_sum;
@@ -1005,79 +641,97 @@ void EventAction::FillGaussians(G4double energy, G4double sigma, G4double steps,
 	G4double ROI_region	= detector->GetRBSROImin();
 	G4double Gauss_sum = GetGaussSum(energy, sigma);
 	G4int GK = detector->GetGaussCounter();
+	G4double normalized_gaussian = GenerateGaussian(0, 0, sigma);
+	G4double steps_to_dist = (steps / RBS_norm_dist);
+	G4double yield_x_steps = steps_to_dist * yield;
 
 	for (int k=-GK; k<=GK; k++) {
 		G4double coef = (G4double)k;
 		G4double Gauss_en 	= energy * (1 - (coef / 1000));
-		G4double Gauss_value = (GenerateGaussian(Gauss_en, energy, sigma)) / GenerateGaussian(0, 0, sigma);
-		G4double  mod_G_value = Gauss_value / Gauss_sum;
+		G4double Gauss_value = (GenerateGaussian(Gauss_en, energy, sigma)) / normalized_gaussian;
+		G4double mod_G_value = Gauss_value / Gauss_sum;
 		if (Gauss_en /MeV > ROI_region) {
-			analysisManager->FillH1(HistoBase[layer][0], Gauss_en, (yield * mod_G_value * (steps / RBS_norm_dist))); // total
-			analysisManager->FillH1(HistoBase[layer][1], Gauss_en, (yield * mod_G_value * (steps / RBS_norm_dist))); //substrate
+			analysisManager->FillH1(HistoBase[layer][0], Gauss_en, (mod_G_value * yield_x_steps)); // total
+			analysisManager->FillH1(HistoBase[layer][1], Gauss_en, (mod_G_value * yield_x_steps)); // substrate
 			if (element == 0)
-				analysisManager->FillH1(HistoBase[layer][2], Gauss_en, (yield * mod_G_value * (steps / RBS_norm_dist))); //el1
+				analysisManager->FillH1(HistoBase[layer][2], Gauss_en, (mod_G_value * yield_x_steps)); // el1
 			else if (element == 1)
-				analysisManager->FillH1(HistoBase[layer][3], Gauss_en, (yield * mod_G_value * (steps / RBS_norm_dist)));
+				analysisManager->FillH1(HistoBase[layer][3], Gauss_en, (mod_G_value * yield_x_steps)); // el2
 		}
 	}
 }
 
-void EventAction::CalculateRBS(G4int layer, G4double energy, G4ThreeVector position, G4ThreeVector momDir, G4double steps, G4ParticleDefinition* fParticle)
+void EventAction::CalculateRBS(G4int layer, G4double energy, G4ThreeVector position, G4ThreeVector momDir, G4double steps, G4ParticleDefinition* fParticle, G4int elements, G4double *nud_el)
 {
 	G4double angle_of_incidence = atan(fPrimary->GetParticleGun()->GetParticleMomentumDirection().x() / fPrimary->GetParticleGun()->GetParticleMomentumDirection().z());
-	G4double scattering_angle = (Angle - angle_of_incidence);
+	G4double rbs_angle = detector->GetRBSAngle();
+	G4double scattering_angle = (rbs_angle - angle_of_incidence);
 	G4double xsecRTR = 0, RBS_yield = 0, tot_sigma = 0, primary_energy = energy, final_energy = 0, bohr_straggling = 0, diff_angle = 0;
 
 	if (detector->GetConstAngle())
 		diff_angle = scattering_angle;
 	else {
 		G4double curr_angle = atan(momDir.x() / momDir.z());
-		diff_angle = Angle - curr_angle;
+		diff_angle = rbs_angle - curr_angle;
 	}
 	//
+	G4double ROI_region = detector->GetRBSROImin();
+	const G4Material* dead_material = G4NistManager::Instance()->FindOrBuildMaterial(detector->GetDeadLayer());
+	G4double det_length = detector->GetLength(0);
 	if (detector->GetRBSCalc()) {
-		G4String dead_material_name = detector->GetDeadLayer();
-		const G4Material* dead_material = G4NistManager::Instance()->FindOrBuildMaterial(dead_material_name);
-		G4Material* d_mat = G4NistManager::Instance()->FindOrBuildMaterial(dead_material_name);
-		for (uint8_t i=0; i<NoOfElements[layer]; i++) {
-			G4int A1 = fPrimary->GetParticleGun()->GetParticleDefinition()->GetAtomicMass();
-			G4double RecEn = RecoilEnergy(primary_energy, diff_angle, A1, Mnumb[layer][i]);
-			G4double ROI_region = detector->GetRBSROImin();
-			if (RecEn > ROI_region) {
-				G4double ptr_pars[2];
-				G4double newWorldPosition = (position.z() + detector->GetLength(0) / 2);
-				CalcEnergyLeft(newWorldPosition, RecEn, ptr_pars);
-				final_energy = ptr_pars[0];
-				bohr_straggling = ptr_pars[1];
-				if (final_energy > ROI_region) {
-					xsecRTR = 1.;
-					if (detector->GetSigmaCalc()) {
-						G4String el_name = sample_material[layer]->GetElement(i)->GetName();
-						xsecRTR = Get2DRTRValue(primary_energy, el_name, diff_angle);
-					}
-					xsecRTR = xsecRTR * nud_el[layer][i];
-					//
-					G4double solidAngle = detector->GetSolidAngle();
-					G4double dead_thickness = detector->GetDeadLayerThickness();
-					G4int Z1 = fPrimary->GetParticleGun()->GetParticleDefinition()->GetAtomicNumber();
-					//
-					RBS_yield = CalculateTotalRBSYield(primary_energy, A1, Mnumb[layer][i], Z1, Znumb[layer][i], diff_angle, solidAngle, xsecRTR, Adens[layer][i], angle_of_incidence);
-					final_energy = CalculateDeadLayerEffect(final_energy, dead_material, dead_thickness, fParticle);
-					G4double dead_layer_straggling = CalculateTotalBohrStraggling(final_energy, fParticle, d_mat, dead_thickness);
-					bohr_straggling += dead_layer_straggling;
+		if (layer < NUMB_MAX_LAYERS) {
+			for (G4int i=0; i<elements; i++) {
+				G4int A1 = fPrimary->GetParticleGun()->GetParticleDefinition()->GetAtomicMass();
+				G4double RecEn = RecoilEnergy(primary_energy, diff_angle, A1, Mnumb[layer][i]);
+				if (RecEn > ROI_region) {
+					bool is_within_ROI = CalculateFinalEnergy(RecEn, position, final_energy, bohr_straggling, det_length, ROI_region);
 
-					tot_sigma = GetDetectorSigmaSq(Z1, final_energy) + bohr_straggling;
-					FillGaussians(final_energy, tot_sigma, steps, RBS_yield, i, layer);
-				} else {
-					if (final_energy > 0.95 * ROI_region) {
+					if (is_within_ROI) {
+						ProcessRBSYield(primary_energy, final_energy, bohr_straggling, layer, i, diff_angle, A1, fParticle, dead_material, steps, angle_of_incidence, nud_el[i]);
+					} else if (final_energy > 0.95 * ROI_region) {
 						Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
-						run->MaxRBSDepth(newWorldPosition);
+						run->MaxRBSDepth(position.z() + det_length / 2);
 						run->AddCount();
 					}
 				}
 			}
-		}// end of elements
-	}	
+		}
+	}
+}
+
+bool EventAction::CalculateFinalEnergy(G4double recoil_energy, G4ThreeVector position, G4double& final_energy, G4double& bohr_straggling, G4double detector_length, G4double ROI_region)
+{
+	G4double ptr_pars[2];
+	G4double newWorldPosition = (position.z() + detector->GetLength(0) / 2);
+	CalcEnergyLeft(newWorldPosition, recoil_energy, ptr_pars);
+	final_energy = ptr_pars[0];
+	bohr_straggling = ptr_pars[1];
+
+	return final_energy > ROI_region;
+}
+
+void EventAction::ProcessRBSYield(G4double primary_energy, G4double& final_energy, G4double& bohr_straggling, G4int layer, G4int element_idx, G4double diff_angle, G4int A1, G4ParticleDefinition* fParticle, const G4Material* dead_material, G4double steps, G4double angle_of_incidence, G4double nud_el)
+{
+	G4double xsecRTR = GetCrossSection(primary_energy, layer, element_idx, diff_angle, nud_el);
+	G4double solidAngle = detector->GetSolidAngle();
+	G4double dead_thickness = detector->GetDeadLayerThickness();
+	G4int Z1 = fPrimary->GetParticleGun()->GetParticleDefinition()->GetAtomicNumber();
+	G4double RBS_yield = CalculateTotalRBSYield(primary_energy, A1, Mnumb[layer][element_idx], Z1, Znumb[layer][element_idx], diff_angle, solidAngle, xsecRTR, Adens[layer][element_idx], angle_of_incidence);
+	final_energy = CalculateDeadLayerEffect(final_energy, dead_material, dead_thickness, fParticle);
+	bohr_straggling += CalculateTotalBohrStraggling(final_energy, fParticle, dead_material, dead_thickness);
+	G4double tot_sigma = GetDetectorSigmaSq(Z1, final_energy) + bohr_straggling;
+
+	FillGaussians(final_energy, tot_sigma, steps, RBS_yield, element_idx, layer);
+}
+
+G4double EventAction::GetCrossSection(G4double primary_energy, G4int layer, G4int element_idx, G4double diff_angle, G4double nud)
+{
+	if (detector->GetSigmaCalc()) {
+		G4String el_name = sample_material[layer]->GetElement(element_idx)->GetName();
+		G4double xsec_rtr = Get2DRTRValue(primary_energy, el_name, diff_angle);
+		return xsec_rtr * nud;
+	}
+	return 1.0;
 }
 
 void EventAction::PrepareHistoBase(void)

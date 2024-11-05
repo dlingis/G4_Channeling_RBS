@@ -36,8 +36,6 @@
 #include "SteppingAction.hh"
 #include "StackingAction.hh"
 
-//#include "G4Channeling_l.hh"
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 ActionInitialization::ActionInitialization(DetectorConstruction* detector)
@@ -71,7 +69,7 @@ void ActionInitialization::Build() const
   EventAction* event = new EventAction(fDetector, primary);
   SetUserAction(event);  
   
-  TrackingAction* trackingAction = new TrackingAction(event, fDetector, primary );
+  TrackingAction* trackingAction = new TrackingAction(event, fDetector, primary);
   SetUserAction(trackingAction);
   
   SteppingAction* steppingAction = new SteppingAction(event, fDetector);

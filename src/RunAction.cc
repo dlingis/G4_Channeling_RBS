@@ -39,15 +39,6 @@
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
-#include "G4UnitsTable.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4EmCalculator.hh"
-#include "Randomize.hh"
-#include <iomanip>
-#include <iostream>
-
-//#include "G4MPI_USE.hh"
-//#include "G4MPImanager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

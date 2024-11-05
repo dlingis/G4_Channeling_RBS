@@ -50,31 +50,31 @@ G4VSensitiveDetector(name){
 	if (!amorphous) {
 		if (fileName1 != "") {
 			G4String fileAtD_a = fileName1 + "_atd.txt";
-			G4cout << "\n Added atomic density for sensitive detector " << name << " from file " << fileName1 << G4endl;
+			// G4cout << "\n Added atomic density for sensitive detector " << name << " from file " << fileName1 << G4endl;
 			fNucleiDensity_a =   new G4ChannelingECHARM(fileAtD_a,1.);
 			set_name1 = 1; 
 		} else {
-			G4cout << "\n No atomic density for sensitive detector " << name << G4endl;
+			// G4cout << "\n No atomic density for sensitive detector " << name << G4endl;
 			set_name1 = 0;
 		}
 
 		if (fileName2 != "") {
 			G4String fileAtD_b = fileName2 + "_atd.txt";
-			G4cout << "\n Added atomic density for sensitive detector " << name << " from file " << fileName2 << G4endl;
+			// G4cout << "\n Added atomic density for sensitive detector " << name << " from file " << fileName2 << G4endl;
 			fNucleiDensity_b =   new G4ChannelingECHARM(fileAtD_b,1.);
 			set_name2 = 1;
 		} else {
 			set_name2 = 0;
-			G4cout << "\n No atomic density for sensitive detector " << name << G4endl;	
+			// G4cout << "\n No atomic density for sensitive detector " << name << G4endl;	
 		}
 		if (fileName3 != "") {
 			G4String fileAtD_c = fileName3 + "_atd.txt";
-			G4cout << "\n Added atomic density for sensitive detector " << name << " from file " << fileName3 << G4endl;
+			// G4cout << "\n Added atomic density for sensitive detector " << name << " from file " << fileName3 << G4endl;
 			fNucleiDensity_c =   new G4ChannelingECHARM(fileAtD_c,1.);
 			set_name3 = 1;
 		} else {
 			set_name3 = 0;
-			G4cout << "\n No atomic density for sensitive detector " << name << G4endl;	
+			// G4cout << "\n No atomic density for sensitive detector " << name << G4endl;	
 		}
 	} else {
 		set_name1 = 0;
