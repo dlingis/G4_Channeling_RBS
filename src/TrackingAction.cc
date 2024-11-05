@@ -76,14 +76,16 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track)
 	}
 
 	G4VPhysicalVolume* volume = track->GetTouchableHandle()->GetVolume();
-	if (volume == fDetector->GetIntAbsorber(1) || volume == fDetector->GetIntAbsorber(2) || volume == fDetector->GetIntAbsorber(3) || volume == fDetector->GetIntAbsorber(4) || volume == fDetector->GetIntAbsorber(5)) {
-		//count secondary particles
-		if (track->GetTrackID() == 1)
-			return;
-		G4String name = track->GetDefinition()->GetParticleName();
-		G4double energy = track->GetKineticEnergy();
-		Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
-		run->ParticleCount(name,energy);
+	if (track->GetTrackID() == 1)
+		return;
+	
+	for (uint8_t i=0; i<NUMB_MAX_LAYERS; ++i) {
+		if (volume == fDetector->GetIntAbsorber(i)) {
+			G4String name = track->GetDefinition()->GetParticleName();
+			G4double energy = track->GetKineticEnergy();
+			Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
+			run->ParticleCount(name,energy);
+		}
 	}
 }
 
@@ -95,37 +97,34 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track)
 	Run* run = static_cast<Run*>(G4RunManager::GetRunManager()->GetNonConstCurrentRun());
 	G4VPhysicalVolume* volume = track->GetTouchableHandle()->GetVolume();
 
-	if (volume == fDetector->GetIntAbsorber(0) || volume == fDetector->GetIntAbsorber(1) || volume == fDetector->GetIntAbsorber(2) 
-		|| volume == fDetector->GetIntAbsorber(3) || volume == fDetector->GetIntAbsorber(4)) {
-		G4String parName = track->GetDefinition()->GetParticleName();
-		G4double Trleng = track->GetTrackLength() + fPrimary->GetParticleGun()->GetParticlePosition().z() + 0.5 * fDetector->GetLength(0);
+	G4String parName = track->GetDefinition()->GetParticleName();
+	G4double Trleng = track->GetTrackLength() + fPrimary->GetParticleGun()->GetParticlePosition().z() + 0.5 * fDetector->GetLength(0);
+	G4ThreeVector vertex = track->GetVertexPosition();
+	G4ThreeVector position = track->GetPosition() + 0.5 * fDetector->GetDimensions(0);
+	G4double z = track->GetPosition().z() + 0.5 * fDetector->GetLength(0);
 
-		if (track->GetParentID() == 0) {
-			fEventAction->AddTrueTrakLen(Trleng);
-			G4ThreeVector vertex = track->GetVertexPosition();
-			G4ThreeVector position = track->GetPosition() + 0.5 * fDetector->GetDimensions(0);
-			fEventAction->AddProjTrakLen(position.z());
-		}
-
-		if (track->GetTrackID() == 1) {
-			G4double z = track->GetPosition().z() + 0.5 * fDetector->GetLength(0);
-			fEventAction->AddProjectedRange(z);
-			// run->AddProjectedRange(z);
-			G4AnalysisManager* analysis = G4AnalysisManager::Instance();
-			analysis->FillH1(16, z);
-		}
-
-		//scattering angle of  primary particle
-		// TODO check whether this actually works
-		if (track->GetParentID() == 0 ) {
-			G4double theta = 0.0;
-			G4double vz = (track->GetMomentumDirection()).z();
-			//G4cout<<"Angle_Lab: "<<std::acos(vx)<<" Position_x: "<<px<<G4endl;
-			if(vz <= -1.0)
-				theta = -CLHEP::pi;
-			else if(vz < 1.0)
-				theta = std::acos(vz);
-			fEventAction->AddTheta(theta);
+	for (uint8_t i=0; i<5; ++i) {
+		if (volume == fDetector->GetIntAbsorber(i)) {
+			if (track->GetParentID() == 0) {
+				fEventAction->AddTrueTrakLen(Trleng);
+				fEventAction->AddProjTrakLen(position.z());
+				//scattering angle of  primary particle
+				// TODO check whether this actually works
+				G4double theta = 0.0;
+				G4double vz = (track->GetMomentumDirection()).z();
+				//G4cout<<"Angle_Lab: "<<std::acos(vx)<<" Position_x: "<<px<<G4endl;
+				if(vz <= -1.0)
+					theta = -CLHEP::pi;
+				else if(vz < 1.0)
+					theta = std::acos(vz);
+				fEventAction->AddTheta(theta);
+			}
+			if (track->GetTrackID() == 1) {
+				fEventAction->AddProjectedRange(z);
+				// run->AddProjectedRange(z);
+				G4AnalysisManager* analysis = G4AnalysisManager::Instance();
+				analysis->FillH1(16, z);
+			}
 		}
 	}
 	// keep only outgoing particle
@@ -163,8 +162,4 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track)
 	else if (type == "lepton")                   ih = 13;
 	if (ih > 0) analysis->FillH1(ih,energy);
 }
-
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-

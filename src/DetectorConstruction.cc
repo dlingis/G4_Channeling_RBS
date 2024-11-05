@@ -162,30 +162,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 	                      i1);
 	}
 
-	G4Box* crystalSolid = new G4Box("crystal.Solid",
-	                                fSizes[0].x()/2.,
-	                                fSizes[0].y()/2.,
-	                                fSizes[0].z()/2.);
-
-	G4Box* crystalSolid2 = new G4Box("crystal.solid2",
-	                                fSizes[1].x()/2.,
-	                                fSizes[1].y()/2.,
-	                                fSizes[1].z()/2.);
-
-	G4Box* crystalSolid3 = new G4Box("crystal.solid3",
-	                                fSizes[2].x()/2.,
-	                                fSizes[2].y()/2.,
-	                                fSizes[2].z()/2.);
-
-	G4Box* crystalSolid4 = new G4Box("crystal.solid4",
-	                                fSizes[3].x()/2.,
-	                                fSizes[3].y()/2.,
-	                                fSizes[3].z()/2.);
-
-	G4Box* crystalSolid5 = new G4Box("crystal.solid5",
-	                                fSizes[4].x()/2.,
-	                                fSizes[4].y()/2.,
-	                                fSizes[4].z()/2.);
+	G4Box *crystalSolid[LAYERS];
+	G4String crname;
+	for (uint8_t i=0; i<LAYERS; ++i) {
+		crname = "crystal.solid" + std::to_string(i);
+		crystalSolid[i] = new G4Box(crname,
+	                                fSizes[i].x()/2.,
+	                                fSizes[i].y()/2.,
+	                                fSizes[i].z()/2.);
+	}
 
 	G4String name, symbol;
 
@@ -223,12 +208,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 	G4Material* graphite = new G4Material("Graphite", 2.25 *g/cm3, 1);
 	graphite->AddElement(elC,1);
 
-
 	G4String plus = " + ";
 	G4String gap  = " ";
 
-
-	for (G4int i=0; i<5; ++i) {
+	for (G4int i=0; i<LAYERS; ++i) {
 		G4cout << " Material " << i << " name: " << fMaterialName[i] << G4endl;
 		if (fMaterialName[i] == "")
 			mat[i] = G4NistManager::Instance()->FindOrBuildMaterial("G4_Si");
@@ -310,7 +293,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 	G4String el_name = "element";
 	G4double avogadro = 6.022e+23;
 
-	for (G4int i=0; i<5; i++) {
+	for (G4int i=0; i<LAYERS; i++) {
 		G4int no_of_elements = mat[i]->GetNumberOfElements();
 		for(int j=0; j<no_of_elements; j++) {
 			G4String total_name = mat_name + std::to_string(i) + el_name + std::to_string(j);
@@ -336,7 +319,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
                                 1*nm);
     
   // -20 m
-  for(int i = 0; i<5; i++) {
+  for(int i = 0; i<LAYERS; i++) {
     G4int no_of_elements = mat[i]->GetNumberOfElements();
     	for(int k = 0; k< no_of_elements; k++) {
     	G4LogicalVolume* phantom2_logic = new G4LogicalVolume(phantom2,
@@ -363,314 +346,54 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 	if(fAngles.z()!=0.)
 		rot->rotateZ(fAngles.z());
 
-
-	// main layer crystal
-	Crystal = new G4ExtendedMaterial("crystal.material",mat[0]);
-	Crystal->RegisterExtension(std::unique_ptr<G4CrystalExtension>(new G4CrystalExtension(Crystal)));
-	G4CrystalExtension* crystalExtension = (G4CrystalExtension*)Crystal->RetrieveExtension("crystal");
-
-
-	crystalExtension->SetUnitCell(new G4CrystalUnitCell(5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    227));
-
-	Crystal->RegisterExtension(std::unique_ptr<G4ChannelingMaterialData>(new G4ChannelingMaterialData("channeling")));
-	G4ChannelingMaterialData* crystalChannelingData = (G4ChannelingMaterialData*)Crystal->RetrieveExtension("channeling");
-
-
-
-	crystalLogic_amo = new G4LogicalVolume (crystalSolid, mat[0], "crystal.logic_amo");
-	crystalLogic_cry = new G4LogicalCrystalVolume(crystalSolid, Crystal,"crystal.logic_cry"); 
-
-	if (fCrystalAmorphous[0]) {
-		//crystalLogic_amo = new G4LogicalVolume (crystalSolid, mat[0], "crystal.logic_amo"); // new
-		physAbsor = new G4PVPlacement(rot,
-		                              G4ThreeVector(),
-		                              crystalLogic_amo,
-		                              "crystal.physic_amo",
-		                              worldLogic,
-		                              false,
-		                              0,
-		                              true);
-
-		crystalLogic_amo->SetUserLimits(stepLimit);
-	} else {
-		crystalChannelingData->SetFilename(fECfileName[0][0]);
-		crystalLogic_cry->SetVerbose(1);
-
-		//crystalLogic_cry = new G4LogicalCrystalVolume(crystalSolid, Crystal,"crystal.logic_cry");  // new
-		physAbsor = new G4PVPlacement(rot,
-		                              G4ThreeVector(),
-		                              crystalLogic_cry,
-		                              "crystal.physic_cry",
-		                              worldLogic,
-		                              false,
-		                              0,
-		                              true);
-	}
-	// layer1 crystal
-	Crystal2 = new G4ExtendedMaterial("crystal2.material",mat[1]);
-	Crystal2->RegisterExtension(std::unique_ptr<G4CrystalExtension>(new G4CrystalExtension(Crystal2)));
-	G4CrystalExtension* crystalExtension2 = (G4CrystalExtension*)Crystal2->RetrieveExtension("crystal");
-
-
-	crystalExtension2->SetUnitCell(new G4CrystalUnitCell(5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    227));
-
-	Crystal2->RegisterExtension(std::unique_ptr<G4ChannelingMaterialData>(new G4ChannelingMaterialData("channeling")));
-	G4ChannelingMaterialData* crystalChannelingData2 = (G4ChannelingMaterialData*)Crystal2->RetrieveExtension("channeling");
-
-	if (fCrystalAmorphous[1]) {
-		crystalLogic2_amo = new G4LogicalVolume (crystalSolid2, mat[1], "crystal2.logic_amo");
-		if(fCrystalAmorphous[0]) {
-			physAbsor2 = new G4PVPlacement(0,
-			                              position[0],
-			                              crystalLogic2_amo,
-			                              "crystal2.physic_amo",
-			                              crystalLogic_amo,
-			                              false,
-			                              0,
-			                              true);
-			crystalLogic2_amo->SetUserLimits(stepLimit);
-		} else {
-			physAbsor2 = new G4PVPlacement(0,
-			                              position[0],
-			                              crystalLogic2_amo,
-			                              "crystal2.physic_amo",
-			                              crystalLogic_cry,
-			                              false,
-			                              0,
-			                              true);
-		}
-	} else {
-		crystalLogic2_cry = new G4LogicalCrystalVolume(crystalSolid2, Crystal2,"crystal2.logic_cry"); 
-		crystalChannelingData2->SetFilename(fECfileName[1][0]);
-		crystalLogic2_cry->SetVerbose(1);
-
-		if (fCrystalAmorphous[0]) {
-			physAbsor2 = new G4PVPlacement(0,
-			                               position[0],
-			                               crystalLogic2_cry,
-			                               "crystal2.physic_cry",
-			                               crystalLogic_amo,
-			                               false,
-			                               0,
-			                               true);
-		} else {
-			physAbsor2 = new G4PVPlacement(0,
-			                               position[0],
-			                               crystalLogic2_cry,
-			                               "crystal2.physic_cry",
-			                               crystalLogic_cry,
-			                               false,
-			                               0,
-			                               true);
+	// setup crystalline extension
+	G4ExtendedMaterial* crystals[LAYERS];
+	G4ChannelingMaterialData* crystalChannelingDatas[LAYERS];
+	G4CrystalExtension* cry_ext[LAYERS];
+	G4double sz = 5.43 * CLHEP::angstrom;
+	G4double half_pi = CLHEP::halfpi;
+	G4String cryname;
+	for (uint8_t i=0; i<LAYERS; ++i) {
+		// setup only if material is crystalline
+		if (!fCrystalAmorphous[i]) {
+			cryname = "crystal.material" + std::to_string(i);
+			crystals[i] = new G4ExtendedMaterial(cryname, mat[i]);
+			crystals[i]->RegisterExtension(std::unique_ptr<G4CrystalExtension>(new G4CrystalExtension(crystals[i])));
+			cry_ext[i] = (G4CrystalExtension*)crystals[i]->RetrieveExtension("crystal");
+			cry_ext[i]->SetUnitCell(new G4CrystalUnitCell(sz, sz, sz, half_pi, half_pi, half_pi, 227));
+			crystals[i]->RegisterExtension(std::unique_ptr<G4ChannelingMaterialData>(new G4ChannelingMaterialData("channeling")));
+			crystalChannelingDatas[i] = (G4ChannelingMaterialData*)crystals[i]->RetrieveExtension("channeling");
 		}
 	}
 
-	// layer2 crystal
-	Crystal3 = new G4ExtendedMaterial("crystal3.material",mat[2]);
-	Crystal3->RegisterExtension(std::unique_ptr<G4CrystalExtension>(new G4CrystalExtension(Crystal3)));
-	G4CrystalExtension* crystalExtension3 = (G4CrystalExtension*)Crystal3->RetrieveExtension("crystal");
-
-
-	crystalExtension3->SetUnitCell(new G4CrystalUnitCell(5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    227));
-
-	Crystal3->RegisterExtension(std::unique_ptr<G4ChannelingMaterialData>(new G4ChannelingMaterialData("channeling")));
-	G4ChannelingMaterialData* crystalChannelingData3 = (G4ChannelingMaterialData*)Crystal3->RetrieveExtension("channeling");
-
-
-	crystalLogic3_amo = new G4LogicalVolume (crystalSolid3, mat[2], "crystal3.logic_amo");
-	crystalLogic3_cry = new G4LogicalCrystalVolume(crystalSolid3, Crystal3,"crystal3.logic_cry"); 
-
-	if (fCrystalAmorphous[2]) {
-		if (fCrystalAmorphous[0]) {
-			physAbsor3 = new G4PVPlacement(0,
-			                               position[1],
-			                               crystalLogic3_amo,
-			                               "crystal3.physic_amo",
-			                               crystalLogic_amo,
-			                               false,
-			                               0,
-			                               true);
+	// building logical and physical volumes
+	G4String log_v_name, phys_v_name;
+	for (uint8_t i=0; i<LAYERS; ++i) {
+		log_v_name = "crystal.logic" + std::to_string(i);
+		phys_v_name = "crystal.physic" + std::to_string(i);
+		// construct logicals and link to crystal or amorphous
+		if (fCrystalAmorphous[i]) {
+			log_v_name += "_amo";
+			crystal_logic_v_amo[i] = new G4LogicalVolume(crystalSolid[i], mat[i], log_v_name);
+			crystal_logic_v[i] = crystal_logic_v_amo[i];
 		} else {
-			physAbsor3 = new G4PVPlacement(0,
-			                               position[1],
-			                               crystalLogic3_amo,
-			                               "crystal3.physic_amo",
-			                               crystalLogic_cry,
-			                               false,
-			                               0,
-			                               true);
+			log_v_name += "_cry";
+			crystal_logic_v_cry[i] = new G4LogicalCrystalVolume(crystalSolid[i], crystals[i], log_v_name);
+			crystal_logic_v[i] = crystal_logic_v_cry[i];
 		}
-		crystalLogic3_amo->SetUserLimits(stepLimit);
-	} else {
-		crystalChannelingData3->SetFilename(fECfileName[2][0]);
-		crystalLogic3_cry->SetVerbose(1);
-
-		if (fCrystalAmorphous[0]) {
-			physAbsor3 = new G4PVPlacement(0,
-			                               position[1],
-			                               crystalLogic3_cry,
-			                               "crystal3.physic_cry",
-			                               crystalLogic_amo,
-			                               false,
-			                               0,
-			                               true);
-		} else {
-			physAbsor3 = new G4PVPlacement(0,
-			                               position[1],
-			                               crystalLogic3_cry,
-			                               "crystal3.physic_cry",
-			                               crystalLogic_cry,
-			                               false,
-			                               0,
-			                               true);
-		}
-	}
-
-	// layer3 crystal
-	Crystal4 = new G4ExtendedMaterial("crystal4.material",mat[3]);
-	Crystal4->RegisterExtension(std::unique_ptr<G4CrystalExtension>(new G4CrystalExtension(Crystal4)));
-	G4CrystalExtension* crystalExtension4 = (G4CrystalExtension*)Crystal4->RetrieveExtension("crystal");
-
-
-	crystalExtension4->SetUnitCell(new G4CrystalUnitCell(5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    227));
-
-	Crystal4->RegisterExtension(std::unique_ptr<G4ChannelingMaterialData>(new G4ChannelingMaterialData("channeling")));
-	G4ChannelingMaterialData* crystalChannelingData4 = (G4ChannelingMaterialData*)Crystal4->RetrieveExtension("channeling");
-
-	crystalLogic4_amo = new G4LogicalVolume (crystalSolid4, mat[3], "crystal4.logic_amo");
-	crystalLogic4_cry = new G4LogicalCrystalVolume(crystalSolid4, Crystal4,"crystal4.logic_cry"); 
-
-	if(fCrystalAmorphous[3]) {
-		if(fCrystalAmorphous[0]) {
-			physAbsor4 = new G4PVPlacement(0,
-			                               position[2],
-			                               crystalLogic4_amo,
-			                               "crystal4.physic_amo",
-			                               crystalLogic_amo,
-			                               false,
-			                               0,
-			                               true);
-		} else {
-			physAbsor4 = new G4PVPlacement(0,
-			                               position[2],
-			                               crystalLogic4_amo,
-			                               "crystal4.physic_amo",
-			                               crystalLogic_cry,
-			                               false,
-			                               0,
-			                               true);
-		}
-		crystalLogic4_amo->SetUserLimits(stepLimit);
-	} else {
-		crystalChannelingData4->SetFilename(fECfileName[3][0]);
-		crystalLogic4_cry->SetVerbose(1);
-		if (fCrystalAmorphous[0]) {
-			physAbsor4 = new G4PVPlacement(0,
-			                               position[2],
-			                               crystalLogic4_cry,
-			                               "crystal4.physic_cry",
-			                               crystalLogic_amo,
-			                               false,
-			                               0,
-			                               true);
-		} else {
-			physAbsor4 = new G4PVPlacement(0,
-			                               position[2],
-			                               crystalLogic4_cry,
-			                               "crystal4.physic_cry",
-			                               crystalLogic_cry,
-			                               false,
-			                               0,
-			                               true);
-		}
-	}
-	// layer4 crystal
-	Crystal5 = new G4ExtendedMaterial("crystal5.material",mat[4]);
-	Crystal5->RegisterExtension(std::unique_ptr<G4CrystalExtension>(new G4CrystalExtension(Crystal5)));
-	G4CrystalExtension* crystalExtension5 = (G4CrystalExtension*)Crystal5->RetrieveExtension("crystal");
-
-
-	crystalExtension5->SetUnitCell(new G4CrystalUnitCell(5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    5.43 * CLHEP::angstrom,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    CLHEP::halfpi,
-	                                                    227));
-
-	Crystal5->RegisterExtension(std::unique_ptr<G4ChannelingMaterialData>(new G4ChannelingMaterialData("channeling")));
-	G4ChannelingMaterialData* crystalChannelingData5 = (G4ChannelingMaterialData*)Crystal5->RetrieveExtension("channeling");
-
-	crystalLogic5_amo = new G4LogicalVolume (crystalSolid5, mat[4], "crystal5.logic_amo");
-	crystalLogic5_cry = new G4LogicalCrystalVolume(crystalSolid4, Crystal5,"crystal5.logic_cry"); 
-
-	if (fCrystalAmorphous[4]) {
-		if (fCrystalAmorphous[0]) {
-			physAbsor5 = new G4PVPlacement(0,
-			                               position[3],
-			                               crystalLogic5_amo,
-			                               "crystal5.physic_amo",
-			                               crystalLogic_amo,
-			                               false,
-			                               0,
-			                               true);
-		} else {
-			physAbsor5 = new G4PVPlacement(0,
-			                               position[3],
-			                               crystalLogic5_amo,
-			                               "crystal5.physic_amo",
-			                               crystalLogic_cry,
-			                               false,
-			                               0,
-			                               true);
-		}
-		crystalLogic5_amo->SetUserLimits(stepLimit);
-	} else {
-		crystalChannelingData5->SetFilename(fECfileName[4][0]);
-		crystalLogic5_cry->SetVerbose(1);
-		if (fCrystalAmorphous[0]) {
-			physAbsor5 = new G4PVPlacement(0, 
-			                               position[3],
-			                               crystalLogic5_cry,
-			                               "crystal5.physic_amo",
-			                               crystalLogic_amo,
-			                               false,
-			                               0,
-			                               true);
-		} else {
-			physAbsor5 = new G4PVPlacement(0,
-			                               position[3],
-			                               crystalLogic5_cry,
-			                               "crystal5.physic_amo",
-			                               crystalLogic_cry,
-			                               false,
-			                               0,
-			                               true);
-		}
+		// construct physicals
+		if (i == 0)
+			crystal_physical_v[i] = new G4PVPlacement(rot, G4ThreeVector(), crystal_logic_v[i], phys_v_name, worldLogic, false, 0, true);
+		else
+			crystal_physical_v[i] = new G4PVPlacement(rot, position[i - 1], crystal_logic_v[i], phys_v_name, crystal_logic_v[0], false, 0, true);
+		// set limitations
+		if (fCrystalAmorphous[i])
+			crystal_logic_v[i]->SetUserLimits(stepLimit);
+		else
+			crystalChannelingDatas[i]->SetFilename(fECfileName[i][0]);
+		G4cout << " Logical name = " << crystal_logic_v[i]->GetName() << G4endl;
+		G4cout << " Physical name = " << crystal_physical_v[i]->GetName() << G4endl;
+		// G4cout << " Pot = " << crystalChannelingDatas[i]->GetPot()->GetMax() << G4endl;
 	}
 
 	return worldPhysical;
@@ -678,54 +401,43 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+// void PrintMap(const std::map<G4String, std::vector<G4LogicalVolume*> >& bmap) {
+//     // Iterate through the map
+//     for (const auto& pair : bmap) {
+//         const G4String& key = pair.first;
+//         const std::vector<G4LogicalVolume*>& volumes = pair.second;
+
+//         // Print the key (G4String)
+//         std::cout << "Key: " << key << std::endl;
+
+//         // Print the logical volumes associated with the key
+//         for (size_t i = 0; i < volumes.size(); ++i) {
+//             if (volumes[i] != nullptr) {
+//                 std::cout << "  Volume " << i << ": " << volumes[i]->GetName() << " (Address: " << volumes[i] << ")" << std::endl;
+//             } else {
+//                 std::cout << "  Volume " << i << ": nullptr" << std::endl;
+//             }
+//         }
+//     }
+// }
+
 void DetectorConstruction::ConstructSDandField()
 {
-
-	if (fCrystalAmorphous[0]) 
-		crystalLogic = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal.logic_amo");
-	else
-		crystalLogic = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal.logic_cry");
-
-	G4VSensitiveDetector* crystaldetector = new CrystalDetector("/crystaldetector",fECfileName[0][0],fECfileName[0][1],fECfileName[0][2],fCrystalAmorphous[0]);
-	G4SDManager::GetSDMpointer()->AddNewDetector(crystaldetector);
-	crystalLogic->SetSensitiveDetector(crystaldetector);
-
-
-	if (fCrystalAmorphous[1]) 
-		crystalLogic2 = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal2.logic_amo");
-	else
-		crystalLogic2 = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal2.logic_cry");
-
-	G4VSensitiveDetector* crystaldetector2 = new CrystalDetector("/crystaldetector2",fECfileName[1][0],fECfileName[1][1],fECfileName[1][2],fCrystalAmorphous[1]);
-	G4SDManager::GetSDMpointer()->AddNewDetector(crystaldetector2);
-	crystalLogic2->SetSensitiveDetector(crystaldetector2);
-
-	if (fCrystalAmorphous[2]) 
-		crystalLogic3 = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal3.logic_amo");
-	else
-		crystalLogic3 = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal3.logic_cry");
-
-	G4VSensitiveDetector* crystaldetector3 = new CrystalDetector("/crystaldetector3",fECfileName[2][0],fECfileName[2][1],fECfileName[2][2],fCrystalAmorphous[2]);
-	G4SDManager::GetSDMpointer()->AddNewDetector(crystaldetector3);
-	crystalLogic3->SetSensitiveDetector(crystaldetector3);
-
-	if (fCrystalAmorphous[3]) 
-		crystalLogic4 = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal4.logic_amo");
-	else
-		crystalLogic4 = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal4.logic_cry");
-
-	G4VSensitiveDetector* crystaldetector4 = new CrystalDetector("/crystaldetector4",fECfileName[3][0],fECfileName[3][1],fECfileName[3][2],fCrystalAmorphous[3]);
-	G4SDManager::GetSDMpointer()->AddNewDetector(crystaldetector4);
-	crystalLogic4->SetSensitiveDetector(crystaldetector4);
-
-	if (fCrystalAmorphous[4]) 
-		crystalLogic5 = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal5.logic_amo");
-	else
-		crystalLogic5 = G4LogicalVolumeStore::GetInstance()->GetVolume("crystal5.logic_cry");
-
-	G4VSensitiveDetector* crystaldetector5 = new CrystalDetector("/crystaldetector5",fECfileName[4][0],fECfileName[4][1],fECfileName[4][2],fCrystalAmorphous[4]);
-	G4SDManager::GetSDMpointer()->AddNewDetector(crystaldetector5);
-	crystalLogic5->SetSensitiveDetector(crystaldetector5);
+	G4String name, det_name;
+	G4VSensitiveDetector* crystal_det[LAYERS];
+	// PrintMap(G4LogicalVolumeStore::GetInstance()->GetMap());
+	for (uint8_t i=0; i<LAYERS; ++i) {
+		name = "crystal.logic" + std::to_string(i);
+		det_name = "/crystaldetector" + std::to_string(i);
+		if (fCrystalAmorphous[i])
+			name += "_amo";
+		else
+			name += "_cry";
+		crystal_logic_v[i] = G4LogicalVolumeStore::GetInstance()->GetVolume(name);
+		crystal_det[i] = new CrystalDetector(det_name, fECfileName[i][0],fECfileName[i][1],fECfileName[i][2],fCrystalAmorphous[i]);
+		G4SDManager::GetSDMpointer()->AddNewDetector(crystal_det[i]);
+		crystal_logic_v[i]->SetSensitiveDetector(crystal_det[i]);
+	}
 
 	G4LogicalVolume* ssdLogic = G4LogicalVolumeStore::GetInstance()->GetVolume("ssd.logic");
 	G4VSensitiveDetector* telescope = new SensitiveDetector("/telescope");
@@ -737,11 +449,8 @@ void DetectorConstruction::ConstructSDandField()
 	if (use_xs_transformation) {
 		G4cout << " Using XS TRANFORMATION " << G4endl;
 		G4ChannelingOptrMultiParticleChangeCrossSection* xsecopr = new G4ChannelingOptrMultiParticleChangeCrossSection();
-		xsecopr->AttachTo(crystalLogic);
-		xsecopr->AttachTo(crystalLogic2);
-		xsecopr->AttachTo(crystalLogic3);
-		xsecopr->AttachTo(crystalLogic4);
-		xsecopr->AttachTo(crystalLogic5);
+		for (uint8_t i=0; i<LAYERS; ++i)
+			xsecopr->AttachTo(crystal_logic_v[i]);
 	}
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -7,11 +7,10 @@
 // start of functions relevant to RBS spectrum
 G4double RecoilEnergy(G4double E, G4double angle, G4double M1, G4double M2)
 {
-	G4double k;
-	G4double square = std::sqrt(std::pow(M2/M1, 2.) - std::pow(sin(angle), 2.));
+	G4double square = std::sqrt(std::pow(M2 / M1, 2.) - std::pow(sin(angle), 2.));
 	G4double M1co = cos(angle);
 	G4double denominator = 1 + (M2 / M1);
-	k = std::pow((M1co + square) / denominator, 2.);
+	G4double k = std::pow((M1co + square) / denominator, 2.);
 	return  E * k;
 }
 
@@ -52,7 +51,7 @@ G4double CalcBohrStrag(G4double Z1, G4double Z2, G4double atomDens, G4double dis
 //from http://atlas.physics.arizona.edu/~shupe/Indep_Studies_2015/Notes_Goethe_Univ/L4_Scattering_Basic.pdf
 G4double CalcAngleCMFrame(G4double angle, G4double M1, G4double M2)
 {
-	G4double x= 0., y=0.;
+	G4double x = 0., y = 0.;
 	x = (M1 / M2) * sin(angle);
 	y = asin(x);
 	return y + angle;
@@ -60,7 +59,7 @@ G4double CalcAngleCMFrame(G4double angle, G4double M1, G4double M2)
 //energy in the CM reference frame
 G4double CalcEnergyCMFrame(G4double energy, G4double M1, G4double M2)
 {
-	G4double en=0.;
+	G4double en = 0.;
 	en = energy * M2 / (M1 + M2);
 	return en;
 }
@@ -100,7 +99,7 @@ G4double CalcTotEnLoss(G4double E, G4double distance, G4int steps, G4ParticleDef
 }
 
 // function for Total RBS yield, combining other functions into single one
-G4double CalculateTotalRBSYield(G4double energy, G4double M1, G4double M2, G4double Z1, G4double Z2, G4double angle, G4double solidAngle, G4double xsecmod, G4double atomDensity,G4double inc_angle)
+G4double CalculateTotalRBSYield(G4double energy, G4double M1, G4double M2, G4double Z1, G4double Z2, G4double angle, G4double solidAngle, G4double xsecmod, G4double atomDensity, G4double inc_angle)
 {
 	G4double CMangleX        = CalcAngleCMFrame(angle, M1, M2);
 	G4double CMenergyX       = CalcEnergyCMFrame(energy, M1, M2);
@@ -112,7 +111,7 @@ G4double CalculateTotalRBSYield(G4double energy, G4double M1, G4double M2, G4dou
 }
 
 // yang+chu
-G4double CalculateTotalBohrStraggling(G4double energy, G4ParticleDefinition* particle, G4Material* mat, G4double distance)
+G4double CalculateTotalBohrStraggling(G4double energy, G4ParticleDefinition* particle, const G4Material* mat, G4double distance)
 {
 	if (energy < 0)
 		return 0;
@@ -170,7 +169,13 @@ G4double CalculateTotalBohrStraggling(G4double energy, G4ParticleDefinition* par
 // energy loss in detector dead layer
 G4double CalculateDeadLayerEffect(G4double energy, const G4Material* material, G4double thickness,G4ParticleDefinition* particle)
 {
-	G4double steps = 20.;
+	G4double steps; // = 20.;
+	G4double stp_size = thickness / (1. *nm);
+	if (thickness /nm <= 1.)
+		steps = ceil(stp_size);
+	else
+		steps = stp_size;
+
 	G4double stp = (thickness / steps) / cm;
 	G4EmCalculator emCalculator;
 	for (int i=1; i<=steps; i++) {
@@ -223,78 +228,4 @@ G4double CalcAndersenScreening(G4double energy_cm, G4double angle_cm, G4double Z
 G4double CalcNuclEnStraggling(G4double Z1, G4double Z2, G4double M1, G4double M2, G4double atdens,G4double distance)
 {
 	return 0.26 * std::pow(Z1 * Z2, 2) * std::pow(M1 / (M1 + M2), 2) * (distance / cm) * (atdens) / (1e+24); // in MeV2
-}
-
-G4double CalcScreening_TF(G4double Z1, G4double Z2)
-{
-	G4double a_bohr = 52900; // in fm
-	G4double zz1 = std::pow(Z1,2. / 3.);
-	G4double zz2 = std::pow(Z2,2. / 3.);
-	return a_bohr * 0.8853 * std::pow(zz1 + zz2, -0.5);
-}
-
-G4double CalcScreening_ZBL(G4double Z1, G4double Z2)
-{
-	G4double a_bohr = 52900; // in fm
-	G4double zz1 = std::pow(Z1, 0.23);
-	G4double zz2 = std::pow(Z2, 0.23);
-	return a_bohr * 0.8853 / (zz1 + zz2);
-}
-
-
-G4double CalcDeltaF_K(G4double M1, G4double energy, G4double angle, G4double M2, G4double kinematic_factor)
-{
-	G4double delta_fk = 0.;
-	G4double delta_fk1 = -2 * M1 * kinematic_factor * energy * sin(angle);
-	G4double delta_fk2 = sqrt(M2 * M2 - (M1 * M1 * sin(angle) * sin(angle)));
-	delta_fk = delta_fk1 / delta_fk2;
-	
-	return delta_fk;
-}
-
-G4double CalcScallingFactorS(G4double a, G4double b, G4double v)
-{
-	G4double sf = 0;
-	G4double k             = b / a;
-	G4double k_v           = k * (v + 1);
-	G4double one_plus_k    = std::abs(1 + k);
-	G4double one_plus_k_sq = std::pow(one_plus_k, v + 1);
-
-	G4double plus_one   = (one_plus_k_sq + 1) / k_v;
-	G4double minus_one  = (one_plus_k_sq - 1) / k_v;
-
-	G4double v_plus     = v + 1;
-	G4double inv_v      = 1 / v;
-
-	if (b==0)
-		sf = a;
-	else if (a == 0)
-		sf = b / (std::pow(v_plus, inv_v));
-	else if (a * b != 0 && k < -1)
-		sf = a * std::pow(std::abs(plus_one), inv_v);
-	else if (a * b != 0 && k >= -1)
-		sf = a * std::pow(std::abs(minus_one), inv_v);
-	return sf;
-}
-
-G4double CalcScallingFactorMiu(G4double energy, G4double Z1, G4double Z2,G4double screening_radius)
-{
-	G4double miu = 0.;
-	G4double elmcharge_squared = 1.4399764;
-	G4double miu_up = (energy / MeV) * screening_radius;
-	G4double miu_down = 2 * Z1 * Z2 * elmcharge_squared;
-	miu = miu_up / miu_down;
-
-	return miu;
-}
-
-// kinematic factor for multiple scattering evaluations
-G4double KinematicFactor(G4double angle, G4double M1, G4double M2)
-{
-	G4double k = 0.;
-	G4double square = std::sqrt(std::pow(M2, 2.) - std::pow(M1 * sin(angle), 2.));
-	G4double M1co = M1 * cos(angle);
-	G4double denominator = M1 + M2;
-	k = std::pow((M1co + square) / denominator, 2.);
-	return k;
 }
